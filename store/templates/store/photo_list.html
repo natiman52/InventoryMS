@@ -1,0 +1,26 @@
+{%extends "store/base.html"%}
+{%block title%} file folder{%endblock title%}
+
+{%block content%}
+<div class="px-5 py-4">
+    <form class="input-group mt-2 mb-4 bg-wheat" role="search" id="searchform" action="{% url 'order-photo' type=type %}" method="get" accept-charset="utf-8">
+        <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm me-2" placeholder="Find Photos">                
+        <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+            <i class="fa-solid fa-search"></i>
+        </button>
+    </form>
+    <div class="d-flex flex-wrap gap-4 ">
+        {%for photo in photos%}
+        <div>
+            <img style="width: 200px;height: 200px;object-fit: cover;border-radius: 5px;border: 1px solid rgb(181, 181, 181);" src="/media/{{photo.image}}" alt="">
+            <p style="font-size: 16px;" class="mt-1">{{photo.filename}}</p>
+        </div>
+        {%endfor%}
+    </div>
+    <div class="position-absolute bottom-0 " style="right: 0;">
+        <ul class=" m-2">
+            <li class="btn btn-primary"><a class="nav-link text-white" href="{%url 'photo-create' type=type %}">New Photos</a></li>
+        </ul>
+    </div>
+</div>
+{%endblock%}

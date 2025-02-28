@@ -1,0 +1,85 @@
+{% extends "store/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Add bill record{%endblock title%}{% block content %}
+<div class="col container p-5">
+    <div class="row">
+          <div class="offset-1 col-md-10 col-lg-10">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <section class="section-bg" id="plans">
+                    <fieldset class="form-group">
+                        <header class="section-header">
+                            <h1 class="text-success">Add Raw Material Record</h1>
+                            <hr>
+                        </header>
+                    <strong>{{form_main.supplier.label}}:-</strong>
+                         {{ form_main.supplier }}
+                         <div class="d-flex flex-column gap-3 mt-3 mb-3">
+                            <div class="border-2 rounded py-1 px-2">
+                                <header>
+                                    <p class="fw-bold mb-1">Form 1 *</p>
+                                </header>
+                                {{sub_form | crispy}}
+                            </div>
+                            <div class="border-2 rounded py-1 px-2">
+                                <header>
+                                    <p class="mb-1">Form 2</p>
+                                </header>
+                                {{sub_form2 | crispy}}
+                            </div>
+                            <div class="border-2 rounded py-1 px-2">
+                                <header>
+                                    <p class="mb-1">Form 3</p>
+                                </header>
+                                {{sub_form3 | crispy}}
+                            </div>
+                            <div class="border-2 rounded py-1 px-2">
+                                <header>
+                                    <p class="mb-1">Form 4</p>
+                                </header>
+                                {{sub_form4 | crispy}}
+                            </div>
+                            <div class="border-2 rounded py-1 px-2">
+                                <header>
+                                    <p class="mb-1">Form 5</p>
+                                </header>
+                                {{sub_form5 | crispy}}
+                            </div>
+                         </div>
+                         <div class="mb-3">
+                             {{form_main.minsceus_cost.label}}
+                             {{form_main.minsceus_cost}}
+                         </div>
+                         <div class="mb-3">
+                             {{form_main.payment_method.label}}
+                             {{form_main.payment_method}}
+                         </div>
+                         <div id="additional_info">
+
+                         </div>
+                    </fieldset>
+                </section>
+                <div class="form-group mt-4 text-center">
+                    <button class="btn btn-success" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-3 col-lg-3"></div>
+    </div>
+</div>
+<script>
+    document.getElementById('id_payment_method').addEventListener('change',event => {
+        if(event.target.value == "credit"){
+            document.getElementById("additional_info").innerHTML = `
+            <div class="mb-3">
+                {{form_main.advance.label}}
+                {{form_main.advance}}
+            </div>
+            `
+        }else if(event.target.value == "cash"){
+            document.getElementById("additional_info").innerHTML = ''
+        }
+    })
+</script>
+{% endblock content %}

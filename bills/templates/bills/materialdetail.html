@@ -1,0 +1,56 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}{{bill.id}}{% endblock title %}
+{%block content%}
+<div class="my-5 mx-5">
+    <div class="d-flex justify-content-around">
+        <div >
+            <p class="text-md">Bill ID: <strong>({{bill.id}})</strong></p>
+            <p class="text-md">Supplier: <strong>{{bill.supplier.name}}</strong></p>
+            <p class="text-md">Aquired Date: <strong>{{bill.date|date:"M d,Y"}}</strong></p>
+            <p class="text-md">Total Cost: <strong>{{bill.total_cost}} birr</strong></p>
+            <p class="text-md">Minsceus Cost: <strong>{{bill.minsceus_cost}} birr</strong></p>
+        </div>
+        <div>
+            <p class="text-md">Payment method: <strong>{{bill.payment_method}}</strong></p>
+            {%if bill.payment_method != 'cash'%}
+            <p class="text-md text-success">Advance: <strong>{{bill.advance}} birr</strong></p>
+            <p class="text-md text-danger mb-2">LeftOver: <strong>{{bill.leftover}} birr</strong></p>
+            {%endif%}
+        </div>
+        <div>
+            {%if bill.payment_method != 'cash'%}
+                {%for payment in payments%}
+                <p class="text-md  mb-2">Payment - <strong>{{payment.amount}} birr</strong> - date <strong>{{payment.date|date:"M d,Y"}} </strong></p>
+                {%endfor%}
+            {%endif%}
+        </div>
+    </div>
+
+        <p class="text-lg fw-bold mt-5 border-bottom">Single Items</p>
+        <div class="d-flex flex-wrap gap-5 ">
+                {%for iron in bill.irons.all %}
+                <div class="d-flex gap-2">
+                    <p>item {{forloop.counter }}</p>
+                    <div class="border-1 p-1 ps-4 pe-5 rounded">
+                        <div class="d-flex gap-5">
+                            <p class="mb-1">Thickness: <strong class="ms-1">{{iron.thickness}}mm</strong></p>
+                            <p class="mb-1">Quantity: <strong class="ms-1">{{iron.quantity}} unit</strong></p>
+                        </div>
+                        <p class="mb-1">Price: <strong class="ms-1">{{iron.price}} birr</strong></p>
+                    </div>
+                </div>
+                {%endfor%}
+        </div>
+        {% if bill.leftover > 0 %}
+        <form action="" class="mt-4" method="post" >
+            {%csrf_token%}
+            {{form}}
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary mt-2"><i class="fa fa-solid fa-save"></i> save</button>
+            </div>
+        </form>
+        {%endif%}
+</div>
+{%endblock content%}

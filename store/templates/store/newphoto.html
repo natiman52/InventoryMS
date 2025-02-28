@@ -1,0 +1,25 @@
+{%extends "store/base.html"%}
+
+{%block title%} add photo{%endblock title%}
+
+{%block content%}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card-body">
+                    <h1 class="text-center mb-4">Add Photo</h1>
+                    <form action="" enctype="multipart/form-data" method="post">
+                        {%csrf_token%}
+                        {{form}}
+                        <div class="d-flex justify-content-end mt-5">
+                            <button class="btn btn-success ">submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    document.getElementById('type').value = "{{type}}"
+</script>
+{%endblock%}

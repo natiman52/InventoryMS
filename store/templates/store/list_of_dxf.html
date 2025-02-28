@@ -1,0 +1,67 @@
+{%extends "store/base.html"%}
+{%load querystring from django_tables2%}
+{%block title%} file Folder{%endblock title%}
+
+{%block content%}
+        <div class="w-100 px-4 py-5">
+            <form class="input-group mt-2 mb-4 bg-wheat" role="search" id="searchform" action="{% url 'order-dxf' type=type %}" method="get" accept-charset="utf-8">
+                <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm me-2" placeholder="Find Photos">                
+                <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+            </form>
+            <table class="table table-bordered table-striped table-hover table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col" style="font-size: 16px;">Name <i class="fa-solid fa-sort"></i></th>
+                        <th scope="col" style="font-size: 16px;">date <i class="fa-solid fa-sort"></i></th>
+
+                        {%if request.user.role == "AD"%}
+                        <th scope="col">Action</th>
+                        {%endif%}
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in Dxf_flies %}
+                    <tr>
+                        <td class="ps-3" style="font-size: 16px;"><a download="{{file.filename}}" href="/media/{{file.dxf}}">{{file.filename}}</a></td>
+                        <td style="font-size: 16px;">{{ file.date }}</td>
+                         {%if request.user.role == "AD"%}
+                        <td>
+                            <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </a>
+                            <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.slug %}">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </td>
+                        {%endif%}
+                    </tr>
+                    {% endfor %}
+                    {%for item in items%}
+            <tr>
+                <td class="ps-3" style="font-size: 16px;"><a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.dxf_file_identifier}}</a></td>
+                <td style="font-size: 16px;">{{ item.date }}</td>
+                 {%if request.user.role == "AD"%}
+                <td>
+                    <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                    <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.slug %}">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </a>
+                </td>
+                {%endif%}
+            </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="position-absolute bottom-0 " style="right: 0;">
+        <ul class=" m-2">
+            <li class="btn btn-primary"><a class="nav-link text-white" href="{%url 'dxf-create' type=type%}">New DXF</a></li>
+        </ul>
+    </div>
+{%endblock%}
