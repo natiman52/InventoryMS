@@ -36,7 +36,6 @@ class ItemDxfForm(forms.ModelForm):
         model = Item
         fields = ('dxf_file',)
 
-
 # Accountant Form
 
 #Operator View Form
@@ -94,7 +93,7 @@ class DXFFileForm(forms.ModelForm):
     type = forms.CharField(widget=forms.TextInput(attrs={'type':'hidden',"id":"type"}))
     class Meta:
         model = DxfFile
-        fields = ["dxf",'type']
+        fields = ["dxf_file",'type']
         widgets={
             "dxf":forms.FileInput(attrs={"class":"form-control  mt-1"})
         }

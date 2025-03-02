@@ -20,10 +20,8 @@ from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Sum
-
+from django.core import serializers
 # Authentication and permissions
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -341,7 +339,7 @@ def listofDxf(request,type):
     object = DxfFile.objects.filter(type=type)
     items = Item.objects.filter( ~Q(dxf_file='') & Q(type=type))
     if(request.GET.get('q')):
-        items=items.filter(Q(dxf_file__contains=request.GET.get('q')))
+        items=items.filter(Q(dxf_file__filename__contains=request.GET.get('q')))
         object=object.filter(Q(name__contains=request.GET.get('q')))       
     context = {"Dxf_flies":list(object) ,"items":list(items),"type":type}
     return render(request,"store/list_of_dxf.html",context)
@@ -551,20 +549,16 @@ def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
 
-@csrf_exempt
-@require_POST
+
 @login_required
 def get_items_ajax_view(request):
     if is_ajax(request):
         try:
-            term = request.POST.get("term", "")
-            data = []
-
-            items = Item.objects.filter(name__icontains=term)
-            for item in items[:10]:
-                data.append(item.to_json())
-
-            return JsonResponse(data, safe=False)
+            type=request.GET.get('type')
+            files =serializers.serialize("json",queryset=Item.objects.filter(~Q(dxf_file='') & Q(type=type)))
+            files2 =serializers.serialize("json",queryset=DxfFile.objects.filter(type=type))
+            
+            return JsonResponse({'files':files,'files2':files2}, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Not an AJAX request'}, status=400)

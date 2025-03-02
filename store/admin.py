@@ -17,7 +17,7 @@ class ImageFileAdmin(admin.ModelAdmin):
     list_display =('name','image','date')
 @admin.decorators.register(DxfFile)
 class DxfFileAdmin(admin.ModelAdmin):
-    list_display = ('name','dxf','date')
+    list_display = ('type','date')
 class CategoryAdmin(admin.ModelAdmin):
     """
     Admin configuration for the Category model.

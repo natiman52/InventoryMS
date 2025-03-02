@@ -1,5 +1,5 @@
 {%extends "store/base.html"%}
-
+{%load add_filters %}
 {%block title%} {{item.client}}{%endblock title%}
 
 {%block content%}
@@ -61,12 +61,16 @@
         </div>
         {%if item.verif_design == "W" or item.verif_design == "D"%}
         <div class="mt-5">
-            <div class="d-flex ">
-                <p class="p-2 mb-2 text-lg border-1 rounded-small">Upload DXF</p>
-            </div>
-            <form action="" enctype="multipart/form-data" method="post">
+            <form class="position-relative" action="" enctype="multipart/form-data" method="post">
                 {%csrf_token%}
-                {{form.dxf_file}}
+                <input type="hidden" id="choosen" name="choosen">
+                <label for="">Search DXF:</label>
+                <input type="text" value="" class="form-control" id="prev_dxf" >
+                <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
+
+                </ul>
+                <p class="mt-4"><strong>OR</strong></p>
+                {{form}}
                 <div class=" d-flex align-items-end flex-column mt-3">
                     <button type="submit" class="btn btn-success">Submit</button>
                     <small class="text-danger"><strong> Please  be sure about the file before  UPLOADING!</strong></small>
@@ -75,4 +79,50 @@
         </div>
         {%endif%}
     </div>
+
 {%endblock%}
+{%block javascripts%}
+{%if item.verif_design == "W" or item.verif_design == "D"%}
+<script> 
+    var ul =document.getElementById("file_name_list")
+    objects = ""
+    $.ajax({
+        url:`http://${window.location.host}/get-items?type={{item.type}}`,
+        async:false,
+    }).done((e)=> {
+        objects = {'files':JSON.parse(e.files),"files2":JSON.parse(e.files2)}
+    }).fail(e=> {
+        console.log(e)
+    })
+    
+    document.getElementById("prev_dxf").addEventListener("keyup", e => {
+        console.log(e.target.value == "")
+        if(e.target.value == ""){
+            ul.classList.add('d-none')
+        }else{
+            ul.classList.remove("d-none")  
+        } 
+        str = ``
+        files = objects.files.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data =>{
+                str +=`<li onclick="changeForm(event)" class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="It_${data.pk}">
+                    ${data.fields.dxf_file.split('/')[3].split('.')[0]} 
+                    <a download="${data.fields.dxf_file.split('/')[3]}" href="/media/${data.fields.dxf_file}">
+                    <i class="border p-1 rounded fa fa-download"></i></a></li>`
+        })
+        files2 = objects.files2.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
+                str +=`<li onclick="changeForm(event)" class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
+                    ${data.fields.dxf_file.split('/')[2].split('.')[0]}
+                     <a download="${data.fields.dxf_file.split('/')[2]}" href="/media/${data.fields.dxf_file}">
+                        <i class="border p-1 rounded fa fa-download"></i></a>
+                     </li>`
+        })
+            ul.innerHTML = str
+    })
+    function changeForm(e){
+        document.getElementById("prev_dxf").value = e.target.innerText
+       document.getElementById('choosen').setAttribute('value',e.target.dataset.id)
+       ul.classList.add("d-none")
+    }
+</script>
+{%endif%}
+{% endblock javascripts %}

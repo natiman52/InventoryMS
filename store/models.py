@@ -24,10 +24,11 @@ thickness_type = ((0.5,"0.5mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
                  (1.4,"1.4mm"),(1.8,"1.8mm"),
                   (2.5,"2.5mm"),(3.0,"3.0mm"))
 class DxfFile(models.Model):
-    name = models.CharField(max_length=100,blank=True)
-    date=models.DateField(auto_now=True)
-    dxf = models.FileField(upload_to="manual/dxf")
+    date=models.DateField(auto_now_add=True)
+    dxf_file = models.FileField(upload_to="manual/dxf")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
+    def __str__(self):
+        return f"{self.type} {self.id}"
     def filename(self):
         return os.path.basename(self.dxf.name).split('.')[0]
 class ImageFile(models.Model):
@@ -98,6 +99,8 @@ class Item(models.Model):
             f"{self.client}  "
             f"{self.id}"
         )
+    def checkname(self,value):
+        return bool(self.dxf_file.name) and self.dxf_file.storage.exists(value)
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
     def get_absolute_url(self):

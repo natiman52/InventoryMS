@@ -1,6 +1,6 @@
 
 from accounts.models import Customer
-from .models import  Item ,UserPrint
+from .models import  Item ,UserPrint,DxfFile
 from django.utils import timezone
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
@@ -43,13 +43,20 @@ class DesignDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateV
         return context
     def post(self, request,id, *args, **kwargs):
         channel = get_channel_layer()
-        item =self.get_object()
-        UserPrint.objects.create(user=request.user,item=self.get_object(),comment="designer_change_add")
-        item.verif_design = "P"
-        item.save()
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
-        return super().post(self,request,id,*args,**kwargs)
+        item =self.get_object()
+        if(request.POST.get('choosen') != "" or request.FILES.get("dxf_file")):
+            UserPrint.objects.create(user=request.user,item=self.get_object(),comment="designer_change_add")
+            item.verif_design = "P"
+            item.save()
+            if(request.POST.get('choosen') != ""):
+                item.dxf_file = request.POST.get('choosen')
+                item.save()
+            if(request.FILES.get("dxf_file")):
+                return super(DesignDetailView,self).post(self,request,id,*args,**kwargs)
+
 class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView):
+    model = Item
     context_object_name = "items"
     table_class = ItemTableDesign
     template_name = 'store/designerorderlist.html'
