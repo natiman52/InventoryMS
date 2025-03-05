@@ -51,7 +51,7 @@
                     <td>{{ item.client }}</td>
                     <td>{{ item.thickness }}</td>
                     <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>
-                    <td>{{ item.date }}</td>
+                    <td>{{ item.date|date:"M d, Y"  }}</td>
                     <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'A'%} Accepted {%else%} Waiting{%endif%}</td>
                     <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'A'%} Accepted {%else%} Waiting{%endif%}</td>
                     {%if request.user.role == "AD"%}
@@ -64,7 +64,7 @@
                         </a>
                     </td>
                     {%endif%}
-                    <td>{{item.quantity}}</td>
+                    <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -44,6 +44,7 @@
                             <option value="square">Square (cm) </option>
                             <option value="other">Other </option>
                         </select>
+                        <p class="help-block">Don't forget to add quantity</p>
                         <div id="Dimensions-holder">
 
                         </div>
@@ -93,6 +94,7 @@
     })
         // dimensions
     document.getElementById('dimensions').addEventListener('change',e => {
+
         if(e.target.value == "rectangular"){
             document.getElementById('Dimensions-holder').innerHTML = `
             <div style="display: flex;justify-content: center;width: 100px;border-bottom: 2px solid black;margin-left:49px">
@@ -119,12 +121,23 @@
             `
         }
         if(e.target.value == 'other'){
+            document.getElementById("id_quantity").classList.add('d-none')
+            document.querySelector('label[for="id_quantity"]').classList.add("d-none")
             document.getElementById('Dimensions-holder').innerHTML = `
-            <div>
-                <input type='file' name="dimensions-image" class="form-control mt-3 mb-3"/>
+            <div class="d-flex flex-column">
+                <label for="id_dimensions-image">Upload Dimensions:</label>
+                <input type="file" id="id_dimensions-image" name="dimensions-image" class="form-control mt-1 mb-2"/>
+                <span class="my-2"><strong>OR</strong></span>
+                <label for="id_dimensions-image">Write Dimensions:</label>
+                <textarea id="id_dimensions_info" name="dimensions_info" row="5" class="form-control mt-1 mb-3"></textarea>
                 </div>`    
         }
+        else{
+            document.getElementById("id_quantity").classList.remove('d-none') 
+            document.querySelector('label[for="id_quantity"]').classList.remove("d-none")
+        }
     })
+
 </script>
 {% endblock content %}
 

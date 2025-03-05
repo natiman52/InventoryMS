@@ -141,7 +141,7 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
 class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
     model = Item
     context_object_name = 'item'
-    template_name = 'store/account/accountdetail.html'
+    template_name = 'accounts/accountdetail.html'
     form_class = ItemPriceForm
     pk_url_kwarg = 'id'
     success_url ="/"
@@ -165,7 +165,7 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
         return super().post(self,request,id,*args,**kwargs)
 class AccountOrderList(ListView):
     context_object_name = "items"
-    template_name = 'store/account/accountorderlist.html'
+    template_name = 'accounts/accountorderlist.html'
     def get_queryset(self):
         obje = []
         current = ''
@@ -182,7 +182,7 @@ class AccountOrderList(ListView):
         return obje
 class AccountOrderListFinished(ListView):
     context_object_name = "items"
-    template_name = 'store/account/accountorderlist.html'
+    template_name = 'accounts/accountorderlist.html'
     def get_queryset(self):
         obje = []
         current = ''
@@ -200,7 +200,7 @@ class AccountOrderListFinished(ListView):
 class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
     model = Customer
     context_object_name = 'items'
-    template_name = "store/account/accountcustomerorderlist.html"
+    template_name = "accounts/accountcustomerorderlist.html"
     pk_url_kwarg = "id"
     def get_object(self):
         obj = super(AccountCustomerOrderList,self).get_object()

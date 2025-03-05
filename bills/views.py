@@ -18,7 +18,7 @@ from django_tables2 import SingleTableView
 from django_tables2.export.views import ExportMixin
 
 # Local app imports
-from .models import Bill,InventoryMaterial,InventoryPayment
+from .models import Bill,InventoryMaterial,InventoryPayment,Thickness
 from .tables import BillTable
 from .forms import InventoryBillForm,SingleBillForm,InventoryUpdateBillForm
 from accounts.models import MyUser
@@ -33,7 +33,10 @@ class MaterialListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     context_object_name = 'bills'
     paginate_by = 10
     SingleTableView.table_pagination = False
-
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+         context = super().get_context_data(**kwargs)
+         context['types'] = Thickness.objects.all()
+         return context
 
 class MaterialDetailView(LoginRequiredMixin,DetailView):
     model = InventoryMaterial
@@ -83,29 +86,48 @@ def material_create_view(request):
         sub_form2 =SingleBillForm(request.POST,prefix='sub_form2')
         #sub form begins
         if(sub_form2.is_valid()):
+                thickness = sub_form2.cleaned_data.get('thickness')
+                thickness.added = int(sub_form2.cleaned_data.get('quantity'))
+                thickness.save()
                 total_price += sub_form2.cleaned_data.get("price") * sub_form2.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form2.save(commit=True).id)
         sub_form3 =SingleBillForm(request.POST,prefix='sub_form3')
         if(sub_form3.is_valid()):
+                thickness = sub_form3.cleaned_data.get('thickness')
+                thickness.added = int(sub_form3.cleaned_data.get('quantity'))
+                thickness.save()
                 total_price += sub_form3.cleaned_data.get("price") * sub_form3.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form3.save(commit=True).id)
         sub_form4 =SingleBillForm(request.POST,prefix='sub_form4')
         if(sub_form4.is_valid()):
+                thickness = sub_form4.cleaned_data.get('thickness')
+                thickness.added = int(sub_form4.cleaned_data.get('quantity'))
+                thickness.save()
                 total_price += sub_form4.cleaned_data.get("price") * sub_form4.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form4.save(commit=True).id)
         sub_form5 =SingleBillForm(request.POST,prefix='sub_form5')
         if(sub_form5.is_valid()):
+                thickness = sub_form5.cleaned_data.get('thickness')
+                thickness.added = int(sub_form5.cleaned_data.get('quantity'))
+                thickness.save()
                 total_price += sub_form5.cleaned_data.get("price") * sub_form5.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form5.save(commit=True).id)
         
         # subform ends
+            
         if(form_main.is_valid() and sub_form.is_valid()):
+            thickness = sub_form.cleaned_data.get('thickness')
+            thickness.added = float(sub_form.cleaned_data.get('quantity'))
+            thickness.save()
             total_price += sub_form.cleaned_data.get("price") * sub_form.cleaned_data.get('quantity')
             total_price += form_main.cleaned_data.get('minsceus_cost')
             singleMaterial.append(sub_form.save(commit=True).id)
             form_main.instance.user = request.user
             form_main.instance.total_cost =total_price
-            form_main.instance.leftover = total_price - int(form_main.cleaned_data.get("advance"))
+            if(form_main.cleaned_data.get("payment_method") != "cash"):
+                form_main.instance.leftover = total_price - int(form_main.cleaned_data.get("advance"))
+            else:
+                 form_main.instance.advance = total_price
             obj = form_main.save(commit=True)
             obj.irons.add(*singleMaterial)
             return redirect(reverse('bill_list'))

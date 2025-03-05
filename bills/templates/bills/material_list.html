@@ -32,7 +32,16 @@
         <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
     </form>
     {% endcomment %}
-
+    <div class="container">
+        <div class="d-flex">
+            {%for type in types%}
+            <div class="d-flex border rounded">
+                <p>{{type.name}}mm</p>
+                <p>{{type.added|subtract:type.removed}}</p>
+                </div>
+            {%endfor%}
+        </div>
+    </div>
     <div class="mb-3">
         <a class="btn btn-success btn-sm" href="{% url 'bill_create' %}">
             <i class="fa-solid fa-plus me-2"></i> Add New Material 

@@ -15,8 +15,7 @@ def saveDxfName(sender,instance,**kwargs):
     name =os.path.basename(instance.dxf.name).split('.')[0]
     instance.name = name
 
-@receiver(pre_save,sender=Item)
-def ChangeId(sender,instance,**kwargs):
+def ChangeId(instance):
         # first 2 months 2 days
         if(not Item.objects.filter(id=instance.id).exists()):
             date_month = timezone.now().date().strftime('%b')

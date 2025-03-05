@@ -4,10 +4,10 @@
 
 {%block content%}
     <div class="px-5 py-5">
-        <div class="d-flex gap-4">
-            <img style="width: 300px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="/media/{{item.image1}}" alt="" srcset="">
-            <img style="width: 300px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image2 %}/media/{{item.image2}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
-            <img style="width: 300px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image3 %}/media/{{item.image3}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
+        <div class="d-flex justify-content-around flex-wrap gap-2">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="/media/{{item.image1}}" alt="" srcset="">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image2 %}/media/{{item.image2}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image3 %}/media/{{item.image3}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
         </div>
         <div class="d-flex pt-4 mb-3 flex-wrap" style="column-gap: 40px;">
             <div class="">
@@ -29,6 +29,12 @@
                 <p class="mb-0 text-md">Remark</p>
                 <div class="mb-0 py-2 ms-1 justify-content-between">
                     <p>{{item.remark}}</p>
+                </div>
+            </div>
+            <div class="">
+                <p class="mb-0 text-md">Quantity</p>
+                <div class="mb-0 py-2 ms-1 justify-content-between">
+                    <p>{{item.quantity}}</p>
                 </div>
             </div>
         </div>
@@ -54,25 +60,67 @@
                         </div>
                     </div>
                     {%else%}
+                        {%if item.dimensions_image%}
                         <a href="/media/{{item.dimensions_image}}"><img style="width: 100px;height: 100px;" src="/media/{{item.dimensions_image}}" alt="Dimemsions" srcset=""></a>
+                        {%else%}   
+                        <div class="mb-0 py-2 ms-1 justify-content-between">
+                                <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info}}</p>
+                            </div>
+                        {%endif%}
                     {%endif%}
                 </div>
             </div>
         </div>
         {%if item.verif_design == "W" or item.verif_design == "D"%}
-        <div class="mt-5">
-            <form class="position-relative" action="" enctype="multipart/form-data" method="post">
-                {%csrf_token%}
-                <input type="hidden" id="choosen" name="choosen">
-                <label for="">Search DXF:</label>
-                <input type="text" value="" class="form-control" id="prev_dxf" >
-                <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
+        <div class="mt-4">
+            <form class="position-relative " action="" enctype="multipart/form-data" method="post">
+                <div class="d-flex flex-wrap">
+                    <div class="w-100">
+                        <input type="hidden" id="choosen" name="choosen">
+                        <label for="">Search DXF:</label>
+                        <input type="text" value="" class="form-control" id="prev_dxf" >
+                        <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
+                        </ul>
+                    </div>
+                    <p class="mt-2 mb-2 mx-3"><strong>OR</strong></p>
+                    <div class="w-100">
+                        {{form}}
+                    </div>
+                </div>
 
-                </ul>
-                <p class="mt-4"><strong>OR</strong></p>
-                {{form}}
+                {%if item.dimensions_type == "other" and item.subclassed == False %}
+                <div class="mb-5">
+                    <label for="quantity">quantity:</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control  ">
+                </div>
+                {{formset.management_form}}
+                <div id="formset-form-list">
+                    {%for form in formset%}
+                    <div class="formset-element">
+                        {{form}}
+                    </div>
+                    {%endfor%}
+                </div>
+                <div id="formset_temp" class="position-relative border mt-2 rounded px-2 py-1 d-none">
+                    <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
+                    <div class="w-100">
+                        <label for="">Search DXF:</label>
+                        <input type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-__prefix__" >
+                        <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-__prefix__">
+                        </ul>
+                    </div>
+                    <p class="mt-2 mb-2 mx-3"><strong>OR</strong></p>
+                    {{formset.empty_form}}
+                </div>
+                {%endif%}
+                {%csrf_token%}
                 <div class=" d-flex align-items-end flex-column mt-3">
-                    <button type="submit" class="btn btn-success">Submit</button>
+                    <div class="mb-4 px-2 d-flex align-items-end flex-colum gap-3">
+                        {%if item.dimensions_type == "other" and item.subclassed == False%}
+                        <button type="button" id="add_form" class="btn btn-primary "><i class="fa fa-plus"></i> DXF</button>
+                        {%endif%}
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
                     <small class="text-danger"><strong> Please  be sure about the file before  UPLOADING!</strong></small>
                 </div>
             </form>
@@ -83,8 +131,29 @@
 {%endblock%}
 {%block javascripts%}
 {%if item.verif_design == "W" or item.verif_design == "D"%}
+
 <script> 
+    const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS")
     var ul =document.getElementById("file_name_list")
+    const totalforms = document.getElementsByClassName("formset-element")
+    var custom =''
+    function killme(e){
+        e.target.parentNode.parentNode.remove()
+        updateFormNumber.setAttribute("value",totalforms - 1)
+    }
+    document.getElementById("add_form").addEventListener("click", event => {
+        const cloned = document.getElementById('formset_temp').cloneNode(true)
+        cloned.setAttribute("id","form_" + totalforms.length)
+        cloned.classList.remove("d-none")
+        cloned.classList.add("formset-element")
+        const regex = new RegExp("__prefix__","g")
+        cloned.innerHTML = cloned.innerHTML.replace(regex,totalforms.length)
+        updateFormNumber.setAttribute('value',totalforms.length + 1)
+        document.getElementById("formset-form-list").append(cloned)
+        document.getElementById(`prev_dxf_multiple-${totalforms.length - 1}`).addEventListener("keyup", e => keyupFunction(e,totalforms.length))
+
+    })   
+    
     objects = ""
     $.ajax({
         url:`http://${window.location.host}/get-items?type={{item.type}}`,
@@ -94,34 +163,51 @@
     }).fail(e=> {
         console.log(e)
     })
-    
-    document.getElementById("prev_dxf").addEventListener("keyup", e => {
-        console.log(e.target.value == "")
+    const keyupFunction = (e,x) => {
+        if(x){
+            custom =document.getElementById(`file_name_list-${x-1}`)
+        }
         if(e.target.value == ""){
-            ul.classList.add('d-none')
+            if(x){
+            custom.classList.add("d-none")
+            }else{ ul.classList.add('d-none')}
         }else{
-            ul.classList.remove("d-none")  
+            if(x){
+                custom.classList.remove("d-none")
+            }else{ul.classList.remove("d-none") }
         } 
         str = ``
         files = objects.files.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data =>{
-                str +=`<li onclick="changeForm(event)" class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="It_${data.pk}">
+                str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="It_${data.pk}">
                     ${data.fields.dxf_file.split('/')[3].split('.')[0]} 
                     <a download="${data.fields.dxf_file.split('/')[3]}" href="/media/${data.fields.dxf_file}">
                     <i class="border p-1 rounded fa fa-download"></i></a></li>`
         })
         files2 = objects.files2.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
-                str +=`<li onclick="changeForm(event)" class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
+                str +=`<li onclick="changeForm(event)"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
                     ${data.fields.dxf_file.split('/')[2].split('.')[0]}
                      <a download="${data.fields.dxf_file.split('/')[2]}" href="/media/${data.fields.dxf_file}">
                         <i class="border p-1 rounded fa fa-download"></i></a>
                      </li>`
         })
-            ul.innerHTML = str
-    })
-    function changeForm(e){
-        document.getElementById("prev_dxf").value = e.target.innerText
-       document.getElementById('choosen').setAttribute('value',e.target.dataset.id)
-       ul.classList.add("d-none")
+        if(x){
+            custom.innerHTML = str
+        }else{ ul.innerHTML = str }
+    }
+    
+    document.getElementById("prev_dxf").addEventListener("keyup",e=> keyupFunction(e,0))
+
+
+    function changeForm(e,x){
+        if(x){
+            document.getElementById(`prev_dxf_multiple-${x-1}`).value = e.target.innerText
+            document.getElementById(`id_form-${x-1}-search`).value = e.target.dataset.id
+            custom.classList.add("d-none")
+        }else{
+            document.getElementById("prev_dxf").value = e.target.innerText
+           document.getElementById('choosen').setAttribute('value',e.target.dataset.id)
+           ul.classList.add("d-none")
+        }
     }
 </script>
 {%endif%}

@@ -38,13 +38,19 @@ from django_tables2.export.views import ExportMixin
 # Local app imports
 from accounts.models import MyUser, Supplier,Customer
 from transactions.models import Sale
-from .models import Category, Item, Delivery,ImageFile,DxfFile
+from .models import Category, Item, Delivery,ImageFile,DxfFile,Thickness
 from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileForm
 from .tables import ItemTable
 from django.utils import timezone
-
+from store.signals import ChangeId
 @login_required
 def dashboard(request):
+    date =timezone.now().date()
+    if(request.GET.get("sort") == 'yesterday'):
+        date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
+    date_time1 = timezone.datetime(date.year,date.month,date.day)
+    date_time2 =timezone.datetime(date.year,date.month,date.day) + timezone.timedelta(hours=23,minutes=59)
+    my_range = [date_time1,date_time2]
     if(request.user.role == "AD"):
         profiles = MyUser.objects.all()
         items = Item.objects.all()
@@ -71,13 +77,9 @@ def dashboard(request):
     }
         return render(request, "store/dashboard.html", context)
     elif(request.user.role == "MR"):
-        date =timezone.now().date()
-        items = Item.objects.filter( Q(date=date) & Q(Q(verif_price='P') | Q(verif_design="P")))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter( Q(date=date) & ~Q(verif_price='W') & ~Q(verif_design="W"))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(~Q(verif_price='W') & ~Q(verif_design="W"))
+        items = Item.objects.filter(Q(verif_price='P',date__range=my_range) | Q(verif_design="P",date__range=my_range))
+        if(request.GET.get("sort") == "all"):
+            items = Item.objects.filter(Q(verif_price='P') | Q(verif_design="P"))
 
     #search
         if(request.GET.get('q')):
@@ -88,13 +90,9 @@ def dashboard(request):
         }
         return render(request, "store/dashboard.html", context)
     elif(request.user.role == "DR"):
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & ( Q(verif_design="W") | Q(verif_design="D")))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & (Q(verif_design="W") | Q(verif_design="D")))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter((Q(verif_design="W") | Q(verif_design="D")))
+        items = Item.objects.filter( Q(verif_design="W",date__range=my_range) | Q(verif_design="D",date__range=my_range))
+        if(request.GET.get("sort") == "all"):
+            items = Item.objects.filter(Q(verif_design="W") | Q(verif_design="D"))
     
     #search
         if(request.GET.get('q')):
@@ -106,13 +104,9 @@ def dashboard(request):
         return render(request, "store/dashboard.html", context)
     elif(request.user.role == "AT"):
         profiles = MyUser.objects.all()
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
+        items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+        if(request.GET.get("sort") == "all"):
+            items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
         # search
         if(request.GET.get('q')):
             items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
@@ -122,13 +116,9 @@ def dashboard(request):
         }
         return render(request, "store/dashboard.html", context)
     elif(request.user.role == "OP"):
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & Q(verif_price="A") & Q(verif_design="A") & Q(completed=False))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) - timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & Q(verif_price="A") & Q(verif_design="A") & Q(completed=False))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(Q(Q(verif_price="A") | Q(verif_design="A")) & Q(completed=False))
+        items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+        if(request.GET.get("sort") == "all"):
+            items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
         if(request.GET.get('q')):
             items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
     # Prepare data for charts
@@ -137,13 +127,9 @@ def dashboard(request):
         }
         return render(request, "store/dashboard.html", context)   
     elif(request.user.role == "DR"):
-        date =timezone.now().date()
-        items = Delivery.objects.filter(date=date,is_delivered=False)
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) - timezone.timedelta(days=1)
-            items = Delivery.objects.filter(date=date,is_delivered=False)
-        elif(request.GET.get("sort") == "all"):
-            items = Delivery.objects.filter(completed=True)
+        items = Delivery.objects.filter(date__range=my_range,is_delivered=False,completed=True)
+        if(request.GET.get("sort") == "all"):
+            items = Delivery.objects.filter(completed=True,is_delivered=False)
         if(request.GET.get('q')):
             items=items.filter(Q(item__id__contains=request.GET.get('q')) | Q(customer__name__contains=request.GET.get('q')))
     # Prepare data for charts
@@ -163,7 +149,7 @@ class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView
     - paginate_by: Number of items per page for pagination.
     """
 
-    queryset = Item.objects.filter(verif_price="W",verif_design="W")
+    queryset = Item.objects.filter(Q(verif_price="W") | Q(verif_design="W"))
     table_class = ItemTable
     template_name = "store/GivenProductList.html"
     context_object_name = "items"
@@ -297,7 +283,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         return context
     def post(self,request,type,*args,**kwargs):
         dimensions = request.POST.get("dimensions")
-        thickness = float(request.POST.get('thickness'))
+        thickness = int(request.POST.get('thickness'))
         client = int(request.POST.get('client'))
         priority =request.POST.get('priority')
         quantity =request.POST.get('quantity')
@@ -307,16 +293,22 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         if(dimensions and thickness and client and priority and quantity and remark and request.FILES.get("image1")):
             item_initial =Item(user=request.user,image1=request.FILES.get("image1"),remark=remark,type=type,
                                image2=request.FILES.get("image2"),dimensions_type=dimensions,quantity=quantity,
-                               image3=request.FILES.get('image3'),thickness=thickness,client=Customer.objects.get(id=client),priority=priority)
+                               image3=request.FILES.get('image3'),thickness=Thickness.objects.get(id=thickness),client=Customer.objects.get(id=client),priority=priority)
             if(dimensions == 'rectangular' and width and length):
                item_initial.diminsions = json.dumps({"type":"rectangular","width":width,"length":length})
             elif(dimensions == "square" and width):
                 item_initial.diminsions=json.dumps({'type':"square","width":request.POST.get("width")})
-            elif(dimensions == 'other' and request.FILES.get("dimensions-image")):
+            elif(dimensions == 'other' and request.FILES.get("dimensions-image") ):
                 item_initial.dimensions_image = request.FILES.get("dimensions-image")
+                item_initial.dimensions_info =request.POST.get("dimensions_info")
+                item_initial.quantity = 0
+            elif(dimensions == 'other' and request.POST.get('dimensions_info')):
+                item_initial.quantity = 0
+                item_initial.dimensions_info =request.POST.get("dimensions_info")
             else:
                 return render(request,"store/productcreate.html",{"form":self.get_form(),'type':type,"error":True})
             channel_layer = get_channel_layer()
+            ChangeId(item_initial)
             async_to_sync(channel_layer.group_send)('DR',{"type":"send.notification",'message':"message"})
             item_initial.save()
             return redirect('/given-order')

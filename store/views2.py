@@ -1,6 +1,6 @@
 
-from accounts.models import Customer
-from .models import  Item ,UserPrint,DxfFile
+from django.forms import formset_factory
+from .models import  Item ,UserPrint
 from django.utils import timezone
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
@@ -10,7 +10,7 @@ import json
 from django.core.exceptions import PermissionDenied
 # Authentication and permissions
 from asgiref.sync import async_to_sync
-
+import string
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_tables2 import SingleTableView
@@ -20,9 +20,9 @@ from .tables import ItemTableDesign
 from channels.layers import get_channel_layer
 # Class-based views
 from django.views.generic import (DetailView, UpdateView, ListView)
-from .forms import ItemDxfForm
+from .forms import ItemDxfForm,ItemDxfAddForm
 from django.contrib.auth.mixins import UserPassesTestMixin
-
+from .filters import get_item_or_dxffile
 class DesignDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
     model = Item
     context_object_name = 'item'
@@ -38,6 +38,8 @@ class DesignDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateV
             return False
     def get_context_data(self, **kwargs):
         context = super(DesignDetailView,self).get_context_data(**kwargs)
+        formset =formset_factory(form=ItemDxfAddForm,extra=0)
+        context['formset'] = formset()
         if(context['item'].diminsions):
             context['diminsion'] = json.loads(context['item'].diminsions)
         return context
@@ -45,15 +47,29 @@ class DesignDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateV
         channel = get_channel_layer()
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
         item =self.get_object()
+        model_formset =formset_factory(form=ItemDxfAddForm,extra=0)
+        formset= model_formset(request.POST,request.FILES)
+        print(formset.errors)
         if(request.POST.get('choosen') != "" or request.FILES.get("dxf_file")):
             UserPrint.objects.create(user=request.user,item=self.get_object(),comment="designer_change_add")
             item.verif_design = "P"
-            item.save()
             if(request.POST.get('choosen') != ""):
-                item.dxf_file = request.POST.get('choosen')
-                item.save()
-            if(request.FILES.get("dxf_file")):
-                return super(DesignDetailView,self).post(self,request,id,*args,**kwargs)
+                item.dxf_file = get_item_or_dxffile(request.POST.get('choosen')).dxf_file
+            if(request.POST.get('quantity')):
+                item.quantity = int(request.POST.get('quantity'))
+            item.save()
+            for index,f in enumerate(formset):
+                if(f.is_valid()):
+                    item2 =self.get_object()
+                    print(item2.pk + string.ascii_uppercase[index])
+                    item2.pk = item2.pk + string.ascii_uppercase[index]
+                    item2.dxf_file = f.cleaned_data.get("dxf_file")
+                    if(f.cleaned_data.get('search')):
+                        item2.dxf_file = get_item_or_dxffile(f.cleaned_data.get('search')).dxf_file
+                    item2.quantity = f.cleaned_data.get('quantity')
+                    item2.subclassed = True
+                    item2.save()
+        return super(DesignDetailView,self).post(request,*args,**kwargs)
 
 class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView):
     model = Item
@@ -63,36 +79,15 @@ class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView
     paginate_by = 10
     SingleTableView.table_pagination = False
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_design == "P" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_design == "P"):
-                        obje.append(i.item)
-                        current = i.item
-        return obje
+        objects = Item.objects.filter(verif_design="P")
+        return objects
 
 class DesignerOrderListFinished(ListView):
     context_object_name = "items"
     template_name = 'store/designerorderlist.html'
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_design == "A" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_design == "A"):
-                        obje.append(i.item)
-                        current = i.item
-        print(obje)
-        return obje
+        objects = Item.objects.filter(verif_design="A")
+        return objects
     
 
 # Operator Views

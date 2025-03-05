@@ -42,7 +42,7 @@
                     {%for item in items%}
             <tr>
                 <td class="ps-3" style="font-size: 16px;"><a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.dxf_file_identifier}}</a></td>
-                <td style="font-size: 16px;">{{ item.date }}</td>
+                <td style="font-size: 16px;">{{ item.date|date:"M d, Y"  }}</td>
                  {%if request.user.role == "AD"%}
                 <td>
                     <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">

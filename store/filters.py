@@ -1,11 +1,11 @@
 import django_filters
-from .models import Item
+from .models import Item,DxfFile
 
 
-class ProductFilter(django_filters.FilterSet):
-    """
-    Filter set for Item model.
-    """
-    class Meta:
-        model = Item
-        fields = ['name', 'category', 'vendor']
+def get_item_or_dxffile(item):
+    dx = item[:2]
+    if(dx == "It"):
+        return Item.objects.get(id=item[3:])
+    else:
+        return DxfFile.objects.get(id=int(item[3:]))
+

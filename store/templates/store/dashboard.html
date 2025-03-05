@@ -177,7 +177,7 @@
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
                         <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         {%if request.user.role == "AD"%}
@@ -190,7 +190,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -245,7 +245,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'designer-order' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         {%if request.user.role == "AD"%}
                         <td>
@@ -257,7 +257,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -301,7 +301,6 @@
                         <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Price Verification <i class="fa-solid fa-sort"></i></th>
-                        <th scope="col">design Verification <i class="fa-solid fa-sort"></i></th>
                         {%if request.user.role == "AD"%}
                         <th scope="col">Action</th>
                         {%endif%}
@@ -315,9 +314,8 @@
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
                         <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
-                        <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -328,7 +326,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -385,7 +383,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'operator-detail' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -396,7 +394,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                         <td>{% if item.completed %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                     </tr>
                     {% endfor %}
@@ -454,7 +452,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'operator-detail' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date| date:"M d, Y"  }}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -465,7 +463,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                         <td>{% if item.completed %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                     </tr>
                     {% endfor %}
