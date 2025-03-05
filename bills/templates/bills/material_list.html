@@ -32,14 +32,30 @@
         <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
     </form>
     {% endcomment %}
-    <div class="container">
-        <div class="d-flex">
-            {%for type in types%}
-            <div class="d-flex border rounded">
-                <p>{{type.name}}mm</p>
-                <p>{{type.added|subtract:type.removed}}</p>
+    <div class="mb-4">
+        <div class="d-flex gap-4 flex-wrap">
+            <div class="" style="flex: .5;">
+                <h2>Remaining Inventory</h2>
+                <div class="d-flex gap-3 flex-wrap">
+                    {%for type in types%}
+                    <div class="d-flex border rounded">
+                        <p class="m-0 p-1 border">{{type.name}}mm</p>
+                        <p class="m-0 p-1 border text-success fw-bold">{{type.added|subtract:type.removed}} units</p>
+                        </div>
+                    {%endfor%}
                 </div>
-            {%endfor%}
+            </div>
+            <div class="" style="flex: .5;">
+                <h2>Total Inventory</h2>
+                <div class="d-flex  gap-3 flex-wrap" >
+                    {%for type in types%}
+                    <div class="d-flex border rounded">
+                        <p class="m-0 p-1 border">{{type.name}}mm</p>
+                        <p class="m-0 p-1 border  fw-bold">{{type.added}} unit</p>
+                        </div>
+                    {%endfor%}
+                </div>
+            </div>
         </div>
     </div>
     <div class="mb-3">
