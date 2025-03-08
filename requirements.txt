@@ -3,9 +3,8 @@ anyio==4.5.2
 asgiref==3.7.2
 async-timeout==4.0.3
 attrs==23.2.0
-autobahn==23.1.2
 Automat==22.10.0
-backports.zoneinfo==0.2.1
+backports.zoneinfo==0.2.1;python_version<"3.9"
 Brotli==1.1.0
 certifi==2023.7.22
 cffi==1.16.0
@@ -28,7 +27,6 @@ django-extensions==3.2.3
 django-filter==24.3
 django-imagekit==5.0.0
 django-jazzmin==2.6.0
-django-phonenumber-field==8.0.0
 django-tables2==2.7.0
 djangorestframework==3.14.0
 dnspython==2.6.1
@@ -36,8 +34,6 @@ email_validator==2.2.0
 et_xmlfile==2.0.0
 ethiopian-date==1.0
 exceptiongroup==1.2.2
-fastapi==0.115.6
-fastapi-cli==0.0.7
 fonttools==4.51.0
 h11==0.14.0
 html5lib==1.1
@@ -57,7 +53,6 @@ numpy==1.24.4
 opencv-python==4.9.0.80
 openpyxl==3.1.5
 packaging==24.0
-phonenumbers==8.13.43
 pilkit==3.0
 pillow==10.2.0
 pure-python-adb==0.3.0.dev0
