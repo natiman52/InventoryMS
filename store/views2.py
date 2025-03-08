@@ -148,8 +148,9 @@ def operator_detail_view(request,id):
         if(request.POST.get('start')):
             obj.start = timezone.now()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_started_task")
-            obj.thickness.removed += obj.quantity
+            obj.thickness.removed += obj.quantity 
             obj.save()
+            obj.thickness.save()
         if(request.POST.get('finish')):
             obj.completed = True
             obj.finish = timezone.now()

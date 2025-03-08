@@ -57,7 +57,7 @@ class Category(models.Model):
 def uploadTo(instance,model):
     return f"item/images/{instance.client.name}" + model
 def uploadDXFTo(instance,model):
-    return f"item/DXF/{instance.client.name}/" + model
+    return f"item/DXF/" + model
 
 
 class DXFOrder(models.Model):

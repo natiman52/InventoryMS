@@ -1,6 +1,7 @@
 {% extends "store/base.html" %}
 {% load static %}
 {% load querystring from django_tables2 %}
+{%load add_filters%}
 {% block title %}Dashboard{% endblock title %}
 
 {% block content %}
@@ -149,9 +150,9 @@
         <div class="px-4">
             <div>
                 <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
-                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday'%} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday">Yesterday</a>
-                    <a href="{%url 'dashboard'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
+                    <a href="{%url 'dashboard'%}?sort=all{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
+                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday'%} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday{{request|get_page}}">Yesterday</a>
+                    <a href="{%url 'dashboard'%}?{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
                 </ul>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm">
@@ -217,9 +218,9 @@
         <div class="px-4">
             <div>
                 <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
-                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday">Yesterday</a>
-                    <a href="{%url 'dashboard'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
+                    <a href="{%url 'dashboard'%}?sort=all{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
+                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday{{request|get_page}}">Yesterday</a>
+                    <a href="{%url 'dashboard'%}?{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
                 </ul>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm">
@@ -468,6 +469,49 @@
             </table>
         </div>
     {%endif%}
+        {% if is_paginated %}
+    <nav aria-label="Page navigation mb-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </span>
+            </li>
+            {% endif %}
+            {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
     </div>
 </div>
 {% endblock content %}
