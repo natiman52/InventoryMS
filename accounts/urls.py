@@ -27,7 +27,7 @@ urlpatterns = [
     path('profile/', user_views.profile, name='user-profile'),
     path('logout/', auth_views.LogoutView.as_view(
         template_name='accounts/logout.html'), name='user-logout'),
-
+     path('changepassword/',user_views.changepassword, name='user-changepassword'),
     # Customer URLs
     path('customers/', CustomerListView.as_view(), name='customer_list'),
     path('customers/create/', CustomerCreateView.as_view(),

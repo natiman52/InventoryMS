@@ -1,13 +1,24 @@
 from django import forms
 from .models import Item, Category, Delivery,ImageFile,DxfFile,Thickness
-from django.forms import formset_factory
+from django.forms import BaseFormSet
+
+
+class MyFormSet(BaseFormSet):
+    def my_custom_clean(self,item):
+        available =item.thickness.added - item.thickness.removed
+        for form in self.forms:
+            if(form.cleaned_data.get('quantity')):
+                if(int(form.cleaned_data.get('quantity')) > available):
+                    form.add_error('quantity',"there is not enough lamera")
+                    return False
+        return True
 #Marketing Form
 class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return "%smm (%s)" %( obj.name, obj.added - obj.removed)
 
 class ItemForm(forms.ModelForm):
-    thickness =ModuleSelectorModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))
+    thickness =ModuleSelectorModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
     """
     A form for creating or updating an Item in the inventory.
     """
@@ -20,19 +31,12 @@ class ItemForm(forms.ModelForm):
             'quantity',
             'remark',
         ]
-        widgets = {
-            'client': forms.Select(attrs={'class': 'form-control mb-3',}),
-            "priority": forms.Select(attrs={'class': 'form-control mb-3'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control mb-3'}),
-            'remark': forms.Textarea(
-                attrs={
-                    'class': 'form-control mb-3',
-                    'rows': 5
-                }
-            ),
-        }
-
-
+    def clean(self):
+        thickness =self.cleaned_data.get('thickness')
+        if((thickness.added - thickness.removed) < int(self.cleaned_data.get('quantity'))):
+            raise forms.ValidationError({"quantity":'there is no availble material'})
+        else:
+            return self.cleaned_data
 # Designer Form
 class ItemDxfForm(forms.ModelForm):
     dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-2 mt-2"}))
@@ -40,10 +44,14 @@ class ItemDxfForm(forms.ModelForm):
         model = Item
         fields = ('dxf_file',)
 class ItemDxfAddForm(forms.Form):
-    search = forms.CharField(required=False,widget=forms.HiddenInput(attrs={'class':"form-control mb-4 mt-2"}))
-    dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-4 mt-2"}))
-    quantity = forms.IntegerField(required=True,widget=forms.TextInput(attrs={'class':"form-control mb-4 mt-2"}))
-
+    search = forms.CharField(required=False,widget=forms.HiddenInput(attrs={'class':"form-control mb-2 mt-2"}))
+    dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-2 mt-2"}))
+    quantity = forms.IntegerField(required=True,widget=forms.TextInput(attrs={'class':"form-control mb-2 mt-2"}))
+    def clean_quantity(self):
+        if(self.cleaned_data.get("quantity")):
+            return self.cleaned_data.get("quantity")
+        else:
+            raise forms.ValidationError('please fill the quantity')
 
 # Accountant Form
 

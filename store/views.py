@@ -19,7 +19,7 @@ from asgiref.sync import async_to_sync
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.db.models import Q, Sum
 from django.core import serializers
 # Authentication and permissions
@@ -200,26 +200,6 @@ class ItemSearchListView(ProductListView):
             )
         return result
 
-# finsihed top level
-
-class PhotoCreateView(LoginRequiredMixin,CreateView):
-    model =ImageFile
-    template_name = 'store/newphoto.html'
-    form_class = imageFileForm
-    success_url = "/"
-    def get_context_data(self, **kwargs) :
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs.get('type')
-        return context
-class DXFCreateView(LoginRequiredMixin,CreateView):
-    model =DxfFile
-    template_name = 'store/newdxf.html'
-    form_class = DXFFileForm
-    success_url = "/"
-    def get_context_data(self, **kwargs) :
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs.get('type')
-        return context
 class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     
     model = Item
@@ -248,6 +228,7 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
         if(design and obj.dxf_file):
             obj.verif_design =design
             if(design == "D"):
+                obj.dxf_file.delete()
                 async_to_sync(channel.group_send)("DR",{"type":"send.notification"})
             if(design == "A"):
                 async_to_sync(channel.group_send)("AT",{"type":"send.notification"})
@@ -262,66 +243,91 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
 
 
 
-class ProductCreateView(LoginRequiredMixin, CreateView):
-    """
-    View class to create a new product.
-
-    Attributes:
-    - model: The model associated with the view.
-    - template_name: The HTML template used for rendering the view.
-    - form_class: The form class used for data input.
-    - success_url: The URL to redirect to upon successful form submission.
-    """
-
-    model = Item
-    template_name = "store/productcreate.html"
-    form_class = ItemForm
-    success_url = "/given-order"
-    def get_context_data(self, **kwargs):
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs['type']
-        return context
-    def post(self,request,type,*args,**kwargs):
+def Item_create_view(request,type):
+    form = ItemForm()
+    if(request.method == "POST"):
+        form = ItemForm(request.POST,request.FILES)
         dimensions = request.POST.get("dimensions")
-        thickness = int(request.POST.get('thickness'))
-        client = int(request.POST.get('client'))
-        priority =request.POST.get('priority')
-        quantity =request.POST.get('quantity')
-        remark =request.POST.get('remark')
         width = request.POST.get("width")
         length =request.POST.get("length")
-        if(dimensions and thickness and client and priority and quantity and remark and request.FILES.get("image1")):
-            item_initial =Item(user=request.user,image1=request.FILES.get("image1"),remark=remark,type=type,
-                               image2=request.FILES.get("image2"),dimensions_type=dimensions,quantity=quantity,
-                               image3=request.FILES.get('image3'),thickness=Thickness.objects.get(id=thickness),client=Customer.objects.get(id=client),priority=priority)
-            if(dimensions == 'rectangular' and width and length):
-               item_initial.diminsions = json.dumps({"type":"rectangular","width":width,"length":length})
-            elif(dimensions == "square" and width):
-                item_initial.diminsions=json.dumps({'type':"square","width":request.POST.get("width")})
-            elif(dimensions == 'other' and request.FILES.get("dimensions-image") ):
-                item_initial.dimensions_image = request.FILES.get("dimensions-image")
-                item_initial.dimensions_info =request.POST.get("dimensions_info")
-                item_initial.quantity = 0
-            elif(dimensions == 'other' and request.POST.get('dimensions_info')):
-                item_initial.quantity = 0
-                item_initial.dimensions_info =request.POST.get("dimensions_info")
+        if(form.is_valid()):
+            obj = form.save(commit=False)
+            obj.user =request.user
+            obj.type =type
+            if(request.FILES.get('image1')):
+                obj.image1 =request.FILES.get('image1')
             else:
-                return render(request,"store/productcreate.html",{"form":self.get_form(),'type':type,"error":True})
+                return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})
+            if(request.FILES.get('image2')):
+                obj.image2 =request.FILES.get('image2')
+            if(request.FILES.get('image3')):
+                obj.image3 =request.FILES.get('image3')  
+            if(dimensions):
+                obj.dimensions_type =dimensions
+            if(dimensions == 'rectangular' and width and length):
+               obj.diminsions = json.dumps({"type":"rectangular","width":width,"length":length})
+            elif(dimensions == "square" and width):
+                obj.diminsions=json.dumps({'type':"square","width":request.POST.get("width")})
+            elif(dimensions == 'other' and request.FILES.get("dimensions-image") ):
+                obj.dimensions_image = request.FILES.get("dimensions-image")
+                obj.dimensions_info =request.POST.get("dimensions_info")
+                obj.quantity = 0
+            elif(dimensions == 'other' and request.POST.get('dimensions_info')):
+                obj.quantity = 0
+                obj.dimensions_info =request.POST.get("dimensions_info")
+            else:   
+                return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})
+            ChangeId(obj)
+            obj.save()
             channel_layer = get_channel_layer()
-            ChangeId(item_initial)
             async_to_sync(channel_layer.group_send)('DR',{"type":"send.notification",'message':"message"})
-            item_initial.save()
-            return redirect('/given-order')
-        else:
-            return render(request,"store/productcreate.html",{"form":self.get_form(),'type':type,"error":True})
+            return redirect("/")
+        return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})   
+    return render(request,"store/productcreate.html",{"form":form,'type':type})
+
+
+# finsihed top level
+
+class PhotoCreateView(LoginRequiredMixin,CreateView):
+    model =ImageFile
+    template_name = 'store/newphoto.html'
+    form_class = imageFileForm
+    success_url = "/"
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.kwargs.get('type')
+        return context
+class DXFCreateView(LoginRequiredMixin,CreateView):
+    model =DxfFile
+    template_name = 'store/newdxf.html'
+    form_class = DXFFileForm
+    def get_success_url(self):
+        return reverse('order-dxf',kwargs={'type':self.kwargs['type']})
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.kwargs.get('type')
+        return context
+class DXFUpdateView(LoginRequiredMixin,UpdateView):
+    model =DxfFile
+    template_name = 'store/newdxf.html'
+    form_class = DXFFileForm
+    pk_url_kwarg = "id"
+    def get_success_url(self):
+        return reverse('order-dxf',kwargs={"type":self.get_object().type})
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.get_object().type
+        return context    
+    def post(self, request, *args, **kwargs):
+        if(self.get_form().is_valid()):
+            self.get_object().dxf_file.delete()
+        return super().post(request, *args, **kwargs)
 
 
 @login_required    
 def listofOrders(request,type):
-    if(request.user.role == "AD" or request.user.role == "MR"):
-        return render(request,'store/list-of-info.html',{"type":type})
-    else:
-        return redirect('/')
+    return render(request,'store/list-of-info.html',{"type":type})
+
 def listofPhoto(request,type):
     images = ImageFile.objects.filter(type=type)
     if(request.GET.get('q')):
@@ -331,36 +337,13 @@ def listofDxf(request,type):
     object = DxfFile.objects.filter(type=type)
     items = Item.objects.filter( ~Q(dxf_file='') & Q(type=type))
     if(request.GET.get('q')):
-        items=items.filter(Q(dxf_file__filename__contains=request.GET.get('q')))
-        object=object.filter(Q(name__contains=request.GET.get('q')))       
+        items=items.filter(Q(dxf_file__contains=request.GET.get('q')))
+        object=object.filter(Q(dxf_file__contains=request.GET.get('q')))       
     context = {"Dxf_flies":list(object) ,"items":list(items),"type":type}
     return render(request,"store/list_of_dxf.html",context)
 
 
 ## End of Known Functions
-class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """
-    View class to update product information.
-
-    Attributes:
-    - model: The model associated with the view.
-    - template_name: The HTML template used for rendering the view.
-    - fields: The fields to be updated.
-    - success_url: The URL to redirect to upon successful form submission.
-    """
-
-    model = Item
-    template_name = "store/productupdate.html"
-    form_class = ItemForm
-    success_url = "/products"
-
-    def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
-
-
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """
     View class to delete a product.

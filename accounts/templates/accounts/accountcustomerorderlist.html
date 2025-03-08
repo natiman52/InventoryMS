@@ -62,7 +62,7 @@
                         </a>
                     </td>
                     {%endif%}
-                    <td>{{item.quantity}}</td>
+                    <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                 </tr>
                 {% endfor %}
             </tbody>

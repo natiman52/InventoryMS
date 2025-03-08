@@ -1,2 +1,4 @@
-First Finish Mysql
-then install dependacict
+transfer list_of_dxf
+transfer list_of_info
+transfer newdxf
+transfer 

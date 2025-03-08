@@ -1,8 +1,14 @@
 {%extends "store/base.html"%}
 {%load add_filters %}
+{%load crispy_forms_tags%}
 {%block title%} {{item.client}}{%endblock title%}
 
 {%block content%}
+{%if errors.main%}
+ <div class="bg-danger py-1 px-2">
+    <p class="text-white mb-0">{{errors.main}}</p>
+ </div>
+ {%endif%}
     <div class="px-5 py-5">
         <div class="d-flex justify-content-around flex-wrap gap-2">
             <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="/media/{{item.image1}}" alt="" srcset="">
@@ -26,15 +32,15 @@
                 {%endif%}
             </div>
             <div class="">
-                <p class="mb-0 text-md">Remark</p>
+                <p class="mb-0 text-md">Quantity</p>
                 <div class="mb-0 py-2 ms-1 justify-content-between">
-                    <p>{{item.remark}}</p>
+                     <p>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</p>
                 </div>
             </div>
             <div class="">
-                <p class="mb-0 text-md">Quantity</p>
+                <p class="mb-0 text-md">Remark</p>
                 <div class="mb-0 py-2 ms-1 justify-content-between">
-                    <p>{{item.quantity}}</p>
+                    <p>{{item.remark |linebreaksbr}}</p>
                 </div>
             </div>
         </div>
@@ -64,7 +70,7 @@
                         <a href="/media/{{item.dimensions_image}}"><img style="width: 100px;height: 100px;" src="/media/{{item.dimensions_image}}" alt="Dimemsions" srcset=""></a>
                         {%else%}   
                         <div class="mb-0 py-2 ms-1 justify-content-between">
-                                <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info}}</p>
+                                <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info | linebreaksbr}}</p>
                             </div>
                         {%endif%}
                     {%endif%}
@@ -89,15 +95,28 @@
                 </div>
 
                 {%if item.dimensions_type == "other" and item.subclassed == False %}
+                <input type="hidden" name="hidden" value="ignore" id="">
                 <div class="mb-5">
                     <label for="quantity">quantity:</label>
-                    <input type="number" name="quantity" id="quantity" class="form-control  ">
+                    {%if errors.main_quantity%}
+                    <input type="number" name="quantity" id="quantity" class="form-control border-danger">
+                    <strong><small class="text-danger form-text ms-1">{{errors.main_quantity}}</small></strong>
+                    {%else%}
+                    <input type="number" name="quantity" id="quantity" class="form-control">
+                    {%endif%}
                 </div>
                 {{formset.management_form}}
                 <div id="formset-form-list">
                     {%for form in formset%}
-                    <div class="formset-element">
-                        {{form}}
+                    <div class="formset-element position-relative border mt-2 rounded px-2 py-1">
+                        <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
+                        <div class="w-100">
+                            <label for="">Search DXF:</label>
+                            <input type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
+                            <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-{{forloop.counter0}}">
+                            </ul>
+                        </div>
+                        {{form  | crispy}}
                     </div>
                     {%endfor%}
                 </div>
@@ -110,7 +129,7 @@
                         </ul>
                     </div>
                     <p class="mt-2 mb-2 mx-3"><strong>OR</strong></p>
-                    {{formset.empty_form}}
+                    {{formset.empty_form | crispy}}
                 </div>
                 {%endif%}
                 {%csrf_token%}
@@ -127,44 +146,46 @@
         </div>
         {%endif%}
     </div>
-
-{%endblock%}
-{%block javascripts%}
-{%if item.verif_design == "W" or item.verif_design == "D"%}
-
-<script> 
+    
+    {%endblock%}
+    {%block javascripts%}
+    {%if item.verif_design == "W" or item.verif_design == "D"%}
+    
+    <script> 
+        objects = ""
+        $.ajax({
+            url:`http://${window.location.host}/get-items?type={{item.type}}`,
+            async:false,
+        }).done((e)=> {
+            objects = {'files':JSON.parse(e.files),"files2":JSON.parse(e.files2)}
+        }).fail(e=> {
+            console.log(e)
+        })
     const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS")
     var ul =document.getElementById("file_name_list")
-    const totalforms = document.getElementsByClassName("formset-element")
+    var totalforms = Number(document.getElementById('id_form-TOTAL_FORMS').getAttribute('value'))
     var custom =''
     function killme(e){
         e.target.parentNode.parentNode.remove()
+        totalforms -= 1
         updateFormNumber.setAttribute("value",totalforms - 1)
     }
     document.getElementById("add_form").addEventListener("click", event => {
         const cloned = document.getElementById('formset_temp').cloneNode(true)
-        cloned.setAttribute("id","form_" + totalforms.length)
+        cloned.setAttribute("id","form_" + totalforms)
         cloned.classList.remove("d-none")
         cloned.classList.add("formset-element")
         const regex = new RegExp("__prefix__","g")
-        cloned.innerHTML = cloned.innerHTML.replace(regex,totalforms.length)
-        updateFormNumber.setAttribute('value',totalforms.length + 1)
+        cloned.innerHTML = cloned.innerHTML.replace(regex,totalforms)
+        updateFormNumber.setAttribute('value',totalforms + 1)
         document.getElementById("formset-form-list").append(cloned)
-        document.getElementById(`prev_dxf_multiple-${totalforms.length - 1}`).addEventListener("keyup", e => keyupFunction(e,totalforms.length))
+        document.getElementById(`prev_dxf_multiple-${totalforms}`).addEventListener("keyup", e => keyupFunction(e,totalforms + 1))
 
     })   
     
-    objects = ""
-    $.ajax({
-        url:`http://${window.location.host}/get-items?type={{item.type}}`,
-        async:false,
-    }).done((e)=> {
-        objects = {'files':JSON.parse(e.files),"files2":JSON.parse(e.files2)}
-    }).fail(e=> {
-        console.log(e)
-    })
     const keyupFunction = (e,x) => {
         if(x){
+            console.log("test",x)
             custom =document.getElementById(`file_name_list-${x-1}`)
         }
         if(e.target.value == ""){
@@ -184,7 +205,7 @@
                     <i class="border p-1 rounded fa fa-download"></i></a></li>`
         })
         files2 = objects.files2.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
-                str +=`<li onclick="changeForm(event)"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
+                str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
                     ${data.fields.dxf_file.split('/')[2].split('.')[0]}
                      <a download="${data.fields.dxf_file.split('/')[2]}" href="/media/${data.fields.dxf_file}">
                         <i class="border p-1 rounded fa fa-download"></i></a>
@@ -196,8 +217,11 @@
     }
     
     document.getElementById("prev_dxf").addEventListener("keyup",e=> keyupFunction(e,0))
-
-
+    new Array(totalforms).fill(1).forEach(function(n){
+        console.log(n,document.getElementById(`prev_dxf_multiple-${n - 1}`))
+        document.getElementById(`prev_dxf_multiple-${n - 1}`).addEventListener("keyup",e => keyupFunction(e,n))
+    });
+  
     function changeForm(e,x){
         if(x){
             document.getElementById(`prev_dxf_multiple-${x-1}`).value = e.target.innerText

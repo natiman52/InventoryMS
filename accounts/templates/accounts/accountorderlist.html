@@ -63,7 +63,7 @@
                         </a>
                     </td>
                     {%endif%}
-                    <td>{{item.quantity}}</td>
+                     <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     <td>{% if item.completed %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                 </tr>
                 {% endfor %}

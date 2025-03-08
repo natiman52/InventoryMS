@@ -6,7 +6,6 @@ from django.utils import timezone
 from django_extensions.db.fields import AutoSlugField
 
 
-
 # Define choices for profile status and roles
 STATUS_CHOICES = [
     ('INA', 'Inactive'),
@@ -31,6 +30,7 @@ class CustomUserManager(BaseUserManager):
         """
         Create and save a user with the given email and password.
         """
+        print('test')
         if not username:
             raise ValueError(_("The Email must be set"))
         user = self.model(username=username, **extra_fields)
@@ -64,6 +64,7 @@ class MyUser(AbstractUser):
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
+
     
 class Supplier(models.Model):
     """

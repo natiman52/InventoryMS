@@ -1,6 +1,6 @@
 {% extends "store/base.html" %}
 {% load static %}
-
+{%load crispy_forms_tags%}
 {% block title %}
     Add Product
 {% endblock title %}
@@ -48,7 +48,7 @@
                         <div id="Dimensions-holder">
 
                         </div>
-                        {{form}}
+                        {{form |crispy}}
                         <div class="d-flex justify-content-end">
                             <button class=" btn btn-success">Submit</button>
                         </div>
@@ -121,8 +121,12 @@
             `
         }
         if(e.target.value == 'other'){
-            document.getElementById("id_quantity").classList.add('d-none')
+            document.getElementById("id_quantity").classList.add("d-none")
+            document.getElementById('id_quantity').value = 0
             document.querySelector('label[for="id_quantity"]').classList.add("d-none")
+            if(document.getElementById("error_1_id_quantity")){
+                document.getElementById("error_1_id_quantity").classList.add('d-none')
+            }
             document.getElementById('Dimensions-holder').innerHTML = `
             <div class="d-flex flex-column">
                 <label for="id_dimensions-image">Upload Dimensions:</label>
@@ -133,6 +137,7 @@
                 </div>`    
         }
         else{
+            document.getElementById('id_quantity').value = 1
             document.getElementById("id_quantity").classList.remove('d-none') 
             document.querySelector('label[for="id_quantity"]').classList.remove("d-none")
         }

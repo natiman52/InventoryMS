@@ -164,10 +164,10 @@
                         <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Price Verification <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">design Verification <i class="fa-solid fa-sort"></i></th>
-                        {%if request.user.role == "AD"%}
+                        <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                        {%if request.user.role == "AD" or request.user.role == "MR"%}
                         <th scope="col">Action</th>
                         {%endif%}
-                        <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -180,17 +180,14 @@
                         <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
-                        {%if request.user.role == "AD"%}
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
+                        {%if request.user.role == "AD" or request.user == item.user%}
                         <td>
-                            <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.pk %}">
+                            <a class="btn btn-outline-info btn-sm py-1" >
                                 <i class="fa-solid fa-pen"></i> Edit
-                            </a>
-                            <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.pk %}">
-                                <i class="fa-solid fa-trash"></i> Delete
                             </a>
                         </td>
                         {%endif%}
-                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

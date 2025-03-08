@@ -39,13 +39,13 @@
             <div class="">
                 <p class="mb-0 text-md">Quantity :-</p>
                 <div class="mb-0 py-2 ms-1 justify-content-between">
-                    <p>{{item.quantity}}</p>
+                    <p>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</p>
                 </div>
             </div>
             <div class="">
                 <p class="mb-0 text-md">Remark :-</p>
                 <div class="mb-0 py-2 ms-1 justify-content-between">
-                    <p class="border-1 ps-2 rounded-medium">{{item.remark}}</p>
+                    <p class="border-1 ps-2 rounded-medium">{{item.remark |linebreaksbr}}</p>
                 </div>
             </div>
         </div>
@@ -75,7 +75,7 @@
                     <a href="/media/{{item.dimensions_image}}"><img style="width: 100px;height: 100px;" src="/media/{{item.dimensions_image}}" alt="Dimemsions" srcset=""></a>
                     {%else%}   
                     <div class="mb-0 py-2 ms-1 justify-content-between">
-                            <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info}}</p>
+                            <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info | linebreaksbr}}</p>
                         </div>
                     {%endif%}
                         {%endif%}

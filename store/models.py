@@ -30,7 +30,7 @@ class DxfFile(models.Model):
     def __str__(self):
         return f"{self.type} {self.id}"
     def filename(self):
-        return os.path.basename(self.dxf.name).split('.')[0]
+        return os.path.basename(self.dxf_file.name).split('.')[0]
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
     date=models.DateField(auto_now=True)
@@ -74,7 +74,7 @@ class Item(models.Model):
     image1 =models.ImageField('image 1',upload_to=uploadTo) 
     image2 =models.ImageField('image 2',upload_to=uploadTo,blank=True) 
     image3=models.ImageField("image 3",upload_to=uploadTo,blank=True)
-    thickness=models.ForeignKey(Thickness,on_delete=models.SET_NULL,null=True,blank=True)
+    thickness=models.ForeignKey(Thickness,on_delete=models.SET_NULL,null=True)
     dimensions_type = models.CharField(max_length=256,choices=(('square','square'),('rectangular',"rectangular"),('other','other')))
     diminsions= models.CharField(max_length=256,blank=True,null=True)
     dimensions_info = models.TextField(blank=True,null=True)

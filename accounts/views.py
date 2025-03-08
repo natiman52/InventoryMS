@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 # Authentication and permissions
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import json
 # Class-based views
@@ -26,7 +26,7 @@ from bills.models import InventoryMaterial
 from .models import Customer, Supplier,MyUser
 from .forms import (
     CreateUserForm, CustomerForm,
-    SupplierForm,ItemPriceForm
+    SupplierForm,ItemPriceForm,changePasswordForm
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -138,6 +138,8 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'accounts/customer_confirm_delete.html'
     success_url = reverse_lazy('customer_list')
 
+##Account Views
+    
 class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
     model = Item
     context_object_name = 'item'
@@ -155,14 +157,19 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
         if(context['item'].diminsions):
             context['diminsion'] = json.loads(context['item'].diminsions)
         return context
-    def post(self, request,id, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
+        form = ItemPriceForm(request.POST,request.FILES)
         channel = get_channel_layer()
         item =self.get_object()
         UserPrint.objects.create(user=request.user,item=item)
-        item.verif_price = "P"
-        item.save()
-        async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
-        return super().post(self,request,id,*args,**kwargs)
+        if(form.is_valid()):
+            item.verif_price = "P"
+            item.price =form.cleaned_data.get('price') * item.quantity if item.quantity > 0 else form.cleaned_data.get('price')
+            item.save()
+            async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
+            return redirect(reverse('dashboard'))
+        else:
+            return super(AccountDetailView,self).post(request,*args,**kwargs)
 class AccountOrderList(ListView):
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
@@ -207,6 +214,27 @@ class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
         obje = Item.objects.filter(client=obj)
         return obje
 
+
+def changepasswordtest(user):
+    if(user.is_superuser):
+        return True
+    else:
+        return False
+@login_required
+@user_passes_test(changepasswordtest)
+def changepassword(request):
+    form =changePasswordForm()
+    if(request.method == "POST"):
+        form =changePasswordForm(request.POST)
+        if(form.is_valid()):
+            user = form.cleaned_data.get('user')
+            password = form.cleaned_data.get("password1")
+            user.set_password(password)
+            user.save()
+            return redirect(reverse('user-changepassword'))
+        return render(request,'accounts/changepassword.html',{'form':form})
+    return render(request,'accounts/changepassword.html',{'form':form})
+## End of Account views
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 

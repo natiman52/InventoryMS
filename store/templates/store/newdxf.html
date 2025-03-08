@@ -1,5 +1,5 @@
 {%extends "store/base.html"%}
-
+{%load crispy_forms_tags%}
 {%block title%} add photo{%endblock title%}
 
 {%block content%}
@@ -10,7 +10,7 @@
                     <h1 class="text-center mb-4">Add DXF</h1>
                     <form action="" enctype="multipart/form-data" method="post">
                         {%csrf_token%}
-                        {{form}}
+                        {{form | crispy}}
                         <div class="d-flex justify-content-end mt-5">
                             <button class="btn btn-success ">submit</button>
                         </div>
