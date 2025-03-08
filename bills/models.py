@@ -2,12 +2,19 @@ from django.db import models
 from autoslug import AutoSlugField
 from accounts.models import Supplier
 from accounts.models import MyUser
-thickness_type = ((0.5,"0.5mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
-                  (0.9,"0.9mm"),(0.9,"0.9mm"),(1.0,"1.0mm"),
-                  (1.1,"1.1mm"),(1.4,"1.4mm"),(1.8,"1.8mm"),
-                  (2.5,"2.5mm"),(3.0,"3.0mm"))
+thickness_type = ((0.5,"0.5mm"),(0.7,"0.7mm"),(0.8,"0.8mm")
+                    ,(0.9,"0.9mm"),(1.0,"1.0mm"),(1.1,"1.1mm")
+                    ,(1.4,"1.4mm"),(1.8,"1.8mm"),(2.5,"2.5mm"),(3.0,"3.0mm"))
+
+class Thickness(models.Model):
+    name = models.FloatField(max_length=250,unique=True,choices=thickness_type)
+    added =models.IntegerField()
+    removed =models.IntegerField()
+    def __str__(self) -> str:
+        return f"{self.name}"
+
 class SingleMaterial(models.Model):
-    thickness = models.FloatField(choices=thickness_type)
+    thickness = models.ForeignKey(Thickness,on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price =models.IntegerField()
 

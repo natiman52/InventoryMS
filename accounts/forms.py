@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms
 from store.models import Item
 from .models import MyUser, Customer, Supplier
@@ -13,17 +14,16 @@ class CreateUserForm(forms.ModelForm):
         """Meta options for the CreateUserForm."""
         model = MyUser
         fields = ['username','password1','password2',"role"]
-    def clean_password2(self):
+    def clean(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
         if(password1 == password2 and password1 and password2):
-            self.save(self)
             user =super(CreateUserForm,self).save(commit=False)
             user.set_password(self.cleaned_data.get('password1'))
             user.save()
-            return user
+            return super(CreateUserForm,self).clean()
         else:
-            raise forms.ValidationError()
+            raise forms.ValidationError({"password2":"passwords don't match","password1":"passwords don't match"})
 class UserUpdateForm(forms.ModelForm):
     """Form for updating existing user information."""
     class Meta:
@@ -33,6 +33,18 @@ class UserUpdateForm(forms.ModelForm):
             'username',
             'role'
         ]
+class changePasswordForm(forms.Form):
+    user = forms.ModelChoiceField(required=True,queryset=MyUser.objects.all())
+    password1 = forms.CharField(label='password',widget=forms.PasswordInput)
+    password2 = forms.CharField(label='confirm Password',widget=forms.PasswordInput)
+    def clean(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if(password1 and password2 and password1 == password2 ):
+            return self.cleaned_data
+        else:
+            raise forms.ValidationError({"password2":"passwords don't match","password1":"passwords don't match"})
+
 class CustomerForm(forms.ModelForm):
     """Form for creating/updating customer information."""
     class Meta:

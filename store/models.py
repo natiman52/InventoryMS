@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.forms import model_to_dict
 from django_extensions.db.fields import AutoSlugField
 from accounts.models import Customer,MyUser
-from bills.models import InventoryMaterial
+from bills.models import Thickness
 import os
 from django.db.models import Value
 thickness_type = ((0.5,"0.5mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
@@ -30,7 +30,7 @@ class DxfFile(models.Model):
     def __str__(self):
         return f"{self.type} {self.id}"
     def filename(self):
-        return os.path.basename(self.dxf.name).split('.')[0]
+        return os.path.basename(self.dxf_file.name).split('.')[0]
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
     date=models.DateField(auto_now=True)
@@ -57,11 +57,13 @@ class Category(models.Model):
 def uploadTo(instance,model):
     return f"item/images/{instance.client.name}" + model
 def uploadDXFTo(instance,model):
-    return f"item/DXF/{instance.client.name}/" + model
+    return f"item/DXF/" + model
 
 
-# Items Job
-# <QuerySet [<Item: Abebe leyu  FE27AB002>, <Item: CSS Tutorial  FE27CS001>, <Item: HTML Tutorial  FE27HT002>, <Item: HAWAZ  FE27HA003>, <Item: Natnael Yazachew  FE27NA003>]>
+class DXFOrder(models.Model):
+    quantity = models.IntegerField(default=1)
+    dxf_file = models.FileField(upload_to="manual/dxf")
+    date = models.DateTimeField(auto_now_add=True)
 
 class Item(models.Model):
     """
@@ -72,9 +74,10 @@ class Item(models.Model):
     image1 =models.ImageField('image 1',upload_to=uploadTo) 
     image2 =models.ImageField('image 2',upload_to=uploadTo,blank=True) 
     image3=models.ImageField("image 3",upload_to=uploadTo,blank=True)
-    thickness=models.FloatField("thickness(mm)",choices=thickness_type)
+    thickness=models.ForeignKey(Thickness,on_delete=models.SET_NULL,null=True)
     dimensions_type = models.CharField(max_length=256,choices=(('square','square'),('rectangular',"rectangular"),('other','other')))
     diminsions= models.CharField(max_length=256,blank=True,null=True)
+    dimensions_info = models.TextField(blank=True,null=True)
     dimensions_image=models.ImageField(blank=True,null=True)
     client = models.ForeignKey(Customer,on_delete=models.SET_NULL,null=True)
     priority = models.CharField(choices=(("H","High"),("S","Sequence")),max_length=256)
@@ -84,13 +87,12 @@ class Item(models.Model):
     verif_design = models.CharField(max_length=256,choices=(("P","pending"),('A',"Accepted"),("D","Declined"),('W',"Waiting")),default="W")
     price=models.IntegerField(blank=True,null=True) 
     dxf_file = models.FileField('dxf',upload_to=uploadDXFTo,blank=True,null=True)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(default=False)
     start = models.DateTimeField(blank=True,null=True)
-    date_created = models.DateTimeField("date_created",blank=True)
     finish = models.DateTimeField(blank=True,null=True)
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
-    
+    subclassed = models.BooleanField(default=False)
     def __str__(self):
         """
         String representation of the item.
@@ -103,6 +105,7 @@ class Item(models.Model):
         return bool(self.dxf_file.name) and self.dxf_file.storage.exists(value)
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
+
     def get_absolute_url(self):
         """
         Returns the absolute URL for an item detail view.
@@ -110,9 +113,10 @@ class Item(models.Model):
         return reverse('item-detail', kwargs={'slug': self.id})
 
     class Meta:
-        ordering = ["priority",'date_created']
+        ordering = ["priority",'date']
         verbose_name_plural = 'Items'
-        get_latest_by = 'date_created'
+        get_latest_by = 'date'
+
 
 class UserPrint(models.Model):
     item = models.ForeignKey(Item,on_delete=models.CASCADE)

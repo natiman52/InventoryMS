@@ -1,5 +1,6 @@
+from typing import Any
 from django import forms
-from  .models import SingleMaterial,InventoryMaterial
+from  .models import SingleMaterial,InventoryMaterial,Thickness
 
 
 class InventoryUpdateBillForm(forms.Form):
@@ -15,14 +16,20 @@ class InventoryBillForm(forms.ModelForm):
             "minsceus_cost":forms.NumberInput(attrs={"class":"form-control mt-2"}),
             'advance':forms.NumberInput(attrs={"class":"form-control"}),
         }
+
+class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return "%smm" % obj.name
+
 class SingleBillForm(forms.ModelForm):
-    quantity = forms.IntegerField()
-    price = forms.IntegerField()
+    thickness = ModuleSelectorModelChoiceField(Thickness.objects.all())
+    quantity= forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
+    price = forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
     class Meta:
         model = SingleMaterial
         fields = ['thickness','quantity',"price"]
-        widgets = {
-            'thickness':forms.Select(attrs={"class":"form-control"}),
-            "quantity":forms.Select(attrs={"class":"form-control mt-2"}),
-            "price":forms.NumberInput(attrs={"class":"form-control mt-2"}),
-        }
+
+        def clean_thickness(self) :
+            if (self.thickness == "----"):
+                self.is_bound = False
+            return self.thickness

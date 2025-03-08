@@ -19,7 +19,8 @@
       background: #FFFFFF;
       max-width: 360px;
       margin: 0 auto 100px;
-      padding: 45px;
+      padding:25px 45px;
+
       text-align: center;
       box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
     }
@@ -104,7 +105,9 @@
     </style>
     <div class="form">
       <div>
-        <strong class="navbar-brand" style="font-size: 26px;">Inventory<span class="text-warning">ms</span></strong>
+        <strong class="" style="font-size: 26px;">Yukuno Metal Engineering</strong>
+      </div>
+      <div>
       </div>
       <div class="text-danger">
         {% if messages %} {% for message in messages %}
@@ -131,7 +134,8 @@
         <span class="text-danger">{{ form.password.errors }}</span>
         {{form.password}}
         <button  type="submit" name="button">login</button>
-        <p class="message">Not registered? <a href="{% url 'user-register' %}">Create an account</a></p>
+        <p class="text-gray mt-5">Addis Ababa, Ethiopia (0911107719)</p>
+        
       </form>
     </div>
   </div>

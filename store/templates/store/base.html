@@ -32,7 +32,7 @@
                     <button class="navbar-toggler" type="button" id="toggle-navigation2">
                       <i class="fa fa-bars text-white"></i>
                     </button>
-                    <a class="navbar-brand" style="font-size: 20px;" href="{% url 'dashboard' %}">Inventory<span class="text-warning">ms</span></a>
+                    <a class="navbar-brand" style="font-size: 20px;" href="{% url 'dashboard' %}">Yukuno Metal Engineering</a>
                   <div class="flex-1 d-flex justify-content-end align-items-center">
                     <button id="notification-count" class=" btn btn-primary p-3 py-1 position-relative"><i class="fa fa-envelope-open fa-xs"></i></button>  
                   </div>
@@ -65,10 +65,17 @@
         document.getElementById("show-side-navigation1").classList.toggle('visible-width')
     })
     var current_message = 0
-      const socket =new WebSocket(`ws://${window.location.host}/ws/notification-count`)
+    function run_socket(){
+      var socket =new WebSocket(`ws://${window.location.host}/ws/notification-count`)
       socket.onmessage = e => {
         current_message += 1
         document.getElementById('notification-count').innerHTML += `<span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger p-2 py-1">${current_message}</span>`
+    }
+      socket.onclose = e => {
+        current_message = 0
+        setTimeout(e =>{run_socket()},5000)
+        socket = null
+      }
     }
         </script>
         <!-- Bootstrap core JavaScript-->

@@ -1,59 +1,100 @@
 
-from accounts.models import Customer
-from .models import  Item ,UserPrint,DxfFile
+from django.forms import formset_factory
+from .models import  Item ,UserPrint
 from django.utils import timezone
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.db.models import Q
 import json
 from django.core.exceptions import PermissionDenied
 # Authentication and permissions
 from asgiref.sync import async_to_sync
-
+import string
 from django.contrib.auth.decorators import login_required,user_passes_test
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from .tables import ItemTableDesign
 from channels.layers import get_channel_layer
 # Class-based views
-from django.views.generic import (DetailView, UpdateView, ListView)
-from .forms import ItemDxfForm
-from django.contrib.auth.mixins import UserPassesTestMixin
-
-class DesignDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
-    model = Item
-    context_object_name = 'item'
-    template_name = 'store/designdetail.html'
-    form_class = ItemDxfForm
-    pk_url_kwarg = 'id'
-    def get_success_url(self) -> str:
-        return reverse_lazy('designer-order',kwargs={"id":self.kwargs['id']})
-    def test_func(self):
-        if self.request.user.role == "DR" or self.request.user.role == "AD":
+from django.views.generic import  ListView
+from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet
+from .filters import get_item_or_dxffile
+def test_func_design_view(user):
+        if user.role == "DR" or user.role == "AD":
             return True
         else:
             return False
-    def get_context_data(self, **kwargs):
-        context = super(DesignDetailView,self).get_context_data(**kwargs)
-        if(context['item'].diminsions):
-            context['diminsion'] = json.loads(context['item'].diminsions)
-        return context
-    def post(self, request,id, *args, **kwargs):
+@login_required
+@user_passes_test(test_func_design_view)
+def design_detail_view(request,id):
+    context = {}
+    form = ItemDxfForm()
+    model_formset =formset_factory(form=ItemDxfAddForm,formset=MyFormSet,extra=0)
+    item = Item.objects.get(id=id)
+    context['form'] = form
+    context['item'] = item
+    context['formset'] = model_formset
+    if(item.diminsions):
+        context['diminsion'] = json.loads(item.diminsions)
+    if(request.method == "POST"):
         channel = get_channel_layer()
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
-        item =self.get_object()
-        if(request.POST.get('choosen') != "" or request.FILES.get("dxf_file")):
-            UserPrint.objects.create(user=request.user,item=self.get_object(),comment="designer_change_add")
+        item =Item.objects.get(id=id)
+        formset= model_formset(request.POST,request.FILES)
+        if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file')):
+            UserPrint.objects.create(user=request.user,item=item,comment="designer_change_add")
             item.verif_design = "P"
-            item.save()
             if(request.POST.get('choosen') != ""):
-                item.dxf_file = request.POST.get('choosen')
+                item.dxf_file = get_item_or_dxffile(request.POST.get('choosen')).dxf_file
+            else:
+                item.dxf_file =request.FILES.get("dxf_file")
+            if(not request.POST.get('hidden')):
                 item.save()
-            if(request.FILES.get("dxf_file")):
-                return super(DesignDetailView,self).post(self,request,id,*args,**kwargs)
+                return redirect(reverse('designer-order',kwargs={"id":item.id}))
+            elif(request.POST.get('hidden') and request.POST.get('quantity')):
+                if(int(request.POST.get('quantity')) < (item.thickness.added - item.thickness.removed)):
+                    item.quantity = int(request.POST.get('quantity'))
+                    if(formset.is_valid()):
+                        if(formset.my_custom_clean(item)):
+                            item.subclassed = True
+                            item.save()
+                            for index,f in enumerate(formset):
+                                item2 =Item.objects.get(id=id)
+                                print(item2.pk + string.ascii_uppercase[index])
+                                item2.pk = item2.pk + string.ascii_uppercase[index]
+                                if(f.cleaned_data.get('search')):
+                                    item2.dxf_file = get_item_or_dxffile(f.cleaned_data.get('search')).dxf_file
+                                else:
+                                    item2.dxf_file = f.cleaned_data.get("dxf_file")
+                                item2.quantity = f.cleaned_data.get('quantity')
+                                item2.subclassed = True
+                                item2.save()
+                            return redirect(reverse('designer-order',kwargs={"id":item.id}))
+                        else:
+                            context['formset'] = formset
+                            context['errors'] = {'main':'please correct your errors'}
+                            return render(request,"store/designdetail.html",context)                            
+                    else:
+                        context['formset'] = formset
+                        context['errors'] = {'main':'please at least fill the first form'}
+                        return render(request,"store/designdetail.html",context)
+                else:
+                    context['formset'] = formset
+                    context['errors'] = {'main_quantity':'not enough in inventory','main':'please at least fill the first form'}
+                    return render(request,"store/designdetail.html",context)                    
+            elif(not request.POST.get('quantity')):
+                context['formset'] = formset
+                context['errors'] = {'main_quantity':'please fill the quantity'}
+                return render(request,"store/designdetail.html",context)
+        else:
+            context['formset'] = formset
+            context['errors'] = {'main':'please at least fill the first form'}
+            return render(request,"store/designdetail.html",context)
+    return render(request,"store/designdetail.html",context)
+
 
 class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView):
     model = Item
@@ -63,36 +104,15 @@ class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView
     paginate_by = 10
     SingleTableView.table_pagination = False
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_design == "P" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_design == "P"):
-                        obje.append(i.item)
-                        current = i.item
-        return obje
+        objects = Item.objects.filter(verif_design="P")
+        return objects
 
 class DesignerOrderListFinished(ListView):
     context_object_name = "items"
     template_name = 'store/designerorderlist.html'
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_design == "A" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_design == "A"):
-                        obje.append(i.item)
-                        current = i.item
-        print(obje)
-        return obje
+        objects = Item.objects.filter(verif_design="A")
+        return objects
     
 
 # Operator Views
@@ -104,18 +124,10 @@ class OperatorFinishedList(LoginRequiredMixin, ExportMixin , tables.SingleTableV
     SingleTableView.table_pagination = False
     def get(self,request,*args,**kwargs):
         if(request.GET.get('q')):
-            self.queryset = self.model.objects.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
+            self.queryset = self.model.objects.filter(Q(completed=True,id__contains=request.GET.get('q')) | Q(completed=True,client__name__contains=request.GET.get('q')))
         return super(OperatorFinishedList,self).get(request,*args,**kwargs)
     def get_queryset(self):
-        obje = []
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.completed == True and (obje.index(i.item))):
-                    pass
-            except:
-                    if(i.item.completed == True):
-                        obje.append(i.item)
+        obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
         return obje
 def test_func(event):
     if(event.role == "OP" or event.role == "AD"):
@@ -136,7 +148,9 @@ def operator_detail_view(request,id):
         if(request.POST.get('start')):
             obj.start = timezone.now()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_started_task")
+            obj.thickness.removed += obj.quantity 
             obj.save()
+            obj.thickness.save()
         if(request.POST.get('finish')):
             obj.completed = True
             obj.finish = timezone.now()

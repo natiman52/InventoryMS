@@ -10,24 +10,29 @@
                     <i class="fa-solid fa-search"></i>
                 </button>
             </form>
+            {%if request.GET.q%}
+            <div class="d-flex justify-content-end mb-2">
+                <a href="{%url  'order-dxf' type=type %}"><button class="btn btn-info ">Clear Filter</button></a>
+            </div>
+            {%endif%}
             <table class="table table-bordered table-striped table-hover table-sm">
                 <thead class="thead-light">
                     <tr>
                         <th scope="col" style="font-size: 16px;">Name <i class="fa-solid fa-sort"></i></th>
                         <th scope="col" style="font-size: 16px;">date <i class="fa-solid fa-sort"></i></th>
-
                         {%if request.user.role == "AD"%}
                         <th scope="col">Action</th>
+                        {%elif request.user.role == "MR" or  request.user.role == "DR"%}
+                        <th scope="col">Edit</th>
                         {%endif%}
-                       
                     </tr>
                 </thead>
                 <tbody>
                     {% for file in Dxf_flies %}
                     <tr>
-                        <td class="ps-3" style="font-size: 16px;"><a download="{{file.filename}}" href="/media/{{file.dxf}}">{{file.filename}}</a></td>
+                        <td class="ps-3" style="font-size: 16px;"><a download="{{file.filename}}" href="/media/{{file.dxf_file}}">{{file.filename}}</a></td>
                         <td style="font-size: 16px;">{{ file.date }}</td>
-                         {%if request.user.role == "AD"%}
+                         {%if request.user.role == "AD" %}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
                                 <i class="fa-solid fa-pen"></i> Edit
@@ -36,13 +41,19 @@
                                 <i class="fa-solid fa-trash"></i> Delete
                             </a>
                         </td>
+                        {%elif request.user.role == "MR" or  request.user.role == "DR"%}
+                        <td>
+                            <a class="btn btn-outline-info btn-sm" href="{%url 'dxf-update' id=file.id %}">
+                                <i class=" fa-solid fa-pen"></i> Edit
+                            </a>
+                        </td>
                         {%endif%}
                     </tr>
                     {% endfor %}
                     {%for item in items%}
             <tr>
-                <td class="ps-3" style="font-size: 16px;"><a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.dxf_file_identifier}}</a></td>
-                <td style="font-size: 16px;">{{ item.date }}</td>
+                <td class="ps-3" style="font-size: 16px;"><a download="{{item.filename}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
+                <td style="font-size: 16px;">{{ item.date|date:"M d, Y"  }}</td>
                  {%if request.user.role == "AD"%}
                 <td>
                     <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
@@ -52,6 +63,8 @@
                         <i class="fa-solid fa-trash"></i> Delete
                     </a>
                 </td>
+                {%elif request.user.role == "MR" or  request.user.role == "DR"%}
+                <td class="text-danger">Can't be Edited</td>
                 {%endif%}
             </tr>
                     {%endfor%}
@@ -59,9 +72,11 @@
             </table>
         </div>
     </div>
+    {%if request.user.role == "MR" or  request.user.role == "DR"%}
     <div class="position-absolute bottom-0 " style="right: 0;">
         <ul class=" m-2">
             <li class="btn btn-primary"><a class="nav-link text-white" href="{%url 'dxf-create' type=type%}">New DXF</a></li>
         </ul>
     </div>
+    {%endif%}
 {%endblock%}

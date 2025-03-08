@@ -17,10 +17,13 @@
         </div>
         {%endfor%}
     </div>
+    {%if request.user.role == "MR"%}
     <div class="position-absolute bottom-0 " style="right: 0;">
         <ul class=" m-2">
             <li class="btn btn-primary"><a class="nav-link text-white" href="{%url 'photo-create' type=type %}">New Photos</a></li>
         </ul>
     </div>
+    {%endif%}
+
 </div>
 {%endblock%}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment
+from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment,Thickness
 
 
 @admin.register(Bill)
@@ -40,4 +40,8 @@ class IPAdmin(admin.ModelAdmin):
     list_display = ('inventory',"amount")
 @admin.register(SingleMaterial)
 class SIAdmin(admin.ModelAdmin):
-    list_display = ('thickness',"quantity")
+    list_display = ('thickness',"price")
+
+@admin.register(Thickness)
+class TKAdmin(admin.ModelAdmin):
+    list_display = ('name',"added","removed")

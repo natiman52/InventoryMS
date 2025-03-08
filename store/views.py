@@ -17,9 +17,10 @@ import json
 # Django core imports
 from asgiref.sync import async_to_sync
 from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.db.models import Q, Sum
 from django.core import serializers
 # Authentication and permissions
@@ -36,121 +37,81 @@ import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 
 # Local app imports
-from accounts.models import MyUser, Supplier,Customer
+from accounts.models import MyUser, Supplier
 from transactions.models import Sale
 from .models import Category, Item, Delivery,ImageFile,DxfFile
 from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileForm
 from .tables import ItemTable
 from django.utils import timezone
+from store.signals import ChangeId
 
-@login_required
-def dashboard(request):
-    if(request.user.role == "AD"):
-        profiles = MyUser.objects.all()
-        items = Item.objects.all()
-        total_items = (
-            Item.objects.all()
-            .aggregate(Sum("quantity"))
-            .get("quantity__sum", 0.00)
-        )
-        items_count = items.count()
-        profiles_count = profiles.count()
-
-    # Prepare data for charts
-
-
-        context = {
-        "items": items,
-        "profiles": profiles,
-        "profiles_count": profiles_count,
-        "items_count": items_count,
-        "total_items": total_items,
-        "vendors": Supplier.objects.all(),
-        "delivery": Delivery.objects.all(),
-        "sales": Sale.objects.all(),
-    }
-        return render(request, "store/dashboard.html", context)
-    elif(request.user.role == "MR"):
+class Dashboard(LoginRequiredMixin,ListView):
+    template_name = "store/dashboard.html"
+    context_object_name = "items"
+    paginate_by = 10
+    export_name = "given_order_list"
+    def get_queryset(self):
         date =timezone.now().date()
-        items = Item.objects.filter( Q(date=date) & Q(Q(verif_price='P') | Q(verif_design="P")))
-        if(request.GET.get("sort") == 'yesterday'):
+        if(self.request.GET.get("sort") == 'yesterday'):
             date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter( Q(date=date) & ~Q(verif_price='W') & ~Q(verif_design="W"))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(~Q(verif_price='W') & ~Q(verif_design="W"))
+        date_time1 = timezone.datetime(date.year,date.month,date.day)
+        date_time2 =timezone.datetime(date.year,date.month,date.day) + timezone.timedelta(hours=23,minutes=59)
+        my_range = [date_time1,date_time2]
+        if(self.request.user.role == "AD"):
+            profiles = MyUser.objects.all()
+            items = Item.objects.all()
+            total_items = (
+                Item.objects.all()
+                .aggregate(Sum("quantity"))
+                .get("quantity__sum", 0.00)
+            )
+            items_count = items.count()
+            profiles_count = profiles.count()
 
-    #search
-        if(request.GET.get('q')):
-            items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
     # Prepare data for charts
-        context = {
-        "items": items,
+
+
+            context = {
+            "items": items,
+            "profiles": profiles,
+            "profiles_count": profiles_count,
+            "items_count": items_count,
+            "total_items": total_items,
+            "vendors": Supplier.objects.all(),
+            "delivery": Delivery.objects.all(),
+            "sales": Sale.objects.all(),
         }
-        return render(request, "store/dashboard.html", context)
-    elif(request.user.role == "DR"):
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & ( Q(verif_design="W") | Q(verif_design="D")))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & (Q(verif_design="W") | Q(verif_design="D")))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter((Q(verif_design="W") | Q(verif_design="D")))
-    
-    #search
-        if(request.GET.get('q')):
-            items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
-    # Prepare data for charts
-        context = {
-        "items": items,
-        }
-        return render(request, "store/dashboard.html", context)
-    elif(request.user.role == "AT"):
-        profiles = MyUser.objects.all()
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(Q(Q(verif_price="W") | Q(verif_price="D")) & Q(verif_design="A"))
-        # search
-        if(request.GET.get('q')):
-            items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
-    # Prepare data for charts
-        context = {
-        "items": items,
-        }
-        return render(request, "store/dashboard.html", context)
-    elif(request.user.role == "OP"):
-        date =timezone.now().date()
-        items = Item.objects.filter(Q(date=date) & Q(verif_price="A") & Q(verif_design="A") & Q(completed=False))
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) - timezone.timedelta(days=1)
-            items = Item.objects.filter(Q(date=date) & Q(verif_price="A") & Q(verif_design="A") & Q(completed=False))
-        elif(request.GET.get("sort") == "all"):
-            items = Item.objects.filter(Q(Q(verif_price="A") | Q(verif_design="A")) & Q(completed=False))
-        if(request.GET.get('q')):
-            items=items.filter(Q(id__contains=request.GET.get('q')) | Q(client__name__contains=request.GET.get('q')))
-    # Prepare data for charts
-        context = {
-        "items": items,
-        }
-        return render(request, "store/dashboard.html", context)   
-    elif(request.user.role == "DR"):
-        date =timezone.now().date()
-        items = Delivery.objects.filter(date=date,is_delivered=False)
-        if(request.GET.get("sort") == 'yesterday'):
-            date =timezone.datetime(date.year,date.month,date.day ) - timezone.timedelta(days=1)
-            items = Delivery.objects.filter(date=date,is_delivered=False)
-        elif(request.GET.get("sort") == "all"):
-            items = Delivery.objects.filter(completed=True)
-        if(request.GET.get('q')):
-            items=items.filter(Q(item__id__contains=request.GET.get('q')) | Q(customer__name__contains=request.GET.get('q')))
-    # Prepare data for charts
-        context = {
-        "items": items,
-        }
-        return render(request, "store/dashboard.html", context)      
+            return items
+        elif(self.request.user.role == "MR"):
+            items = Item.objects.filter(Q(verif_price='P',date__range=my_range) | Q(verif_design="P",date__range=my_range))
+            if(self.request.GET.get("sort") == "all"):
+                items = Item.objects.filter(Q(verif_price='P') | Q(verif_design="P"))
+            if(self.request.GET.get('q')):
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
+            return items
+        elif(self.request.user.role == "DR"):
+            items = Item.objects.filter( Q(verif_design="W",date__range=my_range) | Q(verif_design="D",date__range=my_range))
+            if(self.request.GET.get("sort") == "all"):
+                items = Item.objects.filter(Q(verif_design="W") | Q(verif_design="D"))
+            if(self.request.GET.get('q')):
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
+            return items
+        elif(self.request.user.role == "AT"):
+            profiles = MyUser.objects.all()
+            items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+            if(self.request.GET.get("sort") == "all"):
+                items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+            if(self.request.GET.get('q')):
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
+            return items
+        elif(self.request.user.role == "OP"):
+            items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+            if(self.request.GET.get("sort") == "all"):
+                items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+            if(self.request.GET.get('q')):
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
+        
+            return items 
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.
@@ -163,7 +124,7 @@ class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView
     - paginate_by: Number of items per page for pagination.
     """
 
-    queryset = Item.objects.filter(verif_price="W",verif_design="W")
+    queryset = Item.objects.filter(Q(verif_price="W") | Q(verif_design="W"))
     table_class = ItemTable
     template_name = "store/GivenProductList.html"
     context_object_name = "items"
@@ -214,26 +175,6 @@ class ItemSearchListView(ProductListView):
             )
         return result
 
-# finsihed top level
-
-class PhotoCreateView(LoginRequiredMixin,CreateView):
-    model =ImageFile
-    template_name = 'store/newphoto.html'
-    form_class = imageFileForm
-    success_url = "/"
-    def get_context_data(self, **kwargs) :
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs.get('type')
-        return context
-class DXFCreateView(LoginRequiredMixin,CreateView):
-    model =DxfFile
-    template_name = 'store/newdxf.html'
-    form_class = DXFFileForm
-    success_url = "/"
-    def get_context_data(self, **kwargs) :
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs.get('type')
-        return context
 class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     
     model = Item
@@ -262,6 +203,7 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
         if(design and obj.dxf_file):
             obj.verif_design =design
             if(design == "D"):
+                obj.dxf_file.delete()
                 async_to_sync(channel.group_send)("DR",{"type":"send.notification"})
             if(design == "A"):
                 async_to_sync(channel.group_send)("AT",{"type":"send.notification"})
@@ -276,60 +218,91 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
 
 
 
-class ProductCreateView(LoginRequiredMixin, CreateView):
-    """
-    View class to create a new product.
-
-    Attributes:
-    - model: The model associated with the view.
-    - template_name: The HTML template used for rendering the view.
-    - form_class: The form class used for data input.
-    - success_url: The URL to redirect to upon successful form submission.
-    """
-
-    model = Item
-    template_name = "store/productcreate.html"
-    form_class = ItemForm
-    success_url = "/given-order"
-    def get_context_data(self, **kwargs):
-        context =super().get_context_data(**kwargs)
-        context['type']=self.kwargs['type']
-        return context
-    def post(self,request,type,*args,**kwargs):
+def Item_create_view(request,type):
+    form = ItemForm()
+    if(request.method == "POST"):
+        form = ItemForm(request.POST,request.FILES)
         dimensions = request.POST.get("dimensions")
-        thickness = float(request.POST.get('thickness'))
-        client = int(request.POST.get('client'))
-        priority =request.POST.get('priority')
-        quantity =request.POST.get('quantity')
-        remark =request.POST.get('remark')
         width = request.POST.get("width")
         length =request.POST.get("length")
-        if(dimensions and thickness and client and priority and quantity and remark and request.FILES.get("image1")):
-            item_initial =Item(user=request.user,image1=request.FILES.get("image1"),remark=remark,type=type,
-                               image2=request.FILES.get("image2"),dimensions_type=dimensions,quantity=quantity,
-                               image3=request.FILES.get('image3'),thickness=thickness,client=Customer.objects.get(id=client),priority=priority)
-            if(dimensions == 'rectangular' and width and length):
-               item_initial.diminsions = json.dumps({"type":"rectangular","width":width,"length":length})
-            elif(dimensions == "square" and width):
-                item_initial.diminsions=json.dumps({'type':"square","width":request.POST.get("width")})
-            elif(dimensions == 'other' and request.FILES.get("dimensions-image")):
-                item_initial.dimensions_image = request.FILES.get("dimensions-image")
+        if(form.is_valid()):
+            obj = form.save(commit=False)
+            obj.user =request.user
+            obj.type =type
+            if(request.FILES.get('image1')):
+                obj.image1 =request.FILES.get('image1')
             else:
-                return render(request,"store/productcreate.html",{"form":self.get_form(),'type':type,"error":True})
+                return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})
+            if(request.FILES.get('image2')):
+                obj.image2 =request.FILES.get('image2')
+            if(request.FILES.get('image3')):
+                obj.image3 =request.FILES.get('image3')  
+            if(dimensions):
+                obj.dimensions_type =dimensions
+            if(dimensions == 'rectangular' and width and length):
+               obj.diminsions = json.dumps({"type":"rectangular","width":width,"length":length})
+            elif(dimensions == "square" and width):
+                obj.diminsions=json.dumps({'type':"square","width":request.POST.get("width")})
+            elif(dimensions == 'other' and request.FILES.get("dimensions-image") ):
+                obj.dimensions_image = request.FILES.get("dimensions-image")
+                obj.dimensions_info =request.POST.get("dimensions_info")
+                obj.quantity = 0
+            elif(dimensions == 'other' and request.POST.get('dimensions_info')):
+                obj.quantity = 0
+                obj.dimensions_info =request.POST.get("dimensions_info")
+            else:   
+                return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})
+            ChangeId(obj)
+            obj.save()
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)('DR',{"type":"send.notification",'message':"message"})
-            item_initial.save()
-            return redirect('/given-order')
-        else:
-            return render(request,"store/productcreate.html",{"form":self.get_form(),'type':type,"error":True})
+            return redirect("/")
+        return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})   
+    return render(request,"store/productcreate.html",{"form":form,'type':type})
+
+
+# finsihed top level
+
+class PhotoCreateView(LoginRequiredMixin,CreateView):
+    model =ImageFile
+    template_name = 'store/newphoto.html'
+    form_class = imageFileForm
+    success_url = "/"
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.kwargs.get('type')
+        return context
+class DXFCreateView(LoginRequiredMixin,CreateView):
+    model =DxfFile
+    template_name = 'store/newdxf.html'
+    form_class = DXFFileForm
+    def get_success_url(self):
+        return reverse('order-dxf',kwargs={'type':self.kwargs['type']})
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.kwargs.get('type')
+        return context
+class DXFUpdateView(LoginRequiredMixin,UpdateView):
+    model =DxfFile
+    template_name = 'store/newdxf.html'
+    form_class = DXFFileForm
+    pk_url_kwarg = "id"
+    def get_success_url(self):
+        return reverse('order-dxf',kwargs={"type":self.get_object().type})
+    def get_context_data(self, **kwargs) :
+        context =super().get_context_data(**kwargs)
+        context['type']=self.get_object().type
+        return context    
+    def post(self, request, *args, **kwargs):
+        if(self.get_form().is_valid()):
+            self.get_object().dxf_file.delete()
+        return super().post(request, *args, **kwargs)
 
 
 @login_required    
 def listofOrders(request,type):
-    if(request.user.role == "AD" or request.user.role == "MR"):
-        return render(request,'store/list-of-info.html',{"type":type})
-    else:
-        return redirect('/')
+    return render(request,'store/list-of-info.html',{"type":type})
+
 def listofPhoto(request,type):
     images = ImageFile.objects.filter(type=type)
     if(request.GET.get('q')):
@@ -339,36 +312,13 @@ def listofDxf(request,type):
     object = DxfFile.objects.filter(type=type)
     items = Item.objects.filter( ~Q(dxf_file='') & Q(type=type))
     if(request.GET.get('q')):
-        items=items.filter(Q(dxf_file__filename__contains=request.GET.get('q')))
-        object=object.filter(Q(name__contains=request.GET.get('q')))       
+        items=items.filter(Q(dxf_file__contains=request.GET.get('q')))
+        object=object.filter(Q(dxf_file__contains=request.GET.get('q')))       
     context = {"Dxf_flies":list(object) ,"items":list(items),"type":type}
     return render(request,"store/list_of_dxf.html",context)
 
 
 ## End of Known Functions
-class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    """
-    View class to update product information.
-
-    Attributes:
-    - model: The model associated with the view.
-    - template_name: The HTML template used for rendering the view.
-    - fields: The fields to be updated.
-    - success_url: The URL to redirect to upon successful form submission.
-    """
-
-    model = Item
-    template_name = "store/productupdate.html"
-    form_class = ItemForm
-    success_url = "/products"
-
-    def test_func(self):
-        if self.request.user.is_superuser:
-            return True
-        else:
-            return False
-
-
 class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """
     View class to delete a product.
@@ -555,9 +505,8 @@ def get_items_ajax_view(request):
     if is_ajax(request):
         try:
             type=request.GET.get('type')
-            files =serializers.serialize("json",queryset=Item.objects.filter(~Q(dxf_file='') & Q(type=type)))
+            files =serializers.serialize("json",queryset=Item.objects.filter(Q(verif_design="A") & Q(type=type)))
             files2 =serializers.serialize("json",queryset=DxfFile.objects.filter(type=type))
-            
             return JsonResponse({'files':files,'files2':files2}, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

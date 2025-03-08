@@ -193,6 +193,26 @@
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Finished Order
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/DR'  %}active{% endif %}" href="{% url 'order-type' type='DR' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> Door (bere)
+                </a>
+            </li>           
+             <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/BL' %}active{% endif %}" href="{% url 'order-type' type='BL' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> Balkemni (berenda)
+                </a>
+            </li>           
+             <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/ST' %}active{% endif %}" href="{% url 'order-type' type='ST' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> stair (derja)
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/OE' %}active{% endif %}" href="{% url 'order-type' type='OT' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> other
+                </a>
+            </li>
         </ul>   
         {% elif request.user.role == "AT" %}
         <ul class="nav flex-column mt-3">
@@ -239,7 +259,26 @@
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Finished Tasks
                 </a>
             </li>
-
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/DR'  %}active{% endif %}" href="{% url 'order-type' type='DR' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> Door (bere)
+                </a>
+            </li>           
+             <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/BL' %}active{% endif %}" href="{% url 'order-type' type='BL' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> Balkemni (berenda)
+                </a>
+            </li>           
+             <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/ST' %}active{% endif %}" href="{% url 'order-type' type='ST' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> stair (derja)
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/order/OE' %}active{% endif %}" href="{% url 'order-type' type='OT' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> other
+                </a>
+            </li>
         </ul> 
         {%elif request.user.role == "DR"%}
         <ul class="nav flex-column mt-3">

@@ -1,6 +1,7 @@
 {% extends "store/base.html" %}
 {% load static %}
 {% load querystring from django_tables2 %}
+{%load add_filters%}
 {% block title %}Dashboard{% endblock title %}
 
 {% block content %}
@@ -130,7 +131,7 @@
             <div class="card shadow-sm rounded p-3">
                 <div class="row align-items-center">
                     <div class="col-md-6">
-                        <h4 class="display-6 mb-0 text-success">Pending Products</h4>
+                        <h4 class="display-6 mb-0 text-success">Pending Order</h4>
                     </div>
                     <div class="col-md-6 d-flex justify-content-end gap-2">
                         <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% querystring '_export'='xlsx' %}">
@@ -149,9 +150,9 @@
         <div class="px-4">
             <div>
                 <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
-                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday'%} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday">Yesterday</a>
-                    <a href="{%url 'dashboard'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
+                    <a href="{%url 'dashboard'%}?sort=all{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
+                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday'%} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday{{request|get_page}}">Yesterday</a>
+                    <a href="{%url 'dashboard'%}?{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
                 </ul>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm">
@@ -164,10 +165,10 @@
                         <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Price Verification <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">design Verification <i class="fa-solid fa-sort"></i></th>
-                        {%if request.user.role == "AD"%}
+                        <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                        {%if request.user.role == "AD" or request.user.role == "MR"%}
                         <th scope="col">Action</th>
                         {%endif%}
-                        <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,20 +178,17 @@
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
                         <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
-                        {%if request.user.role == "AD"%}
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
+                        {%if request.user.role == "AD" or request.user == item.user%}
                         <td>
-                            <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.pk %}">
+                            <a class="btn btn-outline-info btn-sm py-1" >
                                 <i class="fa-solid fa-pen"></i> Edit
-                            </a>
-                            <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.pk %}">
-                                <i class="fa-solid fa-trash"></i> Delete
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -220,9 +218,9 @@
         <div class="px-4">
             <div>
                 <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
-                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday">Yesterday</a>
-                    <a href="{%url 'dashboard'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
+                    <a href="{%url 'dashboard'%}?sort=all{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
+                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday{{request|get_page}}">Yesterday</a>
+                    <a href="{%url 'dashboard'%}?{{request|get_page}}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
                 </ul>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm">
@@ -245,7 +243,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'designer-order' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         {%if request.user.role == "AD"%}
                         <td>
@@ -257,7 +255,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -301,7 +299,6 @@
                         <th scope="col">Price <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
                         <th scope="col">Price Verification <i class="fa-solid fa-sort"></i></th>
-                        <th scope="col">design Verification <i class="fa-solid fa-sort"></i></th>
                         {%if request.user.role == "AD"%}
                         <th scope="col">Action</th>
                         {%endif%}
@@ -315,9 +312,8 @@
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
                         <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         <td>{%if item.verif_price == "P"  %} Pending {%elif item.verif_price == 'D'%} Declined {%elif item.verif_price == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
-                        <td>{%if item.verif_design == "P"  %} Pending {%elif item.verif_design == 'D'%} Declined {%elif item.verif_design == 'W'%} Waiting {%else%} Accepted{%endif%}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -328,7 +324,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -385,7 +381,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'operator-detail' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date|date:"M d, Y"  }}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -396,7 +392,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                         <td>{% if item.completed %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                     </tr>
                     {% endfor %}
@@ -454,7 +450,7 @@
                         <th class="nav-item text-center" scope="row"><a class="nav-link text-primary" href="{%url 'operator-detail' id=item.id %}">{{ item.id }}</a></th>
                         <td>{{ item.client }}</td>
                         <td>{{ item.thickness }}</td>
-                        <td>{{ item.date }}</td>
+                        <td>{{ item.date| date:"M d, Y"  }}</td>
                         {%if request.user.role == "AD"%}
                         <td>
                             <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.id %}">
@@ -465,7 +461,7 @@
                             </a>
                         </td>
                         {%endif%}
-                        <td>{{item.quantity}}</td>
+                        <td>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</td>
                         <td>{% if item.completed %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                     </tr>
                     {% endfor %}
@@ -473,6 +469,49 @@
             </table>
         </div>
     {%endif%}
+        {% if is_paginated %}
+    <nav aria-label="Page navigation mb-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </span>
+            </li>
+            {% endif %}
+            {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
     </div>
 </div>
 {% endblock content %}

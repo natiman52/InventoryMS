@@ -7,8 +7,9 @@
         <ul class="list-group list-group-horizontal gap-2">
             <li class="list-group-item list-group-item-action" style="font-size: 21px;"><a href="{%url 'order-photo' type=type %}" class="nav-link text-dark">Photos</a></li>
             <li class="list-group-item list-group-item-action" style="font-size: 21px;"><a href="{%url 'order-dxf' type=type %}" class="nav-link text-dark">DXF</a></li>
-            <li class=" list-group-item list-group-item-action active " style="font-size: 19px;"><a class="nav-link text-white" href="{%url 'product-create' type=type %}"> New Order</a></li>
-            
+            {%if request.user.role == "MR"%}
+            <li class="list-group-item list-group-item-action active " style="font-size: 19px;"><a class="nav-link text-white" href="{%url 'product-create' type=type %}"> New Order</a></li> 
+            {%endif%}
         </ul>
     </div>
 

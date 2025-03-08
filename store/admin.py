@@ -32,11 +32,11 @@ class ItemAdmin(admin.ModelAdmin):
     Admin configuration for the Item model.
     """
     list_display = (
-        'client', 'quantity', 'thickness',"date_created",'priority'
+        'id', 'quantity', 'thickness',"date",'priority'
     )
-    search_fields = ('client__name',)
-    list_filter = ('priority', 'client')
-    ordering = ('date_created',)
+    search_fields = ('id',)
+    list_filter = ("id",)
+    ordering = ('priority','date',)
 @admin.decorators.register(UserPrint)
 class UserPrintAdmin(admin.ModelAdmin):
     list_display = ('user','item')
