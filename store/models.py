@@ -55,7 +55,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = 'Categories'
 def uploadTo(instance,model):
-    return f"item/images/{instance.client.name}" + model
+    return f"item/images/{instance.client.name}/" + model
 def uploadDXFTo(instance,model):
     return f"item/DXF/" + model
 
