@@ -12,9 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-g_n2+2bznu6e@1wel!i(&-4tp86_7lop5395ww+i4x%9*7^old'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["188.245.105.225"]
 
 WSGI_APPLICATION = 'InventoryMS.wsgi.application'
 ASGI_APPLICATION ="InventoryMS.asgi.application"
@@ -87,8 +87,8 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test',
-        'USER': 'root',
+        'NAME': 'nahomManagment',
+        'USER': 'nahom',
         'PASSWORD': '1234567890',
         'HOST':'localhost',
         'PORT':'3306',
