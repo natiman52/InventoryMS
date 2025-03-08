@@ -30,7 +30,6 @@ class CustomUserManager(BaseUserManager):
         """
         Create and save a user with the given email and password.
         """
-        print('test')
         if not username:
             raise ValueError(_("The Email must be set"))
         user = self.model(username=username, **extra_fields)
