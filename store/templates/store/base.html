@@ -66,7 +66,7 @@
     })
     var current_message = 0
     function run_socket(){
-      var socket =new WebSocket(`ws://${window.location.host}/ws/notification-count`)
+      var socket =new WebSocket(`ws://${window.location.host}:8001/ws/notification-count`)
       socket.onmessage = e => {
         current_message += 1
         document.getElementById('notification-count').innerHTML += `<span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger p-2 py-1">${current_message}</span>`
