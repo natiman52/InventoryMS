@@ -155,7 +155,7 @@
     function clean(filesraw){
         var result = []
         filesraw.forEach(file => {
-            if(!(result.filter(prev =>prev.fields.dxf_file.toLowerCase() == file.fields.dxf_file.toLowerCase()).length)){
+            if(!(result.filter(prev =>prev.dxf_file.toLowerCase() == file.dxf_file.toLowerCase()).length)){
                 result.push(file)
             }
             })
@@ -183,7 +183,6 @@
 
     const keyupFunction = (e,x) => {
         if(x){
-            console.log("test",x)
             custom =document.getElementById(`file_name_list-${x-1}`)
         }
         if(e.target.value == ""){
@@ -196,16 +195,16 @@
             }else{ul.classList.remove("d-none") }
         } 
         str = ``
-        files = objects.files.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data =>{
+        files = objects.files.filter(file => file.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data =>{
                 str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="It_${data.pk}">
-                    ${data.fields.dxf_file.split('/')[2].split('.')[0]} 
-                    <a download="${data.fields.dxf_file.split('/')[2]}" href="/media/${data.fields.dxf_file}">
+                    ${data.filename} 
+                    <a download="${data.filename}.dxf" href="/media/${data.dxf_file}">
                     <i class="border p-1 rounded fa fa-download"></i></a></li>`
         })
-        files2 = objects.files2.filter(file => file.fields.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
+        files2 = objects.files2.filter(file => file.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
                 str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
-                    ${data.fields.dxf_file.split('/')[2].split('.')[0]}
-                     <a download="${data.fields.dxf_file.split('/')[2]}" href="/media/${data.fields.dxf_file}">
+                    ${data.filename}
+                     <a download="${data.filename}.dxf" href="/media/${data.dxf_file}">
                         <i class="border p-1 rounded fa fa-download"></i></a>
                      </li>`
         })

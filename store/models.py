@@ -31,6 +31,9 @@ class DxfFile(models.Model):
         return f"{self.type} {self.id}"
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
+    def toJSON(self):
+        return {'pk':self.id,"dxf_file":str(self.dxf_file).lower(),**{'filename': os.path.basename(self.dxf_file.name).split('.')[0] }}
+        
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
     date=models.DateField(auto_now=True)
@@ -105,7 +108,8 @@ class Item(models.Model):
         return bool(self.dxf_file.name) and self.dxf_file.storage.exists(value)
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
-
+    def toJSON(self):
+        return {'pk':self.id,"dxf_file":str(self.dxf_file).lower(),**{'filename': os.path.basename(self.dxf_file.name).split('.')[0] }}
     def get_absolute_url(self):
         """
         Returns the absolute URL for an item detail view.
