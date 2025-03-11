@@ -29,7 +29,6 @@ class DxfFile(models.Model):
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     def __str__(self):
         return f"{self.type} {self.id}"
-    @property
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
     def toJSON(self):
