@@ -17,10 +17,9 @@ import json
 # Django core imports
 from asgiref.sync import async_to_sync
 from django.db.models.base import Model as Model
-from django.db.models.query import QuerySet
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.db.models import Q, Sum
 from django.core import serializers
 # Authentication and permissions
@@ -503,10 +502,11 @@ def is_ajax(request):
 @login_required
 def get_items_ajax_view(request):
     if is_ajax(request):
+        print(json.dumps(Item.objects.filter(Q(verif_design="A")).first().toJSON()))
         try:
             type=request.GET.get('type')
-            files =serializers.serialize("json",queryset=Item.objects.filter(Q(verif_design="A") & Q(type=type)))
-            files2 =serializers.serialize("json",queryset=DxfFile.objects.filter(type=type))
+            files =json.dumps([item.toJSON() for item in Item.objects.filter(Q(verif_design="A") & Q(type=type)) ])
+            files2 =json.dumps([file.toJSON() for file in DxfFile.objects.filter(type=type)])
             return JsonResponse({'files':files,'files2':files2}, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
