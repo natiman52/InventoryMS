@@ -166,7 +166,6 @@
             url:`http://${window.location.host}/get-items?type={{item.type}}`,
             async:false,
         }).done((e)=> {
-            console.log(JSON.parse(e.files2))
             objects = {'files':clean(JSON.parse(e.files)),"files2":clean(JSON.parse(e.files2))}
         }).fail(e=> {
             console.log(e)
@@ -184,7 +183,6 @@
 
     const keyupFunction = (e,x) => {
         if(x){
-            console.log("test",x)
             custom =document.getElementById(`file_name_list-${x-1}`)
         }
         if(e.target.value == ""){
