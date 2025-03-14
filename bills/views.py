@@ -87,28 +87,28 @@ def material_create_view(request):
         #sub form begins
         if(sub_form2.is_valid()):
                 thickness = sub_form2.cleaned_data.get('thickness')
-                thickness.added = int(sub_form2.cleaned_data.get('quantity'))
+                thickness.added += int(sub_form2.cleaned_data.get('quantity'))
                 thickness.save()
                 total_price += sub_form2.cleaned_data.get("price") * sub_form2.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form2.save(commit=True).id)
         sub_form3 =SingleBillForm(request.POST,prefix='sub_form3')
         if(sub_form3.is_valid()):
                 thickness = sub_form3.cleaned_data.get('thickness')
-                thickness.added = int(sub_form3.cleaned_data.get('quantity'))
+                thickness.added += int(sub_form3.cleaned_data.get('quantity'))
                 thickness.save()
                 total_price += sub_form3.cleaned_data.get("price") * sub_form3.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form3.save(commit=True).id)
         sub_form4 =SingleBillForm(request.POST,prefix='sub_form4')
         if(sub_form4.is_valid()):
                 thickness = sub_form4.cleaned_data.get('thickness')
-                thickness.added = int(sub_form4.cleaned_data.get('quantity'))
+                thickness.added += int(sub_form4.cleaned_data.get('quantity'))
                 thickness.save()
                 total_price += sub_form4.cleaned_data.get("price") * sub_form4.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form4.save(commit=True).id)
         sub_form5 =SingleBillForm(request.POST,prefix='sub_form5')
         if(sub_form5.is_valid()):
                 thickness = sub_form5.cleaned_data.get('thickness')
-                thickness.added = int(sub_form5.cleaned_data.get('quantity'))
+                thickness.added += int(sub_form5.cleaned_data.get('quantity'))
                 thickness.save()
                 total_price += sub_form5.cleaned_data.get("price") * sub_form5.cleaned_data.get('quantity')
                 singleMaterial.append(sub_form5.save(commit=True).id)
@@ -117,7 +117,7 @@ def material_create_view(request):
             
         if(form_main.is_valid() and sub_form.is_valid()):
             thickness = sub_form.cleaned_data.get('thickness')
-            thickness.added = float(sub_form.cleaned_data.get('quantity'))
+            thickness.added += float(sub_form.cleaned_data.get('quantity'))
             thickness.save()
             total_price += sub_form.cleaned_data.get("price") * sub_form.cleaned_data.get('quantity')
             total_price += form_main.cleaned_data.get('minsceus_cost')
