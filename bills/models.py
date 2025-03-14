@@ -29,7 +29,7 @@ class InventoryMaterial(models.Model):
     payment_method = models.CharField(max_length=256,choices=(("credit",'credit'),('cash','cash')))
     advance = models.IntegerField(null=True,blank=True)
     leftover =models.IntegerField(null=True,blank=True)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now=True)
     class Meta:
         get_latest_by = 'date'
         ordering = ["-date"]
