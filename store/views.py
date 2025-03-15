@@ -99,14 +99,14 @@ class Dashboard(LoginRequiredMixin,ListView):
             profiles = MyUser.objects.all()
             items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
-                items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+                items = Item.objects.filter(Q(verif_price="W",verif_design="A") | Q(verif_design="A",verif_price="D"))
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
         elif(self.request.user.role == "OP"):
             items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
             if(self.request.GET.get("sort") == "all"):
-                items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+                items = Item.objects.filter(verif_price="A",verif_design="A",completed=False)
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
         
