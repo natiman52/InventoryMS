@@ -15,10 +15,10 @@ class MyFormSet(BaseFormSet):
 #Marketing Form
 class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return "%smm (%s)" %( obj.name, obj.added - obj.removed)
+        return "%smm (%s)" %( obj.get_name_display(), obj.added - obj.removed)
 
 class ItemForm(forms.ModelForm):
-    thickness =forms.ModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
+    thickness =ModuleSelectorModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
     """
     A form for creating or updating an Item in the inventory.
     """
