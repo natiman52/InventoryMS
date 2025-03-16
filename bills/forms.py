@@ -22,7 +22,7 @@ class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
         return "%smm" % obj.name
 
 class SingleBillForm(forms.ModelForm):
-    thickness = ModuleSelectorModelChoiceField(Thickness.objects.all())
+    thickness = forms.ModelChoiceField(Thickness.objects.all())
     quantity= forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
     price = forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
     class Meta:

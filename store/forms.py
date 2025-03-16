@@ -18,7 +18,7 @@ class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
         return "%smm (%s)" %( obj.name, obj.added - obj.removed)
 
 class ItemForm(forms.ModelForm):
-    thickness =ModuleSelectorModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
+    thickness =forms.ModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
     """
     A form for creating or updating an Item in the inventory.
     """
