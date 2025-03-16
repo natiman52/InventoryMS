@@ -13,6 +13,8 @@ class Thickness(models.Model):
     removed =models.IntegerField()
     def __str__(self) -> str:
         return f"{self.name}"
+    class Meta:
+        ordering = ['name']
 
 class SingleMaterial(models.Model):
     thickness = models.ForeignKey(Thickness,on_delete=models.CASCADE)
