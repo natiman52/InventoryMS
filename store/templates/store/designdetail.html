@@ -80,21 +80,26 @@
         {%if item.verif_design == "W" or item.verif_design == "D"%}
         <div class="mt-4">
             <form class="position-relative " action="" enctype="multipart/form-data" method="post">
-                <div class="d-flex flex-wrap">
-                    <div class="w-100">
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="">
                         <input type="hidden" id="choosen" name="choosen">
                         <label for="">Search DXF:</label>
-                        <input type="text" value="" class="form-control" id="prev_dxf" >
+                        <input autocomplete="off" type="text" value="" class="form-control" id="prev_dxf" >
                         <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
                         </ul>
                     </div>
-                    <p class="mt-2 mb-2 mx-3"><strong>OR</strong></p>
-                    <div class="w-100">
-                        {{form}}
+                    <p class="mt-2 mb-2"><strong>OR</strong></p>
+                    <div class="">
+                        <label for="">Upload DXF</label>
+                        {{form.dxf_file}}
                     </div>
                 </div>
 
                 {%if item.dimensions_type == "other" and item.subclassed == False %}
+                <div>
+                    <label for="">thickness</label>
+                    {{form.thickness}}
+                </div>
                 <input type="hidden" name="hidden" value="ignore" id="">
                 <div class="mb-5">
                     <label for="quantity">quantity:</label>
@@ -110,26 +115,51 @@
                     {%for form in formset%}
                     <div class="formset-element position-relative border mt-2 rounded px-2 py-1">
                         <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
-                        <div class="w-100">
-                            <label for="">Search DXF:</label>
-                            <input type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
-                            <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-{{forloop.counter0}}">
-                            </ul>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between">
+                            <div class="">
+                                {{form.search}}
+                                <label for="">Search DXF:</label>
+                                <input autocomplete="off" type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
+                                <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-{{forloop.counter0}}">
+                                </ul>
+                            </div>
+                            <p class="mt-2 mb-2"><strong>OR</strong></p>
+                            <div class="">
+                                <label for="">Upload DXF</label>
+                                {{form.dxf_file}}
+                            </div>
                         </div>
-                        {{form  | crispy}}
+                        <div>
+                            {{form.thickness | as_crispy_field}}
+                        </div>
+                        <div>
+                            {{form.quantity |as_crispy_field}}
+                        </div>
                     </div>
                     {%endfor%}
                 </div>
-                <div id="formset_temp" class="position-relative border mt-2 rounded px-2 py-1 d-none">
+                <div id="formset_temp" class="position-relative border mt-2 rounded px-2 py-2 d-none">
                     <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
-                    <div class="w-100">
-                        <label for="">Search DXF:</label>
-                        <input type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-__prefix__" >
-                        <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-__prefix__">
-                        </ul>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="">
+                            {{formset.empty_form.search}}
+                            <label for="">Search DXF:</label>
+                            <input autocomplete="off" type="text" value="" class="form-control mb-2 mt-2" id="prev_dxf_multiple-__prefix__" >
+                            <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list-__prefix__">
+                            </ul>
+                        </div>
+                        <p class="mt-2 mb-2"><strong>OR</strong></p>
+                        <div class="">
+                            <label for="">Upload DXF</label>
+                            {{formset.empty_form.dxf_file}}
+                        </div>
                     </div>
-                    <p class="mt-2 mb-2 mx-3"><strong>OR</strong></p>
-                    {{formset.empty_form | crispy}}
+                    <div>
+                        {{formset.empty_form.thickness | as_crispy_field}}
+                    </div>
+                    <div>
+                        {{formset.empty_form.quantity | as_crispy_field}}
+                    </div>
                 </div>
                 {%endif%}
                 {%csrf_token%}
@@ -172,7 +202,7 @@
         })
     const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS")
     var ul =document.getElementById("file_name_list")
-    if(updateFormNumber){
+    if(updateFormNumber.value){
         var totalforms =Number(document.getElementById('id_form-TOTAL_FORMS').getAttribute('value'))
     }else{
         var totalforms = 0
@@ -220,6 +250,7 @@
         updateFormNumber.setAttribute("value",totalforms - 1)
     }
     document.getElementById("add_form").addEventListener("click", event => {
+        totalforms = Number(document.getElementById('id_form-TOTAL_FORMS').value)
         const cloned = document.getElementById('formset_temp').cloneNode(true)
         cloned.setAttribute("id","form_" + totalforms)
         cloned.classList.remove("d-none")
