@@ -1,6 +1,7 @@
 
 from django.forms import formset_factory
 from .models import  Item ,UserPrint
+from bills.models import Thickness
 from django.utils import timezone
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
@@ -31,9 +32,9 @@ def test_func_design_view(user):
 @user_passes_test(test_func_design_view)
 def design_detail_view(request,id):
     context = {}
-    form = ItemDxfForm()
-    model_formset =formset_factory(form=ItemDxfAddForm,formset=MyFormSet,extra=0)
     item = Item.objects.get(id=id)
+    form = ItemDxfForm(initial={'thickness':item.thickness})
+    model_formset =formset_factory(form=ItemDxfAddForm,formset=MyFormSet,extra=0)
     context['form'] = form
     context['item'] = item
     context['formset'] = model_formset
@@ -41,10 +42,11 @@ def design_detail_view(request,id):
         context['diminsion'] = json.loads(item.diminsions)
     if(request.method == "POST"):
         channel = get_channel_layer()
+        form =ItemDxfForm(request.POST,request.FILES)
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
         item =Item.objects.get(id=id)
         formset= model_formset(request.POST,request.FILES)
-        if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file')):
+        if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file') and request.POST.get('thickness')):
             UserPrint.objects.create(user=request.user,item=item,comment="designer_change_add")
             item.verif_design = "P"
             if(request.POST.get('choosen') != ""):
@@ -55,41 +57,50 @@ def design_detail_view(request,id):
                 item.save()
                 return redirect(reverse('designer-order',kwargs={"id":item.id}))
             elif(request.POST.get('hidden') and request.POST.get('quantity')):
-                if(int(request.POST.get('quantity')) < (item.thickness.added - item.thickness.removed)):
+                thickness = Thickness.objects.get(id=int(request.POST.get('thickness'))) if request.POST.get('thickness') else item.thickness
+                if(int(request.POST.get('quantity')) < (thickness.added - thickness.removed)):
                     item.quantity = int(request.POST.get('quantity'))
                     if(formset.is_valid()):
                         if(formset.my_custom_clean(item)):
+                            item.thickness = Thickness.objects.get(id=int(request.POST.get('thickness')))
                             item.subclassed = True
                             item.save()
                             for index,f in enumerate(formset):
                                 item2 =Item.objects.get(id=id)
-                                print(item2.pk + string.ascii_uppercase[index])
+                                print(index)
                                 item2.pk = item2.pk + string.ascii_uppercase[index]
                                 if(f.cleaned_data.get('search')):
                                     item2.dxf_file = get_item_or_dxffile(f.cleaned_data.get('search')).dxf_file
                                 else:
                                     item2.dxf_file = f.cleaned_data.get("dxf_file")
+                                if(f.cleaned_data.get("thickness")):
+                                    item2.thickness =f.cleaned_data.get("thickness")
                                 item2.quantity = f.cleaned_data.get('quantity')
                                 item2.subclassed = True
                                 item2.save()
                             return redirect(reverse('designer-order',kwargs={"id":item.id}))
                         else:
+                            context['form'] =form
                             context['formset'] = formset
                             context['errors'] = {'main':'please correct your errors'}
                             return render(request,"store/designdetail.html",context)                            
                     else:
+                        context['form'] =form
                         context['formset'] = formset
                         context['errors'] = {'main':'please at least fill the first form'}
                         return render(request,"store/designdetail.html",context)
                 else:
+                    context['form'] =form
                     context['formset'] = formset
                     context['errors'] = {'main_quantity':'not enough in inventory','main':'please at least fill the first form'}
                     return render(request,"store/designdetail.html",context)                    
             elif(not request.POST.get('quantity')):
+                context['form'] =form
                 context['formset'] = formset
                 context['errors'] = {'main_quantity':'please fill the quantity'}
                 return render(request,"store/designdetail.html",context)
         else:
+            context['form'] =form
             context['formset'] = formset
             context['errors'] = {'main':'please at least fill the first form'}
             return render(request,"store/designdetail.html",context)

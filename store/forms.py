@@ -5,9 +5,9 @@ from django.forms import BaseFormSet
 
 class MyFormSet(BaseFormSet):
     def my_custom_clean(self,item):
-        available =item.thickness.added - item.thickness.removed
         for form in self.forms:
-            if(form.cleaned_data.get('quantity')):
+            if(form.cleaned_data.get('quantity') and form.cleaned_data.get('thickness')):
+                available =form.cleaned_data.get('thickness').added - form.cleaned_data.get('thickness').removed
                 if(int(form.cleaned_data.get('quantity')) > available):
                     form.add_error('quantity',"there is not enough lamera")
                     return False
@@ -40,13 +40,15 @@ class ItemForm(forms.ModelForm):
 # Designer Form
 class ItemDxfForm(forms.ModelForm):
     dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-2 mt-2"}))
+    thickness =ModuleSelectorModelChoiceField(required=False,queryset=Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
     class Meta:
         model = Item
         fields = ('dxf_file',)
 class ItemDxfAddForm(forms.Form):
     search = forms.CharField(required=False,widget=forms.HiddenInput(attrs={'class':"form-control mb-2 mt-2"}))
-    dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-2 mt-2"}))
-    quantity = forms.IntegerField(required=True,widget=forms.TextInput(attrs={'class':"form-control mb-2 mt-2"}))
+    dxf_file = forms.FileField(required=False,widget=forms.FileInput(attrs={'class':"form-control mb-3 mt-2"}))
+    thickness =ModuleSelectorModelChoiceField(required=True,queryset=Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
+    quantity = forms.IntegerField(required=True,widget=forms.TextInput(attrs={'class':"form-control mb-2 mt-1"}))
     def clean_quantity(self):
         if(self.cleaned_data.get("quantity")):
             return self.cleaned_data.get("quantity")
