@@ -39,5 +39,4 @@ def get_unit(value):
 
 @register.filter
 def filter_list(value,test):
-    print(test)
     return value.filter(dxf_file__contains=test)

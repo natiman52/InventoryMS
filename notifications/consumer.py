@@ -21,5 +21,4 @@ class HomeConsumer(WebsocketConsumer):
     def receive(self, text_data):
         async_to_sync(self.channel_layer.group_send)('test',{"type":"test.message","message":"message"})
     def send_notification(self,event):
-        print('working here')
         self.send(text_data=json.dumps({"message": "message"}))

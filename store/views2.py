@@ -46,17 +46,19 @@ def design_detail_view(request,id):
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
         item =Item.objects.get(id=id)
         formset= model_formset(request.POST,request.FILES)
-        if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file') and request.POST.get('thickness')):
+        if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file')):
             UserPrint.objects.create(user=request.user,item=item,comment="designer_change_add")
             item.verif_design = "P"
             if(request.POST.get('choosen') != ""):
+                print('test2')
                 item.dxf_file = get_item_or_dxffile(request.POST.get('choosen')).dxf_file
             else:
+                print('test')
                 item.dxf_file =request.FILES.get("dxf_file")
             if(not request.POST.get('hidden')):
                 item.save()
                 return redirect(reverse('designer-order',kwargs={"id":item.id}))
-            elif(request.POST.get('hidden') and request.POST.get('quantity')):
+            elif(request.POST.get('hidden') and request.POST.get('quantity') and request.POST.get('thickness')):
                 thickness = Thickness.objects.get(id=int(request.POST.get('thickness'))) if request.POST.get('thickness') else item.thickness
                 if(int(request.POST.get('quantity')) < (thickness.added - thickness.removed)):
                     item.quantity = int(request.POST.get('quantity'))
@@ -98,6 +100,11 @@ def design_detail_view(request,id):
                 context['form'] =form
                 context['formset'] = formset
                 context['errors'] = {'main_quantity':'please fill the quantity'}
+                return render(request,"store/designdetail.html",context)
+            elif(not request.POST.get('thickness')):
+                context['form'] =form
+                context['formset'] = formset
+                context['errors'] = {'main':'please fill in all the forms'}
                 return render(request,"store/designdetail.html",context)
         else:
             context['form'] =form
