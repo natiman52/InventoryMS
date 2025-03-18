@@ -22,7 +22,8 @@ class SingleMaterial(models.Model):
     thickness = models.ForeignKey(Thickness,on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price =models.IntegerField()
-
+    def __str__(self):
+        return f"{self.id}-{self.thickness}"
 
 class InventoryMaterial(models.Model):
     id =models.CharField(max_length=250,unique=True,primary_key=True)
