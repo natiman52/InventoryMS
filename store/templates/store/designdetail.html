@@ -202,16 +202,11 @@
         }).fail(e=> {
             console.log(e)
         })
-    const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS")
-    var ul =document.getElementById("file_name_list")
-    if(updateFormNumber.value){
-        var totalforms =Number(document.getElementById('id_form-TOTAL_FORMS').getAttribute('value'))
-    }else{
-        var totalforms = 0
+    if(document.getElementById("id_form-TOTAL_FORMS")){
+        const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS") 
     }
+    var ul =document.getElementById("file_name_list")
     var custom =''
-
-
 
     const keyupFunction = (e,x) => {
         if(x){
@@ -247,12 +242,14 @@
     document.getElementById("prev_dxf").addEventListener("keyup",e=> keyupFunction(e,0))
 
     function killme(e){
+        totalforms = Number(document.getElementById('id_form-TOTAL_FORMS').value)
         e.target.parentNode.parentNode.remove()
         totalforms -= 1
         updateFormNumber.setAttribute("value",totalforms - 1)
     }
     document.getElementById("add_form").addEventListener("click", event => {
-        totalforms = Number(document.getElementById('id_form-TOTAL_FORMS').value)
+        updateFormNumber = document.getElementById('id_form-TOTAL_FORMS')
+        totalforms = Number(updateFormNumber.value)
         const cloned = document.getElementById('formset_temp').cloneNode(true)
         cloned.setAttribute("id","form_" + totalforms)
         cloned.classList.remove("d-none")
@@ -263,12 +260,16 @@
         document.getElementById("formset-form-list").append(cloned)
         document.getElementById(`prev_dxf_multiple-${totalforms}`).addEventListener("keyup", e => keyupFunction(e,totalforms + 1))
 
-    })   
-    new Array(totalforms).fill(1).forEach(function(n){
-        console.log(n,document.getElementById(`prev_dxf_multiple-${n - 1}`))
-        document.getElementById(`prev_dxf_multiple-${n - 1}`).addEventListener("keyup",e => keyupFunction(e,n))
-    });
-  
+    })  
+
+
+    if(Number(document.getElementById('id_form-TOTAL_FORMS').value)) {
+        new Array(totalforms).fill(1).forEach(function(n){
+            console.log(n,document.getElementById(`prev_dxf_multiple-${n - 1}`))
+            document.getElementById(`prev_dxf_multiple-${n - 1}`).addEventListener("keyup",e => keyupFunction(e,n))
+        });
+      
+    }
     function changeForm(e,x){
         if(x){
             document.getElementById(`prev_dxf_multiple-${x-1}`).value = e.target.innerText
