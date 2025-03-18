@@ -4,7 +4,8 @@
 
 {%block content%}
 </div>
-    <div class="px-5 py-5">
+<h2 class="mb-0 pb-0 pt-3 ps-4"><strong>{{item.id}}</strong></h2>
+    <div class="px-5 py-4">
         <div class="d-flex justify-content-around flex-wrap gap-2">
             <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="/media/{{item.image1}}" alt="" srcset="">
             <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image2 %}/media/{{item.image2}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
@@ -13,7 +14,7 @@
         <div class="d-flex pt-4 mb-3 flex-wrap" style="column-gap: 40px;">
             <div class="">
                 <label for="" class="text-md">thickness:-</label>
-                <p class="mb-0 ms-1 p-2 border-1 rounded-small fw-bold">{{item.thickness}}mm</p>
+                <p class="mb-0 ms-1 p-2 border-1 rounded-small fw-bold">{{item.thickness}}</p>
             </div>
             <div class="">
                 <p class="mb-0 text-md">DXF:-</p>
