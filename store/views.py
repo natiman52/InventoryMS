@@ -180,7 +180,7 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     template_name = "store/productdetail.html"
     context_object_name = 'item'
     def test_func(self):
-        print(self.request.user.role)
+
         if self.request.user.role == "MR":
             return True
         else:
@@ -502,7 +502,6 @@ def is_ajax(request):
 @login_required
 def get_items_ajax_view(request):
     if is_ajax(request):
-        print(json.dumps(Item.objects.filter(Q(verif_design="A")).first().toJSON()))
         try:
             type=request.GET.get('type')
             files =json.dumps([item.toJSON() for item in Item.objects.filter(Q(verif_design="A") & Q(type=type)) ])

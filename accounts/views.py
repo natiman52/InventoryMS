@@ -185,7 +185,6 @@ class AccountOrderList(ListView):
                     if(i.item.verif_price == "P"):
                         obje.append(i.item)
                         current = i.item
-        print(obje)
         return obje
 class AccountOrderListFinished(ListView):
     context_object_name = "items"
