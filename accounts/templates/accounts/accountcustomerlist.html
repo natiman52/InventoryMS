@@ -20,6 +20,9 @@
                 </div>
             </div>
             <form class="input-group mt-4" role="search" id="searchform" method="get" accept-charset="utf-8">
+                {%if request.GET%}
+                <i id="clearget" style="cursor: pointer;" class="fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
+                {%endif%}
                 <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find customer">
                 <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
                     <i class="fa-solid fa-search"></i>

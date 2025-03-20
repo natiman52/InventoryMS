@@ -37,10 +37,16 @@ urlpatterns = [
     path('customers/<int:pk>/delete/', CustomerDeleteView.as_view(),
          name='customer_delete'),
     path('get_customers/', get_customers, name='get_customers'),
+    #accounts
     path('account-order-list/',user_views.AccountOrderList.as_view(),name="account-order-list"),
     path("account-order/<str:id>",user_views.AccountDetailView.as_view(),name='account-order'),
     path("account-order-finished/",user_views.AccountOrderListFinished.as_view(),name="account-order-finished"),
     path("account-customer-order/<int:id>",user_views.AccountCustomerOrderList.as_view(),name="account-customer-order"),
+    #overtime
+    path("overtime",user_views.OverTimeDisplayView.as_view(),name="my-overtime"),
+    path("overtimedetail/<int:id>",user_views.OverTimeDetailView.as_view(),name="overtime-detail"),
+    path('all-overtimes',user_views.AllOverTimeDisplay.as_view(),name='all-overtime'),
+
     # Vendor URLs
     path('supplier/', SupplierListView.as_view(), name='vendor-list'),
     path('supplier/new/', SupplierCreateView.as_view(), name='vendor-create'),

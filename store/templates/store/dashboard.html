@@ -354,10 +354,14 @@
         <div class="px-4">
             <div>
                 <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
-                    <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url 'dashboard'%}?sort=yesterday">Yesterday</a>
-                    <a href="{%url 'dashboard'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if not request.GET.sort%} active {%endif%}">today </a>
-                </ul>
+                    <a href="{%url 'dashboard'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'  %} active {%endif%}">All </a>
+                    <a href="{%url 'dashboard'%}?sort=1" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '1'%} active {%endif%}{%if test|date_week == 1 and not request.GET.sort%}active{%endif%}">Monday</a>
+                    <a href="{%url 'dashboard'%}?sort=2" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '2'%} active {%endif%}{%if test|date_week == 2 and not request.GET.sort %}active{%endif%}">Tuesday </a>
+                    <a href="{%url 'dashboard'%}?sort=3" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '3'%} active {%endif%}{%if test|date_week == 3 and not request.GET.sort %}active{%endif%}">Wedensday </a>
+                    <a href="{%url 'dashboard'%}?sort=4" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '4'%} active {%endif%}{%if test|date_week == 4 and not request.GET.sort %}active{%endif%}">Thursday </a>
+                    <a href="{%url 'dashboard'%}?sort=5" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '5'%} active {%endif%}{%if test|date_week == 5 and not request.GET.sort %}active{%endif%}">Friday </a>
+                    <a href="{%url 'dashboard'%}?sort=6" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '6'%} active {%endif%}{%if test|date_week == 6 and not request.GET.sort %}active{%endif%}">Saturday</a>
+                   </ul>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm">
                 <thead class="thead-light">

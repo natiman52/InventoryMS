@@ -13,12 +13,10 @@ Each class provides specific fields and methods for handling related data.
 
 from django.db import models
 from django.urls import reverse
-from django.forms import model_to_dict
 from django_extensions.db.fields import AutoSlugField
 from accounts.models import Customer,MyUser
 from bills.models import Thickness
 import os
-from django.db.models import Value
 thickness_type = ((0.5,"0.5mm"),(0.6,"0.6mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
                  (0.9,"0.9mm"),(0.91,"0.9(oversize)"),(1.0,"1.0mm"),(1.1,"1.1mm"),
                  (1.4,"1.4mm"),(1.8,"1.8mm"),

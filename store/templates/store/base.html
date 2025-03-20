@@ -58,6 +58,11 @@
         </section>
         </div>
         <script>
+      document.getElementById('clearget').addEventListener("click",e => {
+      if(window.location.search){
+        window.location.search = ""
+      }
+    })
       document.getElementById('toggle-navigation').addEventListener('click',e => {
         document.getElementById("show-side-navigation1").classList.toggle('visible-width')
     })
@@ -78,6 +83,7 @@
       }
     }
     run_socket()
+
         </script>
         <!-- Bootstrap core JavaScript-->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

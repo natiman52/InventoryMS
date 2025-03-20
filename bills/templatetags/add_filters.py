@@ -1,5 +1,5 @@
 from django import template 
-from django.db.models import Q
+from django.utils import timezone
 register = template.library.Library()
 
 @register.filter
@@ -36,6 +36,9 @@ def get_unit(value):
     for i in value.all():
         total_unit += i.quantity
     return total_unit
+@register.filter
+def date_week(value):
+    return int(timezone.datetime.today().isoweekday())
 
 @register.filter
 def filter_list(value,test):

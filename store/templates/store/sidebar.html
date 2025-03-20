@@ -246,6 +246,11 @@
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Materials
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'all-overtime' %}active{% endif %}" href="{% url 'all-overtime' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Overtimes
+                </a>
+            </li>
         </ul>     
         {%elif request.user.role == "OP"%}
         <ul class="nav flex-column mt-3">
@@ -263,7 +268,12 @@
                 <a class="nav-link text-light {% if request.path == '/order/DR'  %}active{% endif %}" href="{% url 'order-type' type='DR' %}">
                     <i class="fa fa-shopping-bag fa-fw me-2"></i> Door (bere)
                 </a>
-            </li>           
+            </li>      
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.path == '/overtime'  %}active{% endif %}" href="{% url 'my-overtime' %}">
+                    <i class="fa fa-shopping-bag fa-fw me-2"></i> My OverTime
+                </a>
+            </li>      
              <li class="nav-item mb-2">
                 <a class="nav-link text-light {% if request.path == '/order/BL' %}active{% endif %}" href="{% url 'order-type' type='BL' %}">
                     <i class="fa fa-shopping-bag fa-fw me-2"></i> Balkemni (berenda)

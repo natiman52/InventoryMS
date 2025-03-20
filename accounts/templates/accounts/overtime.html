@@ -1,0 +1,82 @@
+{% extends "store/base.html" %}
+{%load add_filters%}
+{%block content%}
+<div class="px-4 pt-5">
+    <div class="card shadow-sm rounded p-3 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Over Times</h4>
+            </div>
+        </div>
+        <form class="input-group mt-4" role="search" id="searchform" method="get" accept-charset="utf-8">
+            {%if request.GET%}
+            <i id="clearget" style="cursor: pointer;" class="fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
+            {%endif%}
+            <input id="searchbox" name="date" type="date" class="form-control border-0 rounded-pill shadow-sm me-2" placeholder="Find customer">
+            <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                <i class="fa-solid fa-search"></i>
+            </button>
+        </form>
+    </div>
+    <table class="table table-bordered table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">Date </th>
+                <th scope="col">Ammount Done </th>
+                <th scope="col">paid</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in overtimes %}
+            <tr>
+                <td class="ps-2"><a style="text-decoration: none;" href="{%url 'overtime-detail' id=item.id %}">{{item.date|date:"D M, Y"}}</a></td>
+                <td>{{item.ammount.all.count}}</td>
+                <td>{% if item.paid %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </span>
+        </li>
+        {% endif %}
+        {% for i in paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{%endblock content%}
