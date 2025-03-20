@@ -173,7 +173,7 @@ def operator_detail_view(request,id):
         if(request.POST.get('finish')):
             now =timezone.datetime.now()
             time12 =now.replace(hour=18,minute=0,second=0)
-            if(now < time12):
+            if(now > time12):
                 connect =OverTimeConnect.objects.filter(myuser=request.user,date=timezone.datetime.today()).first()
                 if(not connect):
                     connect = OverTimeConnect.objects.create(myuser=request.user,overtime=OverTime.objects.create(),date=timezone.datetime.today())
