@@ -23,7 +23,8 @@ from django.views.generic import (
 # Local app imports
 from store.models import Item,UserPrint
 from bills.models import InventoryMaterial
-from .models import Customer, Supplier,MyUser
+from .models import Customer, Supplier,OverTime,MyUser
+
 from .forms import (
     CreateUserForm, CustomerForm,
     SupplierForm,ItemPriceForm,changePasswordForm
@@ -64,11 +65,7 @@ def profile(request):
 
 
 class CustomerListView(LoginRequiredMixin, ListView):
-    """
-    View for listing all customers.
 
-    Requires the user to be logged in. Displays a list of all Customer objects.
-    """
     model = Customer
     template_name = 'accounts/accountcustomerlist.html'
     context_object_name = 'items'
@@ -174,17 +171,7 @@ class AccountOrderList(ListView):
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_price == "P" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_price == "P"):
-                        obje.append(i.item)
-                        current = i.item
+        obje = Item.objects.filter(verif_price="P")
         return obje
 class AccountOrderListFinished(ListView):
     context_object_name = "items"
@@ -277,3 +264,35 @@ class SupplierDeleteView(LoginRequiredMixin, DeleteView):
     model = Supplier
     template_name = 'accounts/vendor_confirm_delete.html'
     success_url = reverse_lazy('vendor-list')
+
+class AllOverTimeDisplay(LoginRequiredMixin,ListView):
+    template_name = "accounts/allovertime.html"
+    context_object_name = "operators"
+    paginate_by = 15
+    def get_queryset(self):
+        obje =MyUser.objects.filter(role="OP")
+        if(self.request.GET.get('date')):
+            obje =obje.filter(overtime__date =self.request.GET.get('date'))
+        elif(self.request.GET.get('q')):
+            obje =obje.filter(username__contains=self.request.GET.get('q'))
+        return obje
+      
+class OverTimeDisplayView(LoginRequiredMixin,ListView):
+    template_name = "accounts/overtime.html"
+    context_object_name = "overtimes"
+    paginate_by = 15
+    def get_queryset(self):
+        obje =self.request.user.overtime.all()
+        if(self.request.GET.get('date')):
+            obje =self.request.user.overtime.filter(date=self.request.GET.get('date'))
+        return obje
+class OverTimeDetailView(LoginRequiredMixin,DetailView):
+    model=OverTime
+    template_name="accounts/overtimedetail.html"
+    context_object_name = 'overtime'
+    pk_url_kwarg = 'id'
+    def post(self,request,id):
+        obj = self.get_object()
+        obj.paid = True
+        obj.save()
+        return redirect(reverse('overtime-detail',kwargs={"id":id}))

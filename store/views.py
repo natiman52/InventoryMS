@@ -43,19 +43,18 @@ from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileFor
 from .tables import ItemTable
 from django.utils import timezone
 from store.signals import ChangeId
-
+from .filters import get_date_specfic
 class Dashboard(LoginRequiredMixin,ListView):
     template_name = "store/dashboard.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 8
     export_name = "given_order_list"
     def get_queryset(self):
-        date =timezone.now().date()
+        date =timezone.now()
         if(self.request.GET.get("sort") == 'yesterday'):
             date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-        date_time1 = timezone.datetime(date.year,date.month,date.day)
-        date_time2 =timezone.datetime(date.year,date.month,date.day) + timezone.timedelta(hours=23,minutes=59)
-        my_range = [date_time1,date_time2]
+        date_time2 =date.replace(hour=0,minute=0,second=0) + timezone.timedelta(hours=23,minutes=59,seconds=0)
+        my_range = [date.replace(hour=0,minute=0,second=0),date_time2]
         if(self.request.user.role == "AD"):
             profiles = MyUser.objects.all()
             items = Item.objects.all()
@@ -104,12 +103,12 @@ class Dashboard(LoginRequiredMixin,ListView):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
         elif(self.request.user.role == "OP"):
+            my_range=get_date_specfic(timezone.now().isoweekday())
+            if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
+                my_range=get_date_specfic(int(self.request.GET.get('sort')))
             items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
-            if(self.request.GET.get("sort") == "all"):
-                items = Item.objects.filter(verif_price="A",verif_design="A",completed=False)
             if(self.request.GET.get('q')):
-                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
-        
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))     
             return items 
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """

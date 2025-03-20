@@ -31,7 +31,7 @@ class UserUpdateForm(forms.ModelForm):
         model = MyUser
         fields = [
             'username',
-            'role'
+            'role',
         ]
 class changePasswordForm(forms.Form):
     user = forms.ModelChoiceField(required=True,queryset=MyUser.objects.all())

@@ -32,7 +32,7 @@ class ItemAdmin(admin.ModelAdmin):
     Admin configuration for the Item model.
     """
     list_display = (
-        'id', 'quantity', 'thickness',"date",'priority'
+        'id', 'quantity', 'thickness',"date",'priority',"completed"
     )
     search_fields = ('id',)
     list_filter = ("id",)

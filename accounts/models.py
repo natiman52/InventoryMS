@@ -1,11 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser,UserManager,BaseUserManager
+from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils.translation import gettext_lazy as _
-
 from django.utils import timezone
 from django_extensions.db.fields import AutoSlugField
 
-
+ 
 # Define choices for profile status and roles
 STATUS_CHOICES = [
     ('INA', 'Inactive'),
@@ -50,7 +49,18 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
         return self.create_user(username, password, **extra_fields)
-    
+
+class OverTime(models.Model):
+    date =models.DateField(default=timezone.datetime.today)
+    ammount =models.ManyToManyField("store.Item") 
+    paid = models.BooleanField(default=False) 
+    def __str__(self):
+        return f"{self.date}"
+class OverTimeConnect(models.Model):
+    date =models.DateField(default=timezone.datetime.today)
+    myuser = models.ForeignKey('accounts.MyUser',on_delete=models.CASCADE)
+    overtime =models.ForeignKey('accounts.OverTime',on_delete=models.CASCADE)
+
 class MyUser(AbstractUser):
     username = models.CharField(max_length=50 ,unique=True) 
     role = models.CharField(
@@ -59,6 +69,7 @@ class MyUser(AbstractUser):
         default="MR",
         verbose_name='Role'
     )
+    overtime = models.ManyToManyField(OverTime,through=OverTimeConnect)
     last_login = models.DateTimeField(default=timezone.now)
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []

@@ -1,6 +1,7 @@
 
 from django.forms import formset_factory
 from .models import  Item ,UserPrint
+from accounts.models import OverTimeConnect,OverTime
 from bills.models import Thickness
 from django.utils import timezone
 from django.db.models.base import Model as Model
@@ -170,6 +171,15 @@ def operator_detail_view(request,id):
             obj.save()
             obj.thickness.save()
         if(request.POST.get('finish')):
+            now =timezone.datetime.now()
+            time12 =now.replace(hour=18,minute=0,second=0)
+            if(now < time12):
+                connect =OverTimeConnect.objects.filter(myuser=request.user,date=timezone.datetime.today()).first()
+                if(not connect):
+                    connect = OverTimeConnect.objects.create(myuser=request.user,overtime=OverTime.objects.create(),date=timezone.datetime.today())
+                connect.overtime.ammount.add(obj)
+                connect.overtime.save() 
+                request.user.save()
             obj.completed = True
             obj.finish = timezone.now()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_finished_task")
