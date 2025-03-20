@@ -23,7 +23,7 @@ from channels.layers import get_channel_layer
 # Class-based views
 from django.views.generic import  ListView
 from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet
-from .filters import get_item_or_dxffile
+from .filters import get_item_or_dxffile,get_date_specfic
 def test_func_design_view(user):
         if user.role == "DR" or user.role == "AD":
             return True
@@ -141,12 +141,16 @@ class OperatorFinishedList(LoginRequiredMixin, ExportMixin , tables.SingleTableV
     paginate_by =10
     template_name = 'store/operator/operatororderlist.html'
     SingleTableView.table_pagination = False
-    def get(self,request,*args,**kwargs):
-        if(request.GET.get('q')):
-            self.queryset = self.model.objects.filter(Q(completed=True,id__contains=request.GET.get('q')) | Q(completed=True,client__name__contains=request.GET.get('q')))
-        return super(OperatorFinishedList,self).get(request,*args,**kwargs)
     def get_queryset(self):
         obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
+        my_range=get_date_specfic(timezone.now().isoweekday())
+        if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
+            my_range=get_date_specfic(int(self.request.GET.get('sort')))
+        obje = obje.filter(date__range=my_range)
+        if(self.request.GET.get('q')):
+            obje = obje.filter(Q(completed=True,id__contains=self.request.GET.get('q'),date__range=my_range) | Q(completed=True,client__name__contains=self.request.GET.get('q'),date__range=my_range))
+        elif(self.request.GET.get("sort") == 'all'):
+            obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
         return obje
 def test_func(event):
     if(event.role == "OP" or event.role == "AD"):

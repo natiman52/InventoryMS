@@ -21,7 +21,7 @@
             </div>
             <form class="input-group mt-4" role="search" id="searchform" method="get" accept-charset="utf-8">
                 {%if request.GET%}
-                <i id="clearget" style="cursor: pointer;" class="fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
+                <i id="clearget" style="cursor: pointer;" class="d-flex align-items-center fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
                 {%endif%}
                 <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
                 <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
@@ -32,6 +32,17 @@
     </div>
 
     <div class="px-4">
+        <div>
+            <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
+                <a href="{%url 'operator-finished'%}?sort=all" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'  %} active {%endif%}">All </a>
+                <a href="{%url 'operator-finished'%}?sort=1" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '1'%} active {%endif%}{%if test|date_week == 1 and not request.GET.sort%}active{%endif%}">Monday</a>
+                <a href="{%url 'operator-finished'%}?sort=2" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '2'%} active {%endif%}{%if test|date_week == 2 and not request.GET.sort %}active{%endif%}">Tuesday </a>
+                <a href="{%url 'operator-finished'%}?sort=3" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '3'%} active {%endif%}{%if test|date_week == 3 and not request.GET.sort %}active{%endif%}">Wedensday </a>
+                <a href="{%url 'operator-finished'%}?sort=4" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '4'%} active {%endif%}{%if test|date_week == 4 and not request.GET.sort %}active{%endif%}">Thursday </a>
+                <a href="{%url 'operator-finished'%}?sort=5" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '5'%} active {%endif%}{%if test|date_week == 5 and not request.GET.sort %}active{%endif%}">Friday </a>
+                <a href="{%url 'operator-finished'%}?sort=6" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '6'%} active {%endif%}{%if test|date_week == 6 and not request.GET.sort %}active{%endif%}">Saturday</a>
+               </ul>
+        </div>
         <table class="table table-bordered table-striped table-hover table-sm">
             <thead class="thead-light">
                 <tr>
