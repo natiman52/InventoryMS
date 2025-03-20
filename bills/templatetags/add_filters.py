@@ -39,6 +39,9 @@ def get_unit(value):
 @register.filter
 def date_week(value):
     return int(timezone.datetime.today().isoweekday())
+@register.filter
+def date_week2(value):
+    return str(timezone.datetime.today().isoweekday())
 
 @register.filter
 def filter_list(value,test):
