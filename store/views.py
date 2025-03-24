@@ -21,7 +21,6 @@ from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 from django.db.models import Q, Sum
-from django.core import serializers
 # Authentication and permissions
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -107,6 +106,8 @@ class Dashboard(LoginRequiredMixin,ListView):
             if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
                 my_range=get_date_specfic(int(self.request.GET.get('sort')))
             items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+            if(self.request.GET.get("sort") == "all"):
+                items = Item.objects.filter(verif_price='A',verif_design="A",completed=False)
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))     
             return items 
