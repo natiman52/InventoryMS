@@ -47,19 +47,21 @@ def design_detail_view(request,id):
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
         item =Item.objects.get(id=id)
         formset= model_formset(request.POST,request.FILES)
+        context['form'] =form
+        context['formset'] = formset
         if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file')):
             UserPrint.objects.create(user=request.user,item=item,comment="designer_change_add")
             item.verif_design = "P"
             if(request.POST.get('choosen') != ""):
-                print('test2')
+                context['chosen_file_value'] = get_item_or_dxffile(request.POST.get('choosen'))
                 item.dxf_file = get_item_or_dxffile(request.POST.get('choosen')).dxf_file
             else:
-                print('test')
                 item.dxf_file =request.FILES.get("dxf_file")
             if(not request.POST.get('hidden')):
                 item.save()
                 return redirect(reverse('designer-order',kwargs={"id":item.id}))
             elif(request.POST.get('hidden') and request.POST.get('quantity') and request.POST.get('thickness')):
+                context['form_error_quantity'] =int(request.POST.get('quantity'))
                 thickness = Thickness.objects.get(id=int(request.POST.get('thickness'))) if request.POST.get('thickness') else item.thickness
                 if(int(request.POST.get('quantity')) < (thickness.added - thickness.removed)):
                     item.quantity = int(request.POST.get('quantity'))
@@ -70,7 +72,6 @@ def design_detail_view(request,id):
                             item.save()
                             for index,f in enumerate(formset):
                                 item2 =Item.objects.get(id=id)
-                                print(index)
                                 item2.pk = item2.pk + string.ascii_uppercase[index]
                                 if(f.cleaned_data.get('search')):
                                     item2.dxf_file = get_item_or_dxffile(f.cleaned_data.get('search')).dxf_file
@@ -83,33 +84,23 @@ def design_detail_view(request,id):
                                 item2.save()
                             return redirect(reverse('designer-order',kwargs={"id":item.id}))
                         else:
-                            context['form'] =form
-                            context['formset'] = formset
+                            print(formset.errors)
+                            print(form)
                             context['errors'] = {'main':'please correct your errors'}
                             return render(request,"store/designdetail.html",context)                            
                     else:
-                        context['form'] =form
-                        context['formset'] = formset
                         context['errors'] = {'main':'please at least fill the first form'}
                         return render(request,"store/designdetail.html",context)
                 else:
-                    context['form'] =form
-                    context['formset'] = formset
                     context['errors'] = {'main_quantity':'not enough in inventory','main':'please at least fill the first form'}
                     return render(request,"store/designdetail.html",context)                    
             elif(not request.POST.get('quantity')):
-                context['form'] =form
-                context['formset'] = formset
                 context['errors'] = {'main_quantity':'please fill the quantity'}
                 return render(request,"store/designdetail.html",context)
             elif(not request.POST.get('thickness')):
-                context['form'] =form
-                context['formset'] = formset
                 context['errors'] = {'main':'please fill in all the forms'}
                 return render(request,"store/designdetail.html",context)
         else:
-            context['form'] =form
-            context['formset'] = formset
             context['errors'] = {'main':'please at least fill the first form'}
             return render(request,"store/designdetail.html",context)
     return render(request,"store/designdetail.html",context)

@@ -84,9 +84,9 @@
             <form class="position-relative " action="" enctype="multipart/form-data" method="post">
                 <div class="d-flex flex-wrap align-items-center justify-content-between">
                     <div class="">
-                        <input type="hidden" id="choosen" name="choosen">
+                        <input type="hidden" id="choosen" value="{%if chosen_file_value%}It_{{chosen_file_value.id}}{%endif%}" name="choosen">
                         <label for="">Search DXF:</label>
-                        <input autocomplete="off" type="text" value="" class="form-control" id="prev_dxf" >
+                        <input autocomplete="off" type="text" value="{{chosen_file_value.filename}}" class="form-control" id="prev_dxf" >
                         <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
                         </ul>
                     </div>
@@ -106,10 +106,10 @@
                 <div class="mb-5">
                     <label for="quantity">quantity:</label>
                     {%if errors.main_quantity%}
-                    <input type="number" name="quantity" id="quantity" class="form-control border-danger">
+                    <input type="number" name="quantity" id="quantity" value="{{form_error_quantity}}" class="form-control border-danger">
                     <strong><small class="text-danger form-text ms-1">{{errors.main_quantity}}</small></strong>
                     {%else%}
-                    <input type="number" name="quantity" id="quantity" class="form-control">
+                    <input type="number" name="quantity" id="quantity" value="{{form_error_quantity}}" class="form-control">
                     {%endif%}
                 </div>
                 {{formset.management_form}}
@@ -121,7 +121,7 @@
                             <div class="">
                                 {{form.search}}
                                 <label for="">Search DXF:</label>
-                                <input autocomplete="off" type="text" value="" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
+                                <input autocomplete="off" type="text" value="{{form.get_item_or_dxffile.filename}}" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
                                 <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-{{forloop.counter0}}">
                                 </ul>
                             </div>
@@ -182,7 +182,7 @@
     {%endblock%}
     {%block javascripts%}
     {%if item.verif_design == "W" or item.verif_design == "D"%}
-    
+
     <script> 
     function clean(filesraw){
         var result = []
@@ -264,7 +264,7 @@
 
 
     if(Number(document.getElementById('id_form-TOTAL_FORMS').value)) {
-        new Array(totalforms).fill(1).forEach(function(n){
+        new Array(Number(document.getElementById('id_form-TOTAL_FORMS').value)).fill(1).forEach(function(n){
             console.log(n,document.getElementById(`prev_dxf_multiple-${n - 1}`))
             document.getElementById(`prev_dxf_multiple-${n - 1}`).addEventListener("keyup",e => keyupFunction(e,n))
         });

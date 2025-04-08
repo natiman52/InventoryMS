@@ -54,6 +54,12 @@ class ItemDxfAddForm(forms.Form):
             return self.cleaned_data.get("quantity")
         else:
             raise forms.ValidationError('please fill the quantity')
+    def get_item_or_dxffile(self):
+        dx = self.cleaned_data.get("search")
+        if(dx[:2] == "It"):
+            return Item.objects.get(id=dx[3:],verif_design="A")
+        else:
+            return DxfFile.objects.get(id=int(dx[3:]))
 
 # Accountant Form
 
