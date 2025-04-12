@@ -32,4 +32,18 @@ def ChangeId(instance):
                 last_no = "001"
         client = f"{instance.client.name[0] + instance.client.name[1]}".upper()
         instance.date_created = timezone.now()
-        instance.id = str(month).upper() + str(day) + f'{client}{last_no}'
+        itemid =str(month).upper() + str(day) + f'{client}{last_no}'
+        while True:
+            if(not Item.objects.filter(id=itemid).count()):
+                instance.id =itemid 
+                break
+            else:
+                last_no =int(itemid[-3] + itemid[-2] + itemid[-1])
+                if((last_no + 1) < 10 ):
+                    last_no = f'00{last_no + 1}'
+                elif((last_no + 1) < 100):
+                    last_no = f'0{last_no + 1}'
+                else:
+                    last_no = f"{last_no + 1}"
+                itemid = str(month).upper() + str(day) + f'{client}{last_no}'
+        
