@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'transactions.apps.TransactionsConfig',
     'invoice.apps.InvoiceConfig',
     'bills',
+    "dbbackup",
+    'django_crontab',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -94,7 +97,11 @@ DATABASES = {
     }
 }
 
-
+CRONJOBS = [
+    ('*/1 * * * *', 'InventoryMS.cron.my_backup')
+]
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / "backups"}
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
