@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 migrations/
 media/
+backups/
 # C extensions
 *.so
 managmentVenv/
