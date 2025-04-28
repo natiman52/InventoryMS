@@ -51,12 +51,12 @@ MarkupSafe==2.1.5
 mdurl==0.1.2
 msgpack==1.0.8
 mysqlclient==2.2.0
-numpy
+numpy==1.24.4
 opencv-python==4.9.0.80
 openpyxl==3.1.5
 packaging==24.0
 pilkit==3.0
-pillow==10.2.0;python_version<"3.9"
+pillow==10.2.0
 pure-python-adb==0.3.0.dev0
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
