@@ -64,7 +64,7 @@
                 <h5 class="fs-6 mb-1">
                     {{ request.user.username }}{% if request.user.role == 'AD' %} <i class="fa-solid fa-circle-check text-success"></i>{% endif %}
                 </h5>
-                <span class="badge bg-success text-light">
+                <span class="badge bg-primary text-light">
                     {% if request.user.role == 'AD' %}
                         Admin
                     {% elif request.user.role == 'MR' %}
