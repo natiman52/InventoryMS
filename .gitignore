@@ -8,6 +8,7 @@ backups/
 # C extensions
 *.so
 managmentVenv/
+staticroot/
 # Distribution / packaging
 .Python
 env/
