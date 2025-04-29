@@ -58,18 +58,7 @@
         </section>
         </div>
         <script>
-      document.getElementById('clearget').addEventListener("click",e => {
-      if(window.location.search){
-        window.location.search = ""
-      }
-    })
-      document.getElementById('toggle-navigation').addEventListener('click',e => {
-        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
-    })
-        document.getElementById('toggle-navigation2').addEventListener('click',e => {
-        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
-    })
-    var current_message = 0
+          var current_message = 0
     function run_socket(){
       var socket =new WebSocket(`ws://${window.location.host}:8001/ws/notification-count`)
       socket.onmessage = e => {
@@ -83,6 +72,20 @@
       }
     }
     run_socket()
+        </script>
+        <script>
+      document.getElementById('clearget').addEventListener("click",e => {
+      if(window.location.search){
+        window.location.search = ""
+      }
+    })
+      document.getElementById('toggle-navigation').addEventListener('click',e => {
+        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
+    })
+        document.getElementById('toggle-navigation2').addEventListener('click',e => {
+        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
+    })
+
 
         </script>
         <!-- Bootstrap core JavaScript-->
