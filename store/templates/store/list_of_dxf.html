@@ -6,7 +6,7 @@
         <div class="w-100 px-4 py-5">
             <form class="input-group mt-2 mb-4 bg-wheat" role="search" id="searchform" action="{% url 'order-dxf' type=type %}" method="get" accept-charset="utf-8">
                 <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm me-2" placeholder="Find Photos">                
-                <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                <button class="btn btn-outline-primary rounded-pill shadow-sm" type="submit">
                     <i class="fa-solid fa-search"></i>
                 </button>
             </form>
@@ -73,7 +73,7 @@
         </div>
     </div>
     {%if request.user.role == "MR" or  request.user.role == "DR"%}
-    <div class="position-absolute bottom-0 " style="right: 0;">
+    <div class="position-fixed bottom-0 " style="right: 0;">
         <ul class=" m-2">
             <li class="btn btn-primary"><a class="nav-link text-white" href="{%url 'dxf-create' type=type%}">New DXF</a></li>
         </ul>
