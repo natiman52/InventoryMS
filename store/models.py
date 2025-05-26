@@ -17,12 +17,13 @@ from django_extensions.db.fields import AutoSlugField
 from accounts.models import Customer,MyUser
 from bills.models import Thickness
 import os
+from django.utils import timezone
 thickness_type = ((0.5,"0.5mm"),(0.6,"0.6mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
                  (0.9,"0.9mm"),(0.91,"0.9(oversize)"),(1.0,"1.0mm"),(1.1,"1.1mm"),
                  (1.4,"1.4mm"),(1.8,"1.8mm"),
                   (2.5,"2.5mm"),(3.0,"3.0mm"))
 class DxfFile(models.Model):
-    date=models.DateField(auto_now_add=True)
+    date=models.DateField(default=timezone.datetime.now)
     dxf_file = models.FileField(upload_to="manual/dxf")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     def __str__(self):
@@ -34,7 +35,7 @@ class DxfFile(models.Model):
         
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
-    date=models.DateField(auto_now=True)
+    date=models.DateField(default=timezone.datetime.today)
     image = models.FileField(upload_to="manual/image")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
 
@@ -64,7 +65,7 @@ def uploadDXFTo(instance,model):
 class DXFOrder(models.Model):
     quantity = models.IntegerField(default=1)
     dxf_file = models.FileField(upload_to="manual/dxf")
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.datetime.now)
 
 class Item(models.Model):
     """
@@ -88,12 +89,13 @@ class Item(models.Model):
     verif_design = models.CharField(max_length=256,choices=(("P","pending"),('A',"Accepted"),("D","Declined"),('W',"Waiting")),default="W")
     price=models.IntegerField(blank=True,null=True) 
     dxf_file = models.FileField('dxf',upload_to=uploadDXFTo,blank=True,null=True)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(default=timezone.now)
     completed = models.BooleanField(default=False)
     start = models.DateTimeField(blank=True,null=True)
     finish = models.DateTimeField(blank=True,null=True)
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     subclassed = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
     def __str__(self):
         """
         String representation of the item.
@@ -123,7 +125,7 @@ class Item(models.Model):
 class UserPrint(models.Model):
     item = models.ForeignKey(Item,on_delete=models.CASCADE)
     user = models.ForeignKey(MyUser,on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(default=timezone.datetime.now)
     comment = models.CharField(max_length=256)
 
 class Delivery(models.Model):
@@ -133,7 +135,7 @@ class Delivery(models.Model):
     user = models.ForeignKey(MyUser,null=True,on_delete=models.SET_NULL)
     item = models.ForeignKey(Item, blank=True, null=True, on_delete=models.SET_NULL)
     customer = models.ForeignKey(Customer,blank=True, null=True,on_delete=models.SET_NULL)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.datetime.now)
     is_delivered = models.BooleanField(default=False, verbose_name='Is Delivered')
 
     def __str__(self):

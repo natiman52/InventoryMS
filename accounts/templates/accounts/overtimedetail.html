@@ -18,12 +18,6 @@
                 <h2>{{overtime.date|date:"D M ,Y"}}</h2>
                 <p class="mb-0 ms-2">{% if over.paid %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span style="padding:0rem .4rem .1rem .4rem;" class="btn-danger rounded-circle "><i class="fa fa-solid fa-close"></i></span>{%endif%}</p>
             </div>
-            {%if request.user.role == "AT" and not overtime.paid and overtime.date|date:"w" != data|date_week2  %}
-            <form action="" method="post">
-                {%csrf_token%}
-                <button class="btn btn-danger">Pay</button>
-            </form>
-            {%endif%}
         </div>
         <div class="row mt-4">
             {%for item in overtime.ammount.all%}

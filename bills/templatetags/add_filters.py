@@ -42,7 +42,18 @@ def date_week(value):
 @register.filter
 def date_week2(value):
     return str(timezone.datetime.today().isoweekday())
-
 @register.filter
 def filter_list(value,test):
     return value.filter(dxf_file__contains=test)
+@register.filter
+def overtime(value):
+    non_overtime = value.employee.salary + value.bonus
+    overtime_ammount =value.total - non_overtime
+    return overtime_ammount 
+
+@register.filter
+def decide_pos(value):
+    if(value < 0):
+        return False
+    else:
+        return True

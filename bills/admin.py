@@ -1,37 +1,23 @@
 from django.contrib import admin
-from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment,Thickness
+from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment,Thickness,ClientPayment,FreeAssets
 
 
 @admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):
     """Admin interface for managing Bill instances."""
-
-    fields = (
-        'date',
-        'institution_name',
-        'phone_number',
-        'email',
-        'address',
-        'description',
-        'payment_details',
-        'amount',
-        'status'
-    )
-
     list_display = (
         'slug',
         'date',
-        'institution_name',
-        'phone_number',
-        'email',
-        'address',
         'description',
-        'payment_details',
         'amount',
         'status'
     )
-
-
+@admin.register(ClientPayment)
+class CPadmin(admin.ModelAdmin):
+    list_display = ('customer',)
+@admin.register(FreeAssets)
+class FAadmin(admin.ModelAdmin):
+    list_display = ('customer',"ammount")
 @admin.register(InventoryMaterial)
 class IBAdmin(admin.ModelAdmin):
     list_display = ('supplier',"user")
