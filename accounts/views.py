@@ -22,12 +22,13 @@ from django.views.generic import (
 
 # Local app imports
 from store.models import Item,UserPrint
-from bills.models import InventoryMaterial
-from .models import Customer, Supplier,OverTime,MyUser
+from bills.models import InventoryMaterial,FreeAssets
+from bills.algebra import get_total_paid_value,get_total_unpaid_value
+from .models import Customer, Supplier,OverTime,MyUser,Employee
 
 from .forms import (
     CreateUserForm, CustomerForm,
-    SupplierForm,ItemPriceForm,changePasswordForm
+    SupplierForm,ItemPriceForm,changePasswordForm,CreateEmployeeForm
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -145,7 +146,7 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
     pk_url_kwarg = 'id'
     success_url ="/"
     def test_func(self):
-        if self.request.user.role == "AT" or self.request.user.role == "AD":
+        if self.request.user.role == "AT" or self.request.user.role == "AD" or self.request.user.role == "GM":
             return True
         else:
             return False
@@ -177,29 +178,21 @@ class AccountOrderListFinished(ListView):
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
     def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_price == "A" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_price == "A"):
-                        obje.append(i.item)
-                        current = i.item
-        print(obje)
+        obje =Item.objects.filter(completed=True)
         return obje
 class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
     model = Customer
-    context_object_name = 'items'
+    context_object_name = 'obj'
     template_name = "accounts/accountcustomerorderlist.html"
     pk_url_kwarg = "id"
     def get_object(self):
         obj = super(AccountCustomerOrderList,self).get_object()
         obje = Item.objects.filter(client=obj)
-        return obje
-
+        total_unpaid = get_total_unpaid_value(obje)
+        total_paid = get_total_paid_value(obje)
+        total_value = total_paid + total_unpaid
+        free_assets = FreeAssets.objects.get(customer=obj)
+        return {"client":obj,"order_value":total_value,"unpaid":total_unpaid,"assets":free_assets,"paid":total_paid,"items":obje}
 
 def changepasswordtest(user):
     if(user.is_superuser):
@@ -291,8 +284,29 @@ class OverTimeDetailView(LoginRequiredMixin,DetailView):
     template_name="accounts/overtimedetail.html"
     context_object_name = 'overtime'
     pk_url_kwarg = 'id'
-    def post(self,request,id):
-        obj = self.get_object()
-        obj.paid = True
-        obj.save()
-        return redirect(reverse('overtime-detail',kwargs={"id":id}))
+class EmployeePayRollList(LoginRequiredMixin,UserPassesTestMixin,ListView):
+    model= Employee
+    template_name = "accounts/stafflist.html"
+    context_object_name ="employee"
+    def test_func(self):
+        """Check if the user has the required permissions."""
+        return self.request.user in MyUser.objects.all()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for item in context['employee']:
+            overtime = 0
+            if(item.account):
+                for i in item.account.overtime.filter(paid=False):
+                    for t in i.ammount.all():
+                        overtime += t.quantity    
+            item.overtime = overtime * 50
+            item.total = item.overtime + item.salary
+        return context
+
+class CreateEmployee(LoginRequiredMixin,CreateView):
+    model=Employee
+    form_class = CreateEmployeeForm
+    template_name = "accounts/staffcreate.html"
+    def get_success_url(self):
+        return reverse('payroll')
+    

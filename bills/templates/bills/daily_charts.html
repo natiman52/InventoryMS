@@ -1,17 +1,9 @@
 <div class="row justify-content-around">
-    <div class="card shadow border-0 mb-7 col-md-6 col-lg-6">
+    <div class="card shadow border-0 mb-7 col-12">
         <div class="card-body">
-            <h5 class="card-title">Revenue</h5>
-            <div class="chart-container">
-                <canvas id="lineChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="card shadow border-0 mb-7 col-md-5 col-lg-5">
-        <div class="card-body ">
-            <h5 class="card-title">Expense</h5>
+            <h5 class="card-title">Current week activity</h5>
             <div class="chart-container d-flex justify-content-center">
-                <canvas id="myChart"></canvas>
+                    <canvas id="lineChart" ></canvas>
             </div>
         </div>
     </div>
@@ -19,22 +11,48 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const ctx = document.getElementById('myChart');
+    const ctx = document.getElementById('lineChart');
+    const data = {{itemsweek|safe}}
+    var new_data = []
+    var theDays = new Array("sunday","monday", "Tuesday", "Wendnesday", "Thursday", "Friday", "Saturday");
+    var today = new Date();
+    var sevenDay = []
+    var aDay = today.getDay();
 
+    var i;
+    for (i=0; i<5; i++) {
+        if (aDay <= 0) {
+            aDay = 6;
+        }
+        sevenDay.push(theDays[aDay]) 
+        if(data.find(e=>e.weekday == aDay+1) ){
+            new_data.push(data.find(e=>e.weekday == aDay+1).count)
+        }else{
+            new_data.push(0)
+        }
+        aDay -= 1;
+    }
 new Chart(ctx, {
-  type: 'pie',
+  type: 'bar',
   data: {
-    labels: ['Total Expense', 'Total Material Cost', 'Total Payroll'],
+    labels: sevenDay,
     datasets: [{
-      label: 'Total Costs in the current year',
-      data: [Number("{{total_expense}}"),Number("{{total_material}}"), Number("{{total_payroll}}")],
+      label:"weekly activity",
+      data: new_data,
+      backgroundColor: "blue",
       borderWidth: 1
     }]
   },
   options: {
+    responsive: true,
     scales: {
-      y: {
-        beginAtZero: true
+    x:{
+        reverse: true,
+        },
+    y: {
+        position: 'right',
+        beginAtZero: true,
+        suggestedMax: 50
       }
     }
   }
