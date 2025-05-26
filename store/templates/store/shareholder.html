@@ -1,0 +1,166 @@
+
+<main class="py-6 ">
+    <div class="container-fluid">
+        <!-- Card stats -->
+        <div class="row g-6 mb-6" style="row-gap: 1rem;">
+            <style>
+                a {
+                    text-decoration: none;
+                }
+            </style>
+ 
+            <div class="col-xl-3 col-sm-6 col-12" id="orders">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Revenue</span>
+                                    <span class="h3 font-bold mb-0 "><span class="text-success">+{{total_order_value}} </span>Birr</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-tertiary text-white text-lg rounded-circle">
+                                        <i class="fa fa-clipboard-list"></i>
+                                    </div>
+                                </div>
+                            </div>
+<!--                         
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <i class="fa fa-arrow-up me-1"></i>13%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+-->
+                        </div>
+                    </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 col-12" id="Materials">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Material Cost</span>
+                                    <span class="h3 font-bold mb-0"><span class="text-danger">-{{total_material}}</span>  Birr</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
+                                        <i class="fa-solid fa-chart-simple"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <i class="fa fa-arrow-up me-1"></i>30%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 col-12" id="Pay Roll">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Pay Roll</span>
+                                    <span class="h3 font-bold mb-0"><span class="text-danger">-{{total_payroll}}</span> Birr</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-info text-white text-lg rounded-circle">
+                                        <i class="fa-solid fa-comments-dollar"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-danger text-danger me-2">
+                                    <i class="fa fa-arrow-down me-1"></i>-5%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 col-12" id="Employees">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Employees</span>
+                                    <span class="h3 font-bold mb-0">{{profiles_count}}</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
+                                        <i class="fa-solid fa-users"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <i class="fa fa-arrow-up me-1"></i>30%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 col-12" id="Expense">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Expense</span>
+                                    <span class="h3 font-bold mb-0"><span class="text-danger">-{{total_expense}}</span> Birr</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-warning text-white text-lg rounded-circle">
+                                        <i class="fa fa-shopping-cart"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <i class="fa fa-arrow-up me-1"></i>10%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+            </div>
+            <div class="col-xl-3 col-sm-6 col-12" id="profit">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Profit</span>
+                                    <span class="h3 font-bold mb-0 "><span class="{%if profit_type%}text-success{%else%} text-danger{%endif%}">{{profit}} </span> Birr</span>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon icon-shape bg-success text-white text-lg rounded-circle">
+                                        <i class="fa-solid fa-usd"></i>
+                                    </div>
+                                </div>
+                            </div>
+<!--                         
+                            <div class="mt-2 mb-0 text-sm">
+                                <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <i class="fa fa-arrow-up me-1"></i>13%
+                                </span>
+                                <span class="text-nowrap text-xs text-muted">Since last month</span>
+                            </div>
+-->
+                        </div>
+                    </div>
+            </div>
+
+        </div>
+        {% include 'store/charts.html' %}
+    </div>
+</main>

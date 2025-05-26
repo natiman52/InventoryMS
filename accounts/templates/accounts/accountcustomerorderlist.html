@@ -5,18 +5,91 @@
 {%load add_filters%}
 {%block title%}{%endblock title%}
 {%block content%}
+<style> 
+.card {
+    background-color: #fff;
+    border-radius: 10px;
+    border: none;
+    position: relative;
+    margin-bottom: 30px;
+    box-shadow: 0 0.46875rem 2.1875rem rgba(90,97,105,0.1), 0 0.9375rem 1.40625rem rgba(90,97,105,0.1), 0 0.25rem 0.53125rem rgba(90,97,105,0.12), 0 0.125rem 0.1875rem rgba(90,97,105,0.1);
+}
+</style>
 <div class="container">
-    <!-- Header Section -->
     <div class="container my-4">
-        <div class="card shadow-sm rounded p-3">
+        <div class="row"> 
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                <div class="card l-bg-green-dark">
+                    <div class="card-statistic-3 p-4">
+                        <div class="mb-4">
+                            <h5 class="card-title mb-0">Total Order</h5>
+                        </div>
+                        <div class="row align-items-center mb-2 d-flex">
+                            <div class="col-8">
+                                <h2 class="d-flex align-items-center mb-0">
+                                    {{obj.order_value}} Birr
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                <div class="card l-bg-blue-dark">
+                    <div class="card-statistic-3 p-4">
+                        <div class="mb-4">
+                            <h5 class="card-title mb-0">Total Unpaid</h5>
+                        </div>
+                        <div class="row align-items-center mb-2 d-flex">
+                            <div class="col-8">
+                                <h2 class="d-flex align-items-center mb-0">
+                                    {{obj.unpaid}} Birr
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                <div class="card l-bg-cherry">
+                    <div class="card-statistic-3 p-4">
+                        <div class="mb-4">
+                            <h5 class="card-title mb-0">Total Paid</h5>
+                        </div>
+                        <div class="row align-items-end mb-2 d-flex">
+                            <div class="col-8">
+                                <h2 class="d-flex align-items-center mb-0">
+                                    {{obj.paid}} Birr
+                                </h2>
+                            </div>
+                            <div class="offset-1 col-3">
+                               <button class="btn shadow-sm"><a href="{%url 'client_payment_list_create' id=obj.client.id %}"><i class="fa fa-plus"></i></a></button> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                <div class="card l-bg-orange-dark">
+                    <div class="card-statistic-3 p-4">
+                        <div class="mb-4">
+                            <h5 class="card-title mb-0">Free Assets</h5>
+                        </div>
+                        <div class="row align-items-end mb-2 d-flex">
+                            <div class="col-8">
+                                <h2 class="d-flex align-items-center mb-0">
+                                    {{obj.assets.ammount}} Birr
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm rounded p-3 pt-0">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h4 class="display-6 mb-0 text-success">Customer Orders</h4>
-                </div>
-                <div class="col-md-6 d-flex justify-content-end gap-2">
-                    <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% querystring '_export'='xlsx' %}">
-                        <i class="fa-solid fa-download"></i> Export to Excel
-                    </a>
+                    <h4 class="display-6 mb-0 text-success text-capitalize">{{obj.client}}</h4>
                 </div>
             </div>
             <form class="input-group mt-4" role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
@@ -48,7 +121,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in items %}
+                {% for item in obj.items %}
                 <tr>
                     <th class="nav-item" scope="row"><a class="nav-link text-primary ps-3" href="{%url 'account-order' id=item.id %}">{{ item.id }}</a></th>
                     <td>{{ item.client }}</td>

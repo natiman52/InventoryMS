@@ -1,0 +1,32 @@
+
+{% extends 'store/base.html' %}
+{%load add_filters%}
+{% block content %}
+<!-- Header Section -->
+<div class="contianer py-5 px-4">
+    <div class="col-xl-3 col-sm-6 col-12" id="Materials">
+        <div class="card shadow border-0">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Today's Activity</span>
+                        <span class="h3 font-bold mb-0">{{today}} products</span>
+                    </div>
+                
+                </div>
+                <div class="mt-2 mb-0 text-sm text-end">
+                    {%with decided=diff|decide_pos%}
+                    <span class="badge badge-pill {% if decided %} bg-soft-success text-success{%else%} bg-soft-danger text-danger{%endif%} me-2">
+                        <i class="fa {% if decided %} fa-arrow-up {%else%} fa-arrow-down {%endif%} me-1"></i>{{diff}}
+                    </span>
+                    <span class="text-nowrap text-xs text-muted">Since yesterday</span>
+                    {%endwith%}
+                </div>
+            </div>
+        </div>
+</div>
+    <div class="pt-5">
+        {%include 'bills/daily_charts.html'%}
+    </div>
+</div>
+{% endblock %}
