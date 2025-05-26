@@ -29,7 +29,7 @@
     {% comment %}
     <form method="GET" class="container mb-3">
         {{ filter.form }}
-        <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
+        <button type="submit" class="btn btn-sm btn-primary fa fa-search"> Search</button>
     </form>
     {% endcomment %}
     <div class="mb-4">
@@ -40,7 +40,7 @@
                     {%for type in types%}
                     <div class="d-flex border rounded">
                         <p class="m-0 p-1 border">{{type.get_name_display }}</p>
-                        <p class="m-0 p-1 border text-success fw-bold">{{type.added|subtract:type.removed}} units</p>
+                        <p class="m-0 p-1 border text-primary fw-bold">{{type.added|subtract:type.removed}} units</p>
                         </div>
                     {%endfor%}
                 </div>
@@ -59,10 +59,10 @@
         </div>
     </div>
     <div class="mb-3">
-        <a class="btn btn-success btn-sm" href="{% url 'material_create' %}">
+        <a class="btn btn-primary btn-sm" href="{% url 'material_create' %}">
             <i class="fa-solid fa-plus me-2"></i> Add New Material 
         </a>
-        <a class="float-end btn btn-success btn-sm" href="{% querystring '_export'='xlsx' %}">
+        <a class="float-end btn btn-primary btn-sm" href="{% querystring '_export'='xlsx' %}">
             <i class="fa-solid fa-download me-2"></i> Export to Excel
         </a>
     </div>

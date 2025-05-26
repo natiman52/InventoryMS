@@ -89,7 +89,9 @@
         <div class="card shadow-sm rounded p-3 pt-0">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h4 class="display-6 mb-0 text-success text-capitalize">{{obj.client}}</h4>
+
+                    <h4 class="display-6 mb-0 text-primary text-capitalize">{{obj.client}}</h4>
+
                 </div>
             </div>
             <form class="input-group mt-4" role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
@@ -97,7 +99,7 @@
                 <i id="clearget" style="cursor: pointer;" class="d-flex align-items-center fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
                 {%endif%}
                 <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
-                <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                <button class="btn btn-outline-primary rounded-pill shadow-sm" type="submit">
                     <i class="fa-solid fa-search"></i>
                 </button>
             </form>

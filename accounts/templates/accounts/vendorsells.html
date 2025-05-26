@@ -29,7 +29,7 @@
     {% comment %}
     <form method="GET" class="container mb-3">
         {{ filter.form }}
-        <button type="submit" class="btn btn-sm btn-success fa fa-search"> Search</button>
+        <button type="submit" class="btn btn-sm btn-primary fa fa-search"> Search</button>
     </form>
     {% endcomment %}
 
@@ -60,7 +60,7 @@
                     <td>{{ item.minsceus_cost }} Birr</td>
                     <td>{{ item.payment_method }}</td>
                     <td>{{ item.total_cost }} Birr</td>
-                    <td class="text-success">{%if item.payment_method == "credit"%}{{ item.advance }} Birr {%else%} - {%endif%}</td>
+                    <td class="text-primary">{%if item.payment_method == "credit"%}{{ item.advance }} Birr {%else%} - {%endif%}</td>
                     <td class="text-danger">{%if item.payment_method == "credit"%}{{ item.leftover }} Birr {%else%} - {%endif%}</td>
                     <td>{{item.date|date:"M d, Y"}}</td>
                 </tr>

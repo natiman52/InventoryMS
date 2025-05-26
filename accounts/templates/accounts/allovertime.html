@@ -5,7 +5,7 @@
     <div class="card shadow-sm rounded p-3 mb-4">
         <div class="row align-items-center">
             <div class="col-md-6">
-                <h4 class="display-6 mb-0 text-success">Over Times</h4>
+                <h4 class="display-6 mb-0 text-primary">Over Times</h4>
             </div>
         </div>
         <form class="input-group mt-4 align-items-center" role="search" id="searchform" method="get" accept-charset="utf-8">
@@ -14,7 +14,7 @@
             {%endif%}
             <input type="text" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm me-2" placeholder="Find customer">
             <input id="searchbox" name="date" type="date" class="form-control border-0 rounded-pill shadow-sm me-2">
-            <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+            <button class="btn btn-outline-primary rounded-pill shadow-sm" type="submit">
                 <i class="fa-solid fa-search"></i>
             </button>
         </form>
@@ -35,7 +35,7 @@
                 <td><a style="text-decoration: none;" href="{%url 'overtime-detail' id=overtime.id %}">{{operator.username}}</a></td>
                 <td class="ps-2">{{overtime.date|date:"D M, Y"}}</td>
                 <td>{{overtime.ammount.all.count}}</td>
-                <td>{% if item.paid %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+                <td>{% if item.paid %} <span class=" btn-primary rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
             </tr>
             {%endfor%}
             {% endfor %}

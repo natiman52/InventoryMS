@@ -9,7 +9,7 @@
                     <table class="table table-borderless">
                         <thead>
                             <span class="h4">Profile Information</span class="h4">
-                            <a class="btn btn-outline-success btn-sm float-end" href="{% url 'user-profile-update' %}">Edit profile</a>
+                            <a class="btn btn-outline-primary btn-sm float-end" href="{% url 'user-profile-update' %}">Edit profile</a>
                             <hr>
                         </thead>
                         <tbody>
@@ -20,7 +20,7 @@
                             <tr>
                                 <th scope="row">Staff role</th>
                                 <td>
-                                    <span class="badge badge-pill bg-soft-success text-success me-2">
+                                    <span class="badge badge-pill bg-soft-primary text-primary me-2">
                                     {% if user.profile.role == 'AD' %}
                                     Admin
                                     {% elif user.profile.role == 'EX' %}

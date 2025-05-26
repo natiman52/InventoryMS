@@ -27,15 +27,15 @@
       </style>
         {% include "store/sidebar.html" %}
         <section id="wrapper">
-            <nav class="navbar navbar-expand-md bg-success">
+            <nav class="navbar navbar-expand-md bg-primary">
                 <div class="container-fluid mx-2">
                   <div class="navbar-header d-flex w-full">
                     <button class="navbar-toggler" type="button" id="toggle-navigation2">
                       <i class="fa fa-bars text-white"></i>
                     </button>
-                    <a class="navbar-brand" style="font-size: 20px;" href="{% url 'dashboard' %}">Yukuno Metal Engineering</a>
+                    <a class="navbar-brand" style="font-size: 20px;" href="{% url 'dashboard' %}">NYT Metal Engineering</a>
                   <div class="flex-1 d-flex justify-content-end align-items-center">
-                    <button id="notification-count" class=" btn btn-primary p-3 py-1 position-relative"><i class="fa fa-envelope-open fa-xs"></i></button>  
+                    <button id="notification-count" class=" btn btn-success p-3 py-1 position-relative"><i class="fa fa-envelope-open fa-xs"></i></button>  
                   </div>
                   </div>
                   <div class="collapse navbar-collapse" id="toggle-navbar">
@@ -91,6 +91,20 @@
         document.getElementById("show-side-navigation1").classList.toggle('visible-width')
     })
 
+
+        </script>
+        <script>
+      document.getElementById('clearget').addEventListener("click",e => {
+      if(window.location.search){
+        window.location.search = ""
+      }
+    })
+      document.getElementById('toggle-navigation').addEventListener('click',e => {
+        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
+    })
+        document.getElementById('toggle-navigation2').addEventListener('click',e => {
+        document.getElementById("show-side-navigation1").classList.toggle('visible-width')
+    })
 
         </script>
         <!-- Bootstrap core JavaScript-->
