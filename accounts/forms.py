@@ -1,7 +1,7 @@
 from typing import Any
 from django import forms
 from store.models import Item
-from .models import MyUser, Customer, Supplier
+from .models import MyUser, Customer, Supplier,Employee
 
 
 class CreateUserForm(forms.ModelForm):
@@ -82,6 +82,10 @@ class ItemPriceForm(forms.ModelForm):
         model = Item
         fields = ('price',)
 
+class CreateEmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = ['account','name','position',"salary","phone"]
 class SupplierForm(forms.ModelForm):
     """Form for creating/updating vendor information."""
     class Meta:

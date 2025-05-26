@@ -11,14 +11,16 @@ STATUS_CHOICES = [
     ('A', 'Active'),
     ('OL', 'On leave')
 ]
-
+POSITIONS =[('designer','designer'),("manager","manager"),('formal','formal'),('driver','driver'),('accountant','accountant')]
 ROLE_CHOICES = [
     ('MR','Marketing'),
     ("DR","Designer"),
     ('OP', 'Operative'),
     ('AT', 'Accounting'),
     ('DL', 'Delivery'),
-    ("AD","Admin")
+    ("AD","Admin"),
+    ('GM',"General Manager"),
+    ("SH","Share Holder")
 ]
 class CustomUserManager(BaseUserManager):
     """
@@ -75,7 +77,13 @@ class MyUser(AbstractUser):
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
 
-    
+class Employee(models.Model):
+    account = models.ForeignKey(MyUser,on_delete=models.SET_NULL,blank=True,null=True)
+    name=models.CharField(max_length=150)
+    position = models.CharField(max_length=150,choices=POSITIONS) 
+    salary = models.IntegerField()
+    phone = models.IntegerField()
+    active = models.BooleanField(default=True) 
 class Supplier(models.Model):
     """
     Represents a vendor with contact and address information.

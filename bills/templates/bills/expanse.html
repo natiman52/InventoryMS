@@ -1,0 +1,52 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="container my-4">
+    <div class="card shadow-sm rounded p-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Expanses</h4>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="container">
+  <style>
+    .table th, .table td {
+        text-align: center;
+    }
+  </style>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">date</th>
+                <th scope="col">description</th>
+                <th scope="col">ammount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ bill.date|date:"D m,Y" }}</td>
+                <td>{%if bill.description|length > 30 %}{{ bill.description|slice:30 }}{%else%}{{bill.description}}{%endif%}</td>
+                <td>{{ bill.amount }} Birr</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%if request.user.role != 'SH'%}
+    <div class="position-fixed bottom-5">
+        <div class="d-flex justify-content-end gap-2">
+            <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'bill_create' %}">
+                <i class="fa-solid fa-plus"></i> Add New Expense
+            </a>
+        </div>
+    </div>
+    {%endif%}
+</div>
+{% endblock %}

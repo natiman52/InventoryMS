@@ -1,15 +1,3 @@
-"""
-Module: store.views
-
-Contains Django views for managing items, profiles,
-and deliveries in the store application.
-
-Classes handle product listing, creation, updating,
-deletion, and delivery management.
-The module integrates with Django's authentication
-and querying functionalities.
-"""
-
 # Standard library imports
 import operator
 from functools import reduce
@@ -21,6 +9,9 @@ from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 from django.db.models import Q, Sum
+from django.db.models.functions import TruncMonth
+from django.core.serializers.json import DjangoJSONEncoder
+
 # Authentication and permissions
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -33,16 +24,16 @@ from django.views.generic import (
 from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
-
+import json
 # Local app imports
-from accounts.models import MyUser, Supplier
-from transactions.models import Sale
+from accounts.models import MyUser, Supplier,Employee
 from .models import Category, Item, Delivery,ImageFile,DxfFile
 from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileForm
 from .tables import ItemTable
 from django.utils import timezone
 from store.signals import ChangeId
 from .filters import get_date_specfic
+from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_all_expense,get_total_salary_paid,get_material_cost
 class Dashboard(LoginRequiredMixin,ListView):
     template_name = "store/dashboard.html"
     context_object_name = "items"
@@ -54,30 +45,8 @@ class Dashboard(LoginRequiredMixin,ListView):
             date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
         date_time2 =date.replace(hour=0,minute=0,second=0) + timezone.timedelta(hours=23,minutes=59,seconds=0)
         my_range = [date.replace(hour=0,minute=0,second=0),date_time2]
-        if(self.request.user.role == "AD"):
-            profiles = MyUser.objects.all()
+        if(self.request.user.role == "AD" or self.request.user.role == "SH"):
             items = Item.objects.all()
-            total_items = (
-                Item.objects.all()
-                .aggregate(Sum("quantity"))
-                .get("quantity__sum", 0.00)
-            )
-            items_count = items.count()
-            profiles_count = profiles.count()
-
-    # Prepare data for charts
-
-
-            context = {
-            "items": items,
-            "profiles": profiles,
-            "profiles_count": profiles_count,
-            "items_count": items_count,
-            "total_items": total_items,
-            "vendors": Supplier.objects.all(),
-            "delivery": Delivery.objects.all(),
-            "sales": Sale.objects.all(),
-        }
             return items
         elif(self.request.user.role == "MR"):
             items = Item.objects.filter(Q(verif_price='P',date__range=my_range) | Q(verif_design="P",date__range=my_range))
@@ -93,7 +62,7 @@ class Dashboard(LoginRequiredMixin,ListView):
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
-        elif(self.request.user.role == "AT"):
+        elif(self.request.user.role == "AT" or self.request.user.role == "GM"):
             profiles = MyUser.objects.all()
             items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
@@ -111,6 +80,39 @@ class Dashboard(LoginRequiredMixin,ListView):
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))     
             return items 
+    def get_context_data(self, **kwargs):
+        if(self.request.user.role != "SH" and self.request.user.role != "AD"):
+            return super().get_context_data(**kwargs)
+        else:
+            profiles = Employee.objects.all()
+            items = Item.objects.filter(date__year=timezone.now().year)
+            paid_order =get_total_paid_value(items) 
+            unpaid_order =get_total_unpaid_value(items) 
+            total_order = paid_order + unpaid_order
+            unpaid_expense,paid_expense= get_all_expense()
+            orders_count = items.count()
+            debt_material,free_material =get_material_cost()
+            profit = total_order - (unpaid_expense + paid_expense) - get_total_salary_paid() - (debt_material + free_material)
+            each_month_data=items.filter(completed=True).annotate(month=TruncMonth('finish')).values('month').annotate(sum=Sum('price')).order_by('-month')
+            print(each_month_data)
+            profit_type = True
+            if(profit < 0):
+                profit_type = False
+            context = {
+            "profiles_count": profiles.count(),
+            "items_count": orders_count,
+            "each_month_data":json.dumps(list(each_month_data),cls=DjangoJSONEncoder),
+            "total_order_value": total_order,
+            "total_expense":int(paid_expense+unpaid_expense),
+            "total_payroll":get_total_salary_paid(),
+            "total_material":debt_material+free_material,
+            "profit":int(profit),
+            'profit_type':profit_type,
+            "vendors": Supplier.objects.all(),
+            "delivery": Delivery.objects.all(),
+        }
+            return context
+
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.
@@ -181,7 +183,7 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     context_object_name = 'item'
     def test_func(self):
 
-        if self.request.user.role == "MR":
+        if self.request.user.role == "MR" or self.request.user.role == "GM":
             return True
         else:
             return False

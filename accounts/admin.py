@@ -1,8 +1,12 @@
 from django.contrib import admin
-from .models import MyUser, Supplier,Customer,OverTime,OverTimeConnect
+from .models import MyUser, Supplier,Customer,OverTime,OverTimeConnect,Employee
 from django.contrib.auth import admin as base
 from .forms import *
 
+
+@admin.register(Employee)
+class EAdmin(admin.ModelAdmin):
+    list_display=('name','salary')
 @admin.register(OverTimeConnect)
 class OverTimeConnectAdmin(admin.ModelAdmin):
     list_display = ('date','myuser')
