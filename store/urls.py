@@ -27,14 +27,15 @@ from .views import (
     CategoryUpdateView,
     CategoryDeleteView,
     GivenOrderListView,
-    Dashboard
+    Dashboard,
+    AllList
 )
 
 # URL patterns
 urlpatterns = [
     # Dashboard
     path('', Dashboard.as_view(), name='dashboard'),
-
+    path('all_list',AllList.as_view(),name="all_list"),
     # Product URLs
     path('order-list/',ProductListView.as_view(),name='order-lists'),
     path('given-order/',GivenOrderListView.as_view(),name="given-order"),
