@@ -98,7 +98,7 @@ DATABASES = {
 }
 
 CRONJOBS = [
-    ('0 0,6,12,18 * * *', 'InventoryMS.cron.my_backup')
+    ('3 * * *', 'InventoryMS.cron.my_backup')
 ]
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / "backups"}
