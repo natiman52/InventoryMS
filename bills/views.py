@@ -256,6 +256,9 @@ def daily_activity(request):
      item = Item.objects.filter(finish__date=today).count()
      yesterday_items = Item.objects.filter(finish__date=today - timedelta(1)).count()
      print(item ,yesterday_items)
-     percentage_diff = ((item - yesterday_items)/((item + yesterday_items) /2)) * 100
+     try:
+        percentage_diff = ((item - yesterday_items)/((item + yesterday_items) /2)) * 100
+     except:
+        percentage_diff = 0
      itemsWeek =Item.objects.filter(completed=True,date__date__gte=get_weekday()[-1],date__date__lte=get_weekday()[0]).annotate(weekday=ExtractWeekDay('date__date')).values('weekday').annotate(count=Count('id')).values('weekday', 'count') 
      return render(request,'bills/daily_activity.html',{'today':item,'yesterday':yesterday_items,'diff':percentage_diff,'itemsweek':json.dumps(list(itemsWeek),cls=DjangoJSONEncoder)})
