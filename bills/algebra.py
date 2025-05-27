@@ -12,6 +12,12 @@ def clean_tab(items,cash):
                 i.paid = True
                 i.save()
     return result
+
+def get_total_order_value(customer):
+    result = 0
+    for i in customer:
+        result += i.quantity
+    return result
 def get_total_unpaid_value(customer):
     result = 0
     for i in customer:
