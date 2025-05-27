@@ -34,14 +34,20 @@
     <div class="px-4">
         <div>
             <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                <a href="{%url 'all_list'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'  %} active {%endif%}">All </a>
-                <a href="{%url 'operator-finished'%}?sort=1" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '1'%} active {%endif%}{%if test|date_week == 1 and not request.GET.sort%}active{%endif%}">Monday</a>
-                <a href="{%url 'operator-finished'%}?sort=2" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '2'%} active {%endif%}{%if test|date_week == 2 and not request.GET.sort %}active{%endif%}">Tuesday </a>
-                <a href="{%url 'operator-finished'%}?sort=3" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '3'%} active {%endif%}{%if test|date_week == 3 and not request.GET.sort %}active{%endif%}">Wedensday </a>
-                <a href="{%url 'operator-finished'%}?sort=4" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '4'%} active {%endif%}{%if test|date_week == 4 and not request.GET.sort %}active{%endif%}">Thursday </a>
-                <a href="{%url 'operator-finished'%}?sort=5" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '5'%} active {%endif%}{%if test|date_week == 5 and not request.GET.sort %}active{%endif%}">Friday </a>
-                <a href="{%url 'operator-finished'%}?sort=6" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '6'%} active {%endif%}{%if test|date_week == 6 and not request.GET.sort %}active{%endif%}">Saturday</a>
-               </ul>
+                {%for i in weeks%}
+                <a href="?month={{i.num}}&{{request|get_GET}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.month == i.num %} active {%endif%} {%if i.num == 1 and not request.GET.month%}active{%endif%}">{{i.month}}</a>
+                {%endfor%}
+            </ul>
+            <ul id="week_day" class="pb-2 list-group list-group-horizontal w-25  gap-2">
+                {%for i in week|myrange%}
+                <a href="?week={{i}}"  class="list-group-item list-group-item-action py-2 rounded-small{%if request.GET.week == i %} active {%endif%} {%if i == 1 and not request.GET.week%}active{%endif%}">{{i}}</a>
+                {%endfor%}
+            </ul>
+            <ul id="days" class="pb-2 list-group list-group-horizontal w-25  gap-2">
+                {%for day in days%}
+                <a href="?date={{day|date:'Y-m-d'}}&{{request|get_GET}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.date == day|date:'Y-m-d' %} active {%endif%}{%if day == first_day and not request.GET.date %}active{%endif%}">{{day|date:'D'}}</a>
+                {%endfor%}
+            </ul>
         </div>
         <table class="table table-bordered table-striped table-hover table-sm">
             <thead class="thead-light">
@@ -130,4 +136,7 @@
     </nav>
     {% endif %}
 </div>
+<script>
+
+</script>
 {% endblock content %}

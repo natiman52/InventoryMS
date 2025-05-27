@@ -5,6 +5,7 @@ import json
 # Django core imports
 from asgiref.sync import async_to_sync
 from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
@@ -33,7 +34,7 @@ from .tables import ItemTable
 from django.utils import timezone
 from store.signals import ChangeId
 from .filters import get_date_specfic
-from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_all_expense,get_total_salary_paid,get_material_cost
+from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_days,get_all_expense,get_total_salary_paid,get_material_cost,get_months_with_their_weeks
 class Dashboard(LoginRequiredMixin,ListView):
     template_name = "store/dashboard.html"
     context_object_name = "items"
@@ -113,6 +114,30 @@ class Dashboard(LoginRequiredMixin,ListView):
         }
             return context
 
+class AllList(ListView):
+    model =Item
+    template_name = "store/all_list.html"
+    context_object_name = "items"
+    def get_queryset(self,**kwargs):
+        day = get_days(get_months_with_their_weeks()[0].get('initial_week'))[0]
+        items = Item.objects.filter(completed=True,date=day)
+        if(self.request.GET.get('date')):
+            items =items.filter(date=self.request.GET.get('date'))
+        return items
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        weeks =get_months_with_their_weeks()
+        context['weeks'] = weeks
+        if(self.request.GET.get('month')):
+            context['week'] = weeks[int(self.request.GET.get('month')) - 1].get('initial_week')
+        else:
+            context['week'] = weeks[0].get('initial_week')
+        if(self.request.GET.get('week')):
+            context['days'] =get_days(weeks[0].get('initial_week'))
+        else:
+            context['days'] =get_days(weeks[0].get('initial_week'))
+        context['first_day']=get_days(weeks[0].get('initial_week'))[0]
+        return context
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.

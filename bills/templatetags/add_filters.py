@@ -9,7 +9,7 @@ def subtract(value,minus):
 @register.filter
 def get_sort(value):
     sort = value.GET.get("sort")
-    q = value.GET.get("q")
+    q = value.GET.get("q")  
     if("sort" in value.get_full_path() and "q" in value.get_full_path()):
         return f"&sort={sort}&q={q}"
     elif("sort" in value.get_full_path()):
@@ -18,6 +18,14 @@ def get_sort(value):
         return f"&q={q}"
     else:
         return ""
+@register.filter
+def get_GET(value):
+    tst = ""
+    for key,value in value.GET.items():
+        print(key,value)
+        tst+=f"{key}={value}&"
+    return tst
+
 @register.filter
 def get_page(value):
     page = value.GET.get("page")
@@ -57,3 +65,6 @@ def decide_pos(value):
         return False
     else:
         return True
+@register.filter
+def myrange(value):
+    return range(value,value+5)    

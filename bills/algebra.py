@@ -1,6 +1,8 @@
 from .models import Bill,SaleryPayment,InventoryMaterial
 from django.utils import timezone
 from datetime import timedelta
+import calendar
+import datetime
 def clean_tab(items,cash):
     result = cash
     for i in items:
@@ -49,7 +51,23 @@ def get_material_cost():
         if(i.leftover):
             leftover += i.leftover
     return [paid,leftover]
+def get_months_with_their_weeks():
+    year = datetime.date.today().year
+    list_of_weeks= []
+    for i in range(1,13):
+        ending_day    = calendar.monthrange(year, i)[1] #get the last day of month
+        initial_week  = datetime.date(year, i, 1).isocalendar()[1]
+        ending_week   = datetime.date(year, i, ending_day).isocalendar()[1]
+        list_of_weeks.append({"num":i,"month":calendar.month_name[i],"initial_week":initial_week,"ending_week":ending_week})
+    return list_of_weeks
 
+def get_days(initial_week):
+    year = datetime.date.today().year
+    first_day =datetime.datetime.strptime(f'{year}-W{int(initial_week) - 1}-1', "%Y-W%W-%w").date()
+    dates =[first_day] 
+    for i in range(1,6):
+        dates.append(first_day + timedelta(i))
+    return dates
 def get_weekday():
     today =timezone.now().date()
     my_dates = [today]
