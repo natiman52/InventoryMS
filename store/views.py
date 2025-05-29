@@ -119,25 +119,37 @@ class AllList(ListView):
     template_name = "store/all_list.html"
     context_object_name = "items"
     def get_queryset(self,**kwargs):
-        day = get_days(get_months_with_their_weeks()[0].get('initial_week'))[0]
-        items = Item.objects.filter(completed=True,date=day)
+        if(self.request.GET.get('month')):
+            week =get_months_with_their_weeks()[int(self.request.GET.get('month')) - 1].get('initial_week')
+        else:
+            week = get_months_with_their_weeks()[0].get('initial_week')
+        if(self.request.GET.get('week')):
+            day =get_days(int(self.request.GET.get('week')))[0]
+        else:
+            day =get_days(week)[0]
+        items = Item.objects.filter(completed=True)
         if(self.request.GET.get('date')):
-            items =items.filter(date=self.request.GET.get('date'))
+            items =items.filter(date__date=self.request.GET.get('date'))
+        else:
+            items = items.filter(date__date=day)
         return items
     def get_context_data(self,**kwargs):
         context = super().get_context_data(**kwargs)
         weeks =get_months_with_their_weeks()
         context['weeks'] = weeks
+        week = weeks[0].get('initial_week')
         if(self.request.GET.get('month')):
+            week =weeks[int(self.request.GET.get('month')) - 1].get('initial_week')
             context['week'] = weeks[int(self.request.GET.get('month')) - 1].get('initial_week')
         else:
             context['week'] = weeks[0].get('initial_week')
         if(self.request.GET.get('week')):
-            context['days'] =get_days(weeks[0].get('initial_week'))
+            context['days'] =get_days(int(self.request.GET.get('week')))
         else:
-            context['days'] =get_days(weeks[0].get('initial_week'))
-        context['first_day']=get_days(weeks[0].get('initial_week'))[0]
+            context['days'] =get_days(week)
         return context
+
+
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.

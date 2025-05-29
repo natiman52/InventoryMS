@@ -20,7 +20,7 @@
                 <p class="mb-0 text-md">DXF:-</p>
                 {%if item.verif_design != "W"%}
                 <div class="d-flex mb-0 py-2 ms-1 justify-content-between">
-                    <p class="text-gray mb-0 me-2">{%if item.verif_design == "P" %} <p class="text-info mb-0 me-2">Pending</p> {%elif item.verif_design == "D"%} <p class="text-danger mb-0 me-2">Declined</p> {%else%} <p class="text-success mb-0 me-1">Accepted</p>{%endif%}</p>
+                    <p class="text-gray mb-0 me-2">{%if item.verif_design == "P" %} <p class="text-info mb-0 me-2">Pending</p> {%elif item.verif_design == "D"%} <p class="text-danger mb-0 me-2">Declined</p> {%else%} <p class="text-success mb-0 me-1">{{item.dxf_file_identifier}}</p>{%endif%}</p>
                     <a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}"><i class="fa-solid fa-download p-2 border-1 rounded-small"></i></a>
                 </div>
                 {%else%}

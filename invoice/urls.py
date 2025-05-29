@@ -9,34 +9,38 @@ from .views import (
     InvoiceDetailView,
     InvoiceCreateView,
     InvoiceUpdateView,
-    InvoiceDeleteView
+    InvoiceDeleteView,
+    InvoicePrepView,
+    create_operation_cost,
 )
 
 # URL patterns
 urlpatterns = [
     # Invoice URLs
     path(
-        'invoices/',
+        'audit-history/',
         InvoiceListView.as_view(),
         name='invoicelist'
     ),
+    path('create_operation',create_operation_cost,name='create_operation_cost'),
+    path("prep-audit/",InvoicePrepView.as_view(),name="invoiceprep"),
     path(
-        'invoice/<slug:slug>/',
+        'audit/<slug:slug>/',
         InvoiceDetailView.as_view(),
         name='invoice-detail'
     ),
     path(
-        'new-invoice/',
+        'new-audit/<str:id>',
         InvoiceCreateView.as_view(),
         name='invoice-create'
     ),
     path(
-        'invoice/<slug:slug>/update/',
+        'audit/<slug:slug>/update/',
         InvoiceUpdateView.as_view(),
         name='invoice-update'
     ),
     path(
-        'invoice/<int:pk>/delete/',
+        'audit/<int:pk>/delete/',
         InvoiceDeleteView.as_view(),
         name='invoice-delete'
     ),

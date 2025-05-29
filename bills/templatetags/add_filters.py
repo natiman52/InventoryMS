@@ -1,7 +1,12 @@
 from django import template 
 from django.utils import timezone
+from bills.algebra import getDateRangeFromWeek
+from bills.models import thickness_type
 register = template.library.Library()
 
+@register.filter
+def strf(value):
+    return f"{value}"
 @register.filter
 def subtract(value,minus):
     return(value - minus)
@@ -19,12 +24,44 @@ def get_sort(value):
     else:
         return ""
 @register.filter
+def get_GET_week(value):
+    month = value.GET.get("month")
+    if("month" in value.get_full_path()):
+        return f"month={month}"
+    return ""
+
+@register.filter
+def get_GET_day(value):
+    week = value.GET.get("week")
+    month =value.GET.get("month")
+    if("week" in value.get_full_path() and "month" in value.get_full_path()):
+        return f"&week={week}&month={month}"
+    elif("week" in value.get_full_path()):
+        return f"&week={week}"
+    elif("month" in value.get_full_path()):
+        return f"&month={month}"
+    return ""
+@register.filter
 def get_GET(value):
-    tst = ""
-    for key,value in value.GET.items():
-        print(key,value)
-        tst+=f"{key}={value}&"
-    return tst
+    week = value.GET.get("week")
+    month =value.GET.get("month")
+    date =value.GET.get('date')
+    if("week" in value.get_full_path() and "month" in value.get_full_path() and "date" in value.get_full_path()):
+        return f"&week={week}&month={month}&date={date}"
+    if("month" in value.get_full_path() and "week" in value.get_full_path() ):
+        return f"&month={month}&week={week}"
+    if("month" in value.get_full_path() and "day" in value.get_full_path() ):
+        return f"&month={month}&day={date}"
+    if("week" in value.get_full_path() and "day" in value.get_full_path() ):
+        return f"&week={week}&day={date}"
+    elif("month" in value.get_full_path()):
+        return f"&month={month}" 
+    elif("week" in value.get_full_path()):
+        return f"&week={week}"   
+    elif("date" in value.get_full_path()):
+        return f"&date={date}"
+    return ""    
+
 
 @register.filter
 def get_page(value):
@@ -67,4 +104,18 @@ def decide_pos(value):
         return True
 @register.filter
 def myrange(value):
-    return range(value,value+5)    
+    lst = []
+    for i in range(value,value+5):
+        firstdayofweek, lastdayofweek=getDateRangeFromWeek(timezone.datetime.now().year,i)
+        lst.append({'weekno':f"{i}",'dates':f'{firstdayofweek.strftime("%b %d")}-{lastdayofweek.strftime("%b %d")}'})
+    return lst
+@register.filter
+def weekno(value):
+    return value.weekno
+
+@register.filter
+def thickness_name(q):
+    for choice in thickness_type:
+        if choice[0] == q:
+            return choice[1]
+    return ''

@@ -6,7 +6,6 @@ from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment,Thick
 class BillAdmin(admin.ModelAdmin):
     """Admin interface for managing Bill instances."""
     list_display = (
-        'slug',
         'date',
         'description',
         'amount',
