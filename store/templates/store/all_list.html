@@ -35,17 +35,18 @@
         <div>
             <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
                 {%for i in weeks%}
-                <a href="?month={{i.num}}&{{request|get_GET}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.month == i.num %} active {%endif%} {%if i.num == 1 and not request.GET.month%}active{%endif%}">{{i.month}}</a>
+                
+                <a href="?month={{i.num}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.month == i.num|strf %} active {%endif%} {%if i.num == 1 and not request.GET.month%}active{%endif%}">{{i.month}}</a>
                 {%endfor%}
             </ul>
-            <ul id="week_day" class="pb-2 list-group list-group-horizontal w-25  gap-2">
-                {%for i in week|myrange%}
-                <a href="?week={{i}}"  class="list-group-item list-group-item-action py-2 rounded-small{%if request.GET.week == i %} active {%endif%} {%if i == 1 and not request.GET.week%}active{%endif%}">{{i}}</a>
+            <ul id="week_day" class="pb-2 list-group list-group-horizontal w-75  gap-2">
+                {%for ii in week|myrange%}
+                <a href="?week={{ii.weekno}}&{{request|get_GET_week}}"  class="list-group-item list-group-item-action py-2 rounded-small {% if  ii.weekno == request.GET.week %} active {%endif%} {%if forloop.counter == 1  and not request.GET.week %}active{%endif%}">{{ii.dates}}</a>
                 {%endfor%}
             </ul>
             <ul id="days" class="pb-2 list-group list-group-horizontal w-25  gap-2">
                 {%for day in days%}
-                <a href="?date={{day|date:'Y-m-d'}}&{{request|get_GET}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.date == day|date:'Y-m-d' %} active {%endif%}{%if day == first_day and not request.GET.date %}active{%endif%}">{{day|date:'D'}}</a>
+                <a href="?date={{day|date:'Y-m-d'}}&{{request|get_GET_day}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.date == day|date:'Y-m-d' %} active {%endif%}{%if forloop.counter == 1 and not request.GET.date %}active{%endif%}">{{day|date:'D'}}</a>
                 {%endfor%}
             </ul>
         </div>
@@ -97,7 +98,7 @@
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_GET}}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
@@ -115,13 +116,13 @@
             </li>
             {% else %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+                <a class="page-link" href="?page={{ i }}{{request | get_GET}}">{{ i }}</a>
             </li>
             {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_GET}}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>

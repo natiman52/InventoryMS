@@ -12,24 +12,6 @@
         text-align: center;
     }
   </style>
- <div class="mb-2">
-    <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-        {%for i in weeks%}
-        
-        <a href="?month={{i.num}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.month == i.num|strf %} active {%endif%} {%if i.num == 1 and not request.GET.month%}active{%endif%}">{{i.month}}</a>
-        {%endfor%}
-    </ul>
-    <ul id="week_day" class="pb-2 list-group list-group-horizontal w-75  gap-2">
-        {%for ii in week|myrange%}
-        <a href="?week={{ii.weekno}}&{{request|get_GET_week}}"  class="list-group-item list-group-item-action py-2 rounded-small {% if  ii.weekno == request.GET.week %} active {%endif%} {%if forloop.counter == 1  and not request.GET.week %}active{%endif%}">{{ii.dates}}</a>
-        {%endfor%}
-    </ul>
-    <ul id="days" class="pb-2 list-group list-group-horizontal w-25  gap-2">
-        {%for day in days%}
-        <a href="?date={{day|date:'Y-m-d'}}&{{request|get_GET_day}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.date == day|date:'Y-m-d' %} active {%endif%}{%if forloop.counter == 1 and not request.GET.date %}active{%endif%}">{{day|date:'D'}}</a>
-        {%endfor%}
-    </ul>
-</div>
     <h2 class="mb-2">{{current_date|date:"M d, Y"}}</h2>
     <div class="container mb-3">
         <div class="row justify-content-end">
@@ -59,67 +41,87 @@
     </div>
         </div>
     </div>
-    <div class="container">
+    <div class="container mt-4">
         <div class="row justify-content-around">
             <div class=" col-md-3">
-                <p class="text-xl text-underline">Sheet metal List</p>
+                <p class="text-xl text-underline mb-3">Sheet metal List</p>
                 <div>
+                    {%if metals|length == 0 %}
+                    <p>no work done</p>
+                    {%endif%}
                     {%for i in metals%}
                     <p class="d-flex justify-content-between">{{i.name |thickness_name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.quantity.amm}} units</span></p>
                     {%endfor%}
                 </div>
             </div>
-            <div class="col-md-3">
-                <p class="text-xl text-underline">Operational Cost</p>
+            <div class="col-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="text-xl text-underline">Operational Cost</p>
+                    {%if not operational_cost%}
+                    <button onclick="submitForm()" class="btn btn-danger py-1">submit</button>
+                    {%endif%}
+                </div>
+                {%if operational_cost%}
                 <div>
-                    {%if  operational_cost%}
                     {%for i in operational_cost%}
                     <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.amm}}</span></p>
                     {%endfor%}
-                    {%endif%}
                 </div>
+                {%else%}
+                <form id="operation_cost" action="{%url 'create_operation_cost' %}" method="post">
+                    {%csrf_token%}
+                    <input type="hidden" name="date" value="{{current_date|date:'Y-m-d'}}">
+                    <p class="d-flex justify-content-between">Rent <input type="number" name="rent" placeholder="Rent/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Logistics <input type="number" name="log" placeholder="Logistics/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">PayRoll <input type="number" name="pay" placeholder="PayRoll/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">machinery & Electric <input type="number" name="elec" placeholder="Electric/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Overtime <input type="number" name="over" placeholder="Overtime/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                </form>
+                {%endif%}
             </div>
             <div class="col-md-3">
-                <p class="text-xl text-underline">client list</p>
+                <p class="text-xl text-underline mb-3">client list</p>
                 <div class="">
+                    {%if clients|length == 0 %}
+                    <p>no clients satisfied</p>
+                    {%endif%}
+                    
                     {%for i in clients%}
-                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.debt}}</span></p>
+                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 "> - </span></p>
                     {%endfor%}
                 </div>
             </div>
         </div>
     </div>
     <div class="m-2">
+        {%if operational_cost %}
         <table class="table table-sm table-striped table-bordered">
             <thead class="thead-light">
                 <tr>
                     <th scope="col">ID <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Customer Name <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Thickness <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Price per Item <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Gross Revenue <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Gross Cost <i class="fa-solid fa-sort"></i></th>
-                    <th scope="col">Operational Cost per unit <i class="fa-solid fa-sort"></i></th>
-
+                    <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
+                    <th>Audited</th>
                 </tr>
             </thead>
             <tbody>
-                {% for invoice in invoices %}
+                {% for item in items %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td><a href="{% url 'invoice-detail' invoice.slug %}">{{ invoice.item.client}}</a></td>
-                    <td>{{ invoice.item.thickness }}</td>
-                    <td>{{ invoice.unit_price }}</td>
-                    <td>{{ invoice.quantity }}</td>
-                    <td>{{ invoice.gross_revenue }}</td>
-                    <td>{{ invoice.gross_cost }}</td>
-                    <td>{{ invoice.opertional_cost }}</td>
-
+                    <td><a href="{%url 'invoice-create' id=item.id %}">{{ item.client}}</a></td>
+                    <td>{{ item.thickness }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.date|date:"M d Y" }}</td>
+                    <th></th>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {%else%}
+        <p class="text-center">Please Fill & Submit Operation Cost</p>
+        {%endif%}
     </div>
 
     <!-- Pagination -->
@@ -169,4 +171,10 @@
         {% endif %}
     </div>
 </div>
+<script>
+    function submitForm(){
+        form = document.getElementById("operation_cost")
+        form.submit()
+    }
+</script>
 {% endblock content %}
