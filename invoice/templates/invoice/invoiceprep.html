@@ -11,7 +11,20 @@
     .table th, .table td {
         text-align: center;
     }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
   </style>
+    <form id="search-get" class="form-group row justify-content-end" action="" method="get">
+        <label class="col-sm-1 col-form-label" for="date">Date:</label>
+        <div class="col-sm-2">
+            <input onchange="submitSearch(event)" class="form-control" type="date" name="date" id="">
+        </div>
+    </form>
     <h2 class="mb-2">{{current_date|date:"M d, Y"}}</h2>
     <div class="container mb-3">
         <div class="row justify-content-end">
@@ -71,11 +84,11 @@
                 <form id="operation_cost" action="{%url 'create_operation_cost' %}" method="post">
                     {%csrf_token%}
                     <input type="hidden" name="date" value="{{current_date|date:'Y-m-d'}}">
-                    <p class="d-flex justify-content-between">Rent <input type="number" name="rent" placeholder="Rent/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
-                    <p class="d-flex justify-content-between">Logistics <input type="number" name="log" placeholder="Logistics/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
-                    <p class="d-flex justify-content-between">PayRoll <input type="number" name="pay" placeholder="PayRoll/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
-                    <p class="d-flex justify-content-between">machinery & Electric <input type="number" name="elec" placeholder="Electric/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
-                    <p class="d-flex justify-content-between">Overtime <input type="number" name="over" placeholder="Overtime/day" style="background-color: white;width: 120px;appearance: textfield;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Rent <input type="number" name="rent" placeholder="Rent/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Logistics <input type="number" name="log" placeholder="Logistics/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">PayRoll <input type="number" name="pay" placeholder="PayRoll/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">machinery & Electric <input type="number" name="elec" placeholder="Electric/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Overtime <input type="number" name="over" placeholder="Overtime/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
                 </form>
                 {%endif%}
             </div>
@@ -110,11 +123,18 @@
                 {% for item in items %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
+                    {%if item.audited%}
+                    {%with invoice=item|get_invoice%}
+                    <td><a href="{%url 'invoice-detail' id=invoice.id %}">{{ item.client}}</a></td>
+                    {%endwith%}
+                    {%else%}
                     <td><a href="{%url 'invoice-create' id=item.id %}">{{ item.client}}</a></td>
+                    {%endif%}
                     <td>{{ item.thickness }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.date|date:"M d Y" }}</td>
-                    <th></th>
+                    <td>{% if item.audited %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+
                 </tr>
                 {% endfor %}
             </tbody>
@@ -176,5 +196,11 @@
         form = document.getElementById("operation_cost")
         form.submit()
     }
+    function submitSearch(event){
+        document.getElementById('search-get').submit()
+    }
 </script>
 {% endblock content %}
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{%endblock javascripts %}

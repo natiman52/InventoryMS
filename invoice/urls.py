@@ -25,7 +25,7 @@ urlpatterns = [
     path('create_operation',create_operation_cost,name='create_operation_cost'),
     path("prep-audit/",InvoicePrepView.as_view(),name="invoiceprep"),
     path(
-        'audit/<slug:slug>/',
+        'audit/<int:id>/',
         InvoiceDetailView.as_view(),
         name='invoice-detail'
     ),

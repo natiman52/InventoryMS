@@ -1,6 +1,6 @@
 # Django core imports
 from typing import Any
-from django.http import HttpRequest, HttpResponse
+from django.db.models import OuterRef,Exists
 from django.urls import reverse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import redirect
@@ -21,7 +21,7 @@ from .models import Invoice
 from .tables import InvoiceTable
 from store.models import Item
 from bills.algebra import get_months_with_their_weeks,get_days,get_yesterday,comparetoday
-from .calc import get_count_of_clients,get_count_of_lamera,get_opertional_cost,get_each_clients_debt,getstatus
+from .calc import get_count_of_clients,get_count_of_lamera,get_opertional_cost,get_each_clients_debt
 from bills.models import Bill
 class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     """
@@ -32,7 +32,6 @@ class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     template_name = 'invoice/invoicelist.html'
     context_object_name = 'invoices'
     paginate_by = 10
-    table_pagination = False  # Disable table pagination
     def get_queryset(self,**kwargs):
         if(self.request.GET.get('month')):
             week =get_months_with_their_weeks()[int(self.request.GET.get('month')) - 1].get('initial_week')
@@ -64,33 +63,18 @@ class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
         else:
             context['days'] =get_days(week)
         if(self.request.GET.get('date')):
-            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(date__date=self.request.GET.get('date'))))
-            context['metals']= get_count_of_lamera(Item.objects.filter(date__date=self.request.GET.get('date')))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(date__date=self.request.GET.get('date')))[1]
+            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=self.request.GET.get('date'))))
+            context['metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))[0]
+            context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))[1]
             context['current_date'] = timezone.datetime.strptime(self.request.GET.get('date'),"%Y-%m-%d")
             context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'))
         else:
-            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(date__date=get_days(week)[0])))
-            context['metals']= get_count_of_lamera(Item.objects.filter(date__date=get_days(week)[0]))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(date__date=get_days(week)[0]))[1]
+            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=get_days(week)[0])))
+            context['metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=get_days(week)[0]))[0]
+            context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=get_days(week)[0]))[1]
             context['current_date'] =get_days(week)[0]
             context['operational_cost'] = get_opertional_cost(get_days(week)[0])
         return context
-
-
-class InvoiceDetailView(DetailView):
-    """
-    View for displaying invoice details.
-    """
-    model = Invoice
-    template_name = 'invoice/invoicedetail.html'
-
-    def get_success_url(self):
-        """
-        Return the URL to redirect to after a successful action.
-        """
-        return reverse('invoice-detail', kwargs={'slug': self.object.pk})
-
 
 class InvoicePrepView(ListView):
     template_name = 'invoice/invoiceprep.html'
@@ -99,27 +83,41 @@ class InvoicePrepView(ListView):
     
     def get_queryset(self):
         if(self.request.GET.get('date')):
-            res =getstatus(Item.objects.filter(date__date=self.request.GET.get('date')))
+            res =Item.objects.filter(completed=True,date__date=self.request.GET.get('date')).annotate(audited=Exists(Invoice.objects.filter(item__id=OuterRef('id'))))
         else:
-            res =Item.objects.filter(date__date=get_yesterday())
+            res =Item.objects.filter(completed=True,date__date=get_yesterday()).annotate(audited=Exists(Invoice.objects.filter(item__id=OuterRef('id'))))
         return res
     def get_context_data(self,**kwargs):
         context = super().get_context_data(**kwargs)
         date = get_yesterday()
         context['clients'] =get_count_of_clients(self.get_queryset(**kwargs))
         if(self.request.GET.get('date')):
-            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(date__date=self.request.GET.get('date'))))
-            context['metals']= get_count_of_lamera(Item.objects.filter(date__date=self.request.GET.get('date')))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(date__date=self.request.GET.get('date')))[1]
+            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=self.request.GET.get('date'))))
+            context['metals'],context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))
             context['current_date'] =timezone.datetime.strptime(self.request.GET.get('date'),"%Y-%m-%d")
             context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'))       
         else:
-            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(date__date=date)))
-            context['metals']= get_count_of_lamera(Item.objects.filter(date__date=date))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(date__date=date))[1]
+            context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=date)))
+            context['metals'],context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=date))
             context['current_date'] =date
             context['operational_cost'] = get_opertional_cost(date)
         return context
+
+class InvoiceDetailView(DetailView):
+    """
+    View for displaying invoice details.
+    """
+    model = Invoice
+    template_name = 'invoice/invoicedetail.html'
+    pk_url_kwarg = "id"
+    context_object_name = "obj"
+    def get_success_url(self):
+        """
+        Return the URL to redirect to after a successful action.
+        """
+        return reverse('invoice-detail', kwargs={'id': self.object.id})
+
+
 
 class InvoiceCreateView(LoginRequiredMixin, CreateView):
     """
@@ -147,7 +145,10 @@ class InvoiceCreateView(LoginRequiredMixin, CreateView):
         """
         Return the URL to redirect to after a successful creation.
         """
-        date =comparetoday(Item.objects.get(id=self.kwargs.get("id")).date)
+        if(get_yesterday() == Item.objects.get(id=self.kwargs.get("id")).date):
+            date = ""
+        else:
+            date =f"?date={Item.objects.get(id=self.kwargs.get('id')).date.strftime('%Y-%m-%d')}"
         return reverse('invoiceprep') + date
 
 

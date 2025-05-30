@@ -108,7 +108,7 @@
                 {% for invoice in invoices %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td><a href="{% url 'invoice-detail' invoice.slug %}">{{ invoice.item.client}}</a></td>
+                    <td><a href="{% url 'invoice-detail' invoice.id %}">{{ invoice.item.client}}</a></td>
                     <td>{{ invoice.item.thickness }}</td>
                     <td>{{ invoice.unit_price }}</td>
                     <td>{{ invoice.quantity }}</td>

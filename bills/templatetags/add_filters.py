@@ -2,6 +2,7 @@ from django import template
 from django.utils import timezone
 from bills.algebra import getDateRangeFromWeek
 from bills.models import thickness_type
+from invoice.models import Invoice
 register = template.library.Library()
 
 @register.filter
@@ -119,3 +120,11 @@ def thickness_name(q):
         if choice[0] == q:
             return choice[1]
     return ''
+
+@register.filter
+def get_invoice(value):
+    item = Invoice.objects.filter(item=value)
+    if(item.exists()):
+        return item.first()
+    else:
+        return value
