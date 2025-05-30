@@ -1,6 +1,5 @@
 from django.db.models import Sum
 from bills.models import Bill,bill_type
-from store.models import Item
 def get_count_of_clients(item):
     unique_count = []
     for i in item:
@@ -23,7 +22,10 @@ def get_each_clients_debt(item):
             if(not i.item.client.name== t.get('name')):
                 unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
     return unique_count
-        
+
+
+
+
 def get_opertional_cost(date):
     data = []
     item = Bill.objects.filter(date__date=date,bill_type__in=[x[0] for x in bill_type])
@@ -34,11 +36,16 @@ def get_opertional_cost(date):
     for i in item:
         data.append({'name':i.bill_type,"amm":i.amount})
     return data
+
+
+
 def total_opertional_cost(costs):
     data = 0
     for i in costs:
         data += i.get('amm')
     return data
+
+
 
 def get_count_of_lamera(item):
     unique_count = []
@@ -51,14 +58,4 @@ def get_count_of_lamera(item):
         total += i.get('quantity').get('amm')
     return unique_count,total
 
-def getstatus(items):
-    off = []
-    on =[]
-    for i in items:
-        if(i.invoice_set.all().exists()):
-            on.append(i.id)
-        else:
-            off.append(i.id)
-    dataA = Item.objects.filter(id__in=on).annotate(audited=True)
-    dataB = Item.objects.filter(id__in=off).annotate(audited=False)
-    return dataA | dataB
+

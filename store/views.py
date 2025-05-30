@@ -118,6 +118,7 @@ class AllList(ListView):
     model =Item
     template_name = "store/all_list.html"
     context_object_name = "items"
+    paginate_by = 15
     def get_queryset(self,**kwargs):
         if(self.request.GET.get('month')):
             week =get_months_with_their_weeks()[int(self.request.GET.get('month')) - 1].get('initial_week')
