@@ -51,9 +51,18 @@ def get_count_of_lamera(item):
     unique_count = []
     total = 0
     for i in item:
-        for t in unique_count or [{}]:
-            if(not (i.thickness.name == t.get('name'))):
+        if(len(unique_count) > 0):
+            count = 0
+            test =False
+            for d in unique_count:
+                if not d['name'] == i.thickness.name:
+                    count += 1
+                if count == len(unique_count):
+                    test =True
+            if(test):
                 unique_count.append({'name':i.thickness.name,'quantity':item.filter(thickness=i.thickness).aggregate(amm=Sum('quantity'))})
+        else:
+            unique_count.append({'name':i.thickness.name,'quantity':item.filter(thickness=i.thickness).aggregate(amm=Sum('quantity'))})
     for i in unique_count:
         total += i.get('quantity').get('amm')
     return unique_count,total
