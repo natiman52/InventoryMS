@@ -134,7 +134,7 @@
                     <td>{{ item.thickness }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.date|date:"M d Y" }}</td>
-                    <td><a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
+                    <td><a style="text-decoration: none;" download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
                     <td>{% if item.audited %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
                 </tr>
                 {% endfor %}
