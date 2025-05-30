@@ -116,6 +116,7 @@
                     <th scope="col">Thickness <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
                     <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
+                    <th>Dxf </th>
                     <th>Audited</th>
                 </tr>
             </thead>
@@ -133,8 +134,8 @@
                     <td>{{ item.thickness }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.date|date:"M d Y" }}</td>
+                    <td><a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}"><i class="fa-solid fa-download p-2 border-1 rounded-small"></i></a></td>
                     <td>{% if item.audited %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
-
                 </tr>
                 {% endfor %}
             </tbody>
