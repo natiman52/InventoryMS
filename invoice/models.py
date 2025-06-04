@@ -26,7 +26,7 @@ class Invoice(models.Model):
         self.gross_revenue = round(self.total + (self.scrap_value * self.quantity), 2)
         self.gross_cost =round(self.sheet_metal_cost * self.quantity,2)
         self.gross_profit =round(self.gross_revenue - self.gross_cost,2)
-        self.opertional_cost = (total_opertional_cost(get_opertional_cost(self.item.date))) / get_count_of_lamera(Item.objects.filter(date__date=self.item.date))[1]
+        self.opertional_cost = (total_opertional_cost(get_opertional_cost(self.item.date)) * self.quantity) / get_count_of_lamera(Item.objects.filter(date__date=self.item.date))[1]
         self.net_profit = self.gross_profit - self.opertional_cost
         return super().save(*args, **kwargs)
 
