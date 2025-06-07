@@ -128,3 +128,7 @@ def get_invoice(value):
         return item.first()
     else:
         return value
+    
+@register.filter
+def rounded(value):
+    return round(value,2)
