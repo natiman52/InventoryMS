@@ -1,6 +1,6 @@
 # Django core imports
 from typing import Any
-from django.db.models import OuterRef,Exists
+from django.db.models import OuterRef,Exists,Sum
 from django.urls import reverse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import redirect
@@ -63,17 +63,21 @@ class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
         else:
             context['days'] =get_days(week)
         if(self.request.GET.get('date')):
+            total_lamera =get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))[1]
             context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=self.request.GET.get('date'))))
             context['metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))[1]
+            context['total_metals']= total_lamera
+            context['total_profit'] =Invoice.objects.filter(item__date__date=self.request.GET.get('date')).aggregate(total=Sum('net_profit'))
             context['current_date'] = timezone.datetime.strptime(self.request.GET.get('date'),"%Y-%m-%d")
-            context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'))
+            context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'),total_lamera)
         else:
+            total_lamera =get_count_of_lamera(Item.objects.filter(completed=True,date__date=get_days(week)[0]))[1]
             context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=get_days(week)[0])))
             context['metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=get_days(week)[0]))[0]
-            context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=get_days(week)[0]))[1]
+            context['total_metals']= total_lamera
+            context['total_profit'] =Invoice.objects.filter(item__date__date=get_days(week)[0]).aggregate(total=Sum('net_profit'))
             context['current_date'] =get_days(week)[0]
-            context['operational_cost'] = get_opertional_cost(get_days(week)[0])
+            context['operational_cost'] = get_opertional_cost(get_days(week)[0],total_lamera)
         return context
 
 class InvoicePrepView(ListView):

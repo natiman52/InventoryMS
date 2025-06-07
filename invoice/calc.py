@@ -15,19 +15,13 @@ def get_single_client_debt(invoices,client):
             else:
                 data += 1 * i.unit_price
     return data
-def get_each_clients_debt(item):
-    unique_count = []
-    for i in item:
-        for t in unique_count or [{}]:
-            if(not i.item.client.name== t.get('name')):
-                unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
-    return unique_count
 
 
 
 
-def get_opertional_cost(date):
+def get_opertional_cost(date,l=1):
     data = []
+    AMMOUNT = 0
     item = Bill.objects.filter(date__date=date,bill_type__in=[x[0] for x in bill_type])
     if(item.exists()):
         pass
@@ -35,6 +29,8 @@ def get_opertional_cost(date):
         return False
     for i in item:
         data.append({'name':i.bill_type,"amm":i.amount})
+        AMMOUNT += i.amount
+    data.append({'name':'total/lamera',"amm":round(AMMOUNT/l,2)})
     return data
 
 
@@ -45,6 +41,24 @@ def total_opertional_cost(costs):
         data += i.get('amm')
     return data
 
+def get_each_clients_debt(item):
+    unique_count = []
+    for i in item:
+        if(len(unique_count) > 0):
+            count = 0
+            test =False
+            for d in unique_count:
+                if not d['name'] == i.thickness.name:
+                    count += 1
+                if count == len(unique_count):
+                    test =True
+            if(test):
+                for t in unique_count:
+                    if(not i.item.client.name== t.get('name')):
+                        unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
+        else:
+            unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
+        return unique_count
 
 
 def get_count_of_lamera(item):
