@@ -206,6 +206,16 @@
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Finished Orders
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'invoiceprep' %}active{% endif %}" href="{% url 'invoiceprep' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Audit
+                </a>
+            </li>       
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'invoicelist' %}active{% endif %}" href="{% url 'invoicelist' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Audit History
+                </a>
+            </li>  
             {%if request.user.role == "GM"%}
             <li class="nav-item mb-2">
                 <a class="nav-link text-light {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}" href="{% url 'customer_list' %}">

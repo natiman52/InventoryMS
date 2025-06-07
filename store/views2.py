@@ -9,7 +9,7 @@ from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.db.models import Q
 import json
-from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
 # Authentication and permissions
 from asgiref.sync import async_to_sync
 import string
@@ -154,7 +154,7 @@ def operator_detail_view(request,id):
     context = {}
     obj = Item.objects.get(id=id)
     if(obj.verif_design !='A' and obj.verif_price !='A'):
-        return PermissionDenied()
+        return HttpResponseForbidden()
     if(obj.diminsions):
             context['diminsion'] = json.loads(obj.diminsions)
     context['item'] = obj

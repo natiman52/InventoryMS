@@ -38,5 +38,6 @@ urlpatterns = [
     ),
     path('client/<int:id>',ClientPaymentListCreate.as_view(),name="client_payment_list_create"),
     path('employee/<int:id>',EmployeePayroll.as_view(),name="payroll"),
-    path('daily_activity',daily_activity,name='daily')
+    path('daily_activity',daily_activity,name='daily'),
+    
 ]
