@@ -30,7 +30,8 @@ def get_opertional_cost(date,l=1):
     for i in item:
         data.append({'name':i.bill_type,"amm":i.amount})
         AMMOUNT += i.amount
-    data.append({'name':'total/lamera',"amm":round(AMMOUNT/l,2)})
+    data.append({'name':'total cost/day',"amm":round(AMMOUNT,2)})
+    data.append({'name':'operational cost/lamera',"amm":round(AMMOUNT/l,2)})
     return data
 
 
