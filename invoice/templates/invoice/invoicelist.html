@@ -118,9 +118,9 @@
                     <td>{{ invoice.item.thickness }}</td>
                     <td>{{ invoice.unit_price }}</td>
                     <td>{{ invoice.quantity }}</td>
-                    <td>{{ invoice.gross_revenue }}</td>
-                    <td>{{ invoice.gross_cost }}</td>
-                    <td>{{ invoice.opertional_cost }}</td>
+                    <td>{{ invoice.gross_revenue |rounded}}</td>
+                    <td>{{ invoice.gross_cost| rounded }}</td>
+                    <td>{{ invoice.opertional_cost| rounded }}</td>
 
                 </tr>
                 {% endfor %}
