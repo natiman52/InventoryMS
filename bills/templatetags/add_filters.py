@@ -62,8 +62,10 @@ def get_GET(value):
     elif("date" in value.get_full_path()):
         return f"&date={date}"
     return ""    
-
-
+@register.filter
+def get_GET2(val):
+    if("page" in val.get_full_path()):
+        return f"&page={val.GET.get("page")}"
 @register.filter
 def get_page(value):
     page = value.GET.get("page")
