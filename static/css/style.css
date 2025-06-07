@@ -233,7 +233,10 @@ a {
 .navbar .navbar-nav > li > a > i {
   font-size: 18px;
 }
-
+.l-bg-red-dark{
+  background: linear-gradient(to right, #500a0a, #ef3838) !important;
+  color: #fff;
+}
 .l-bg-green-dark {
   background: linear-gradient(to right, #0a504a, #38ef7d) !important;
   color: #fff;

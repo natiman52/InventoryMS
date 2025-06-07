@@ -11,10 +11,10 @@
         <div class="card shadow-sm rounded p-3">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h4 class="display-6 mb-0 text-primary">Finished Tasks</h4>
+                    <h4 class="display-6 mb-0 text-success">Finished Tasks</h4>
                 </div>
                 <div class="col-md-6 d-flex justify-content-end gap-2">
-                    <a class="btn btn-primary btn-sm rounded-pill shadow-sm" href="{% querystring '_export'='xlsx' %}">
+                    <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% querystring '_export'='xlsx' %}">
                         <i class="fa-solid fa-download"></i> Export to Excel
                     </a>
                 </div>
@@ -24,7 +24,7 @@
                 <i id="clearget" style="cursor: pointer;" class="d-flex align-items-center fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
                 {%endif%}
                 <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
-                <button class="btn btn-outline-primary rounded-pill shadow-sm" type="submit">
+                <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
                     <i class="fa-solid fa-search"></i>
                 </button>
             </form>
@@ -34,14 +34,21 @@
     <div class="px-4">
         <div>
             <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
-                <a href="{%url 'all_list'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'  %} active {%endif%}">All </a>
-                <a href="{%url 'operator-finished'%}?sort=1" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '1'%} active {%endif%}{%if test|date_week == 1 and not request.GET.sort%}active{%endif%}">Monday</a>
-                <a href="{%url 'operator-finished'%}?sort=2" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '2'%} active {%endif%}{%if test|date_week == 2 and not request.GET.sort %}active{%endif%}">Tuesday </a>
-                <a href="{%url 'operator-finished'%}?sort=3" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '3'%} active {%endif%}{%if test|date_week == 3 and not request.GET.sort %}active{%endif%}">Wedensday </a>
-                <a href="{%url 'operator-finished'%}?sort=4" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '4'%} active {%endif%}{%if test|date_week == 4 and not request.GET.sort %}active{%endif%}">Thursday </a>
-                <a href="{%url 'operator-finished'%}?sort=5" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '5'%} active {%endif%}{%if test|date_week == 5 and not request.GET.sort %}active{%endif%}">Friday </a>
-                <a href="{%url 'operator-finished'%}?sort=6" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == '6'%} active {%endif%}{%if test|date_week == 6 and not request.GET.sort %}active{%endif%}">Saturday</a>
-               </ul>
+                {%for i in weeks%}
+                
+                <a href="?month={{i.num}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.month == i.num|strf %} active {%endif%} {%if i.num == 1 and not request.GET.month%}active{%endif%}">{{i.month}}</a>
+                {%endfor%}
+            </ul>
+            <ul id="week_day" class="pb-2 list-group list-group-horizontal w-75  gap-2">
+                {%for ii in week|myrange%}
+                <a href="?week={{ii.weekno}}&{{request|get_GET_week}}"  class="list-group-item list-group-item-action py-2 rounded-small {% if  ii.weekno == request.GET.week %} active {%endif%} {%if forloop.counter == 1  and not request.GET.week %}active{%endif%}">{{ii.dates}}</a>
+                {%endfor%}
+            </ul>
+            <ul id="days" class="pb-2 list-group list-group-horizontal w-25  gap-2">
+                {%for day in days%}
+                <a href="?date={{day|date:'Y-m-d'}}&{{request|get_GET_day}}"  class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.date == day|date:'Y-m-d' %} active {%endif%}{%if forloop.counter == 1 and not request.GET.date %}active{%endif%}">{{day|date:'D'}}</a>
+                {%endfor%}
+            </ul>
         </div>
         <table class="table table-bordered table-striped table-hover table-sm">
             <thead class="thead-light">
@@ -91,7 +98,7 @@
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_GET}}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
@@ -109,13 +116,13 @@
             </li>
             {% else %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+                <a class="page-link" href="?page={{ i }}{{request | get_GET}}">{{ i }}</a>
             </li>
             {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_GET}}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
@@ -130,4 +137,7 @@
     </nav>
     {% endif %}
 </div>
+<script>
+
+</script>
 {% endblock content %}

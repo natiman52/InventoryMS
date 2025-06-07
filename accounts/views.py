@@ -23,7 +23,7 @@ from django.views.generic import (
 # Local app imports
 from store.models import Item,UserPrint
 from bills.models import InventoryMaterial,FreeAssets
-from bills.algebra import get_total_paid_value,get_total_unpaid_value
+from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_total_order_value
 from .models import Customer, Supplier,OverTime,MyUser,Employee
 
 from .forms import (
@@ -189,10 +189,11 @@ class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
         obj = super(AccountCustomerOrderList,self).get_object()
         obje = Item.objects.filter(client=obj)
         total_unpaid = get_total_unpaid_value(obje)
+        total_order_value =get_total_order_value(obje)
         total_paid = get_total_paid_value(obje)
         total_value = total_paid + total_unpaid
-        free_assets = FreeAssets.objects.get(customer=obj)
-        return {"client":obj,"order_value":total_value,"unpaid":total_unpaid,"assets":free_assets,"paid":total_paid,"items":obje}
+        free_assets,created = FreeAssets.objects.get_or_create(customer=obj)
+        return {"client":obj,"order_value":total_value,"total_item_value":total_order_value,"unpaid":total_unpaid,"assets":free_assets,"paid":total_paid,"items":obje}
 
 def changepasswordtest(user):
     if(user.is_superuser):
@@ -290,7 +291,7 @@ class EmployeePayRollList(LoginRequiredMixin,UserPassesTestMixin,ListView):
     context_object_name ="employee"
     def test_func(self):
         """Check if the user has the required permissions."""
-        return self.request.user in MyUser.objects.all()
+        return True
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         for item in context['employee']:

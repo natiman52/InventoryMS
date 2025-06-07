@@ -1,3 +1,4 @@
+from typing import Iterable
 from django.db import models
 from autoslug import AutoSlugField
 from accounts.models import Supplier,MyUser,Employee,Customer
@@ -7,8 +8,8 @@ thickness_type = ((0.5,"0.5mm"),(0.6,"0.6mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
                  (1.0,"1.0mm"),(1.1,"1.1mm"),(1.2,"1.2mm"),(3.0,"3.0mm"),
                  (0.91,"0.9mm(oversize)"),(1.11,"1.1mm(oversize)"),(1.21,"1.2mm(oversize)"),
                  (1.01,"1.0mm(oversize)"),(1.81,"1.8mm(oversize)"),(2.51,"2.5mm(oversize)"),
-                 (1.41,"1.4mm(oversize)"))
-
+                 (1.41,"1.4mm(oversize)"),(5,'5mm'),(4,"4mm"),(0,"scrap"),(10.0,"self"))
+bill_type =(("Rent","Rent"),("Logistics","Logistics"),("PayRoll","PayRoll"),("Electric","Electric"),('Overtime','Overtime'))
 class Thickness(models.Model):
     name = models.FloatField(max_length=250,unique=True,choices=thickness_type)
     added =models.IntegerField()
@@ -66,8 +67,7 @@ class Bill(models.Model):
 
     slug = AutoSlugField(unique=True, populate_from='date')
     date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Date (e.g., 2022/11/22)'
+        default=timezone.now,
     )
     description = models.CharField(
         max_length=255,
@@ -75,6 +75,7 @@ class Bill(models.Model):
         null=True,
         help_text='What is the expense for'
     )
+    bill_type =models.CharField(max_length=255,blank=True,choices=bill_type) 
     amount = models.FloatField(
         verbose_name='Total Amount (Birr)',
         help_text='Total amount due for payment'
@@ -85,7 +86,18 @@ class Bill(models.Model):
         help_text='Payment status of the bill'
     )
 
+    def save(self,**kwargs):
+        if(self.bill_type == "Rent"):
+            if(not self.amount):
+                self.amount = 80000 / 26
+        if(self.bill_type == "Electric"):
+            if(not self.amount):
+                self.amount = 1000
+        if(self.bill_type == "Overtime"):
+            if(not self.amount):
+                self.amount = 500  
+        return super().save(**kwargs)
     def __str__(self):
-        return self.date
+        return self.date.strftime('%b %d %y')
 
 
