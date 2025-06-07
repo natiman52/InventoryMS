@@ -56,7 +56,7 @@ def get_each_clients_debt(item):
                 unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
         else:
             unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
-        return unique_count
+    return unique_count
 
 
 def get_count_of_lamera(item):
