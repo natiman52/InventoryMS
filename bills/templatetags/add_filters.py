@@ -130,4 +130,7 @@ def get_invoice(value):
     
 @register.filter
 def rounded(value):
-    return round(value,2)
+    if(value):
+        return round(value,2)
+    else:
+        return value
