@@ -11,6 +11,7 @@
                 {% csrf_token %}
                 <div class="d-flex justify-content-between">
                     <p style="font-size: 18px;">Thickness ({{item.thickness}})</p>
+                    <p style="font-size: 18px;">Quantity ({{item.quantity}})</p>
                     <span>
                         {{item.filename}}
                         <a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}"><i class="ms-2 fa-solid fa-download p-2 border-1 rounded-small"></i></a>
