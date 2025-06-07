@@ -48,14 +48,12 @@ def get_each_clients_debt(item):
             count = 0
             test =False
             for d in unique_count:
-                if not d['name'] == i.thickness.name:
+                if not d['name'] == i.item.client.name:
                     count += 1
                 if count == len(unique_count):
                     test =True
             if(test):
-                for t in unique_count:
-                    if(not i.item.client.name== t.get('name')):
-                        unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
+                unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
         else:
             unique_count.append({'name':i.item.client.name,'debt':get_single_client_debt(item,i.item.client)})
         return unique_count
