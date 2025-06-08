@@ -21,7 +21,7 @@ from .models import Invoice
 from .tables import InvoiceTable
 from store.models import Item
 from bills.algebra import get_months_with_their_weeks,get_days,get_yesterday,comparetoday
-from .calc import get_count_of_clients,get_count_of_lamera,get_opertional_cost,get_each_clients_debt
+from .calc import get_count_of_clients,get_count_of_lamera,get_opertional_cost,get_each_clients_debt,get_count_of_clients_debt
 from bills.models import Bill
 class InvoiceListView(LoginRequiredMixin, ExportMixin, SingleTableView):
     """
@@ -94,17 +94,17 @@ class InvoicePrepView(ListView):
     def get_context_data(self,**kwargs):
         context = super().get_context_data(**kwargs)
         date = get_yesterday()
-        context['clients'] =get_count_of_clients(self.get_queryset(**kwargs))
+        context['clients'] =get_count_of_clients_debt(self.get_queryset(**kwargs))
         if(self.request.GET.get('date')):
             context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=self.request.GET.get('date'))))
             context['metals'],context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=self.request.GET.get('date')))
             context['current_date'] =timezone.datetime.strptime(self.request.GET.get('date'),"%Y-%m-%d")
-            context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'))       
+            context['operational_cost'] = get_opertional_cost(self.request.GET.get('date'),context['total_metals'])       
         else:
             context['clients_count'] = len(get_count_of_clients(Item.objects.filter(completed=True,date__date=date)))
             context['metals'],context['total_metals']= get_count_of_lamera(Item.objects.filter(completed=True,date__date=date))
             context['current_date'] =date
-            context['operational_cost'] = get_opertional_cost(date)
+            context['operational_cost'] = get_opertional_cost(date,context['total_metals'])
         return context
 
 class InvoiceDetailView(DetailView):
