@@ -3,10 +3,11 @@ from django_extensions.db.fields import AutoSlugField
 from store.models import Item
 from django.utils import timezone
 from .calc import get_opertional_cost,total_opertional_cost,get_count_of_lamera
+from accounts.time import timechecker
 class Invoice(models.Model):
 
     slug = AutoSlugField(unique=True, populate_from='date')
-    date = models.DateTimeField(default=timezone.now,verbose_name='Date (e.g., 2022/11/22)')
+    date = models.DateTimeField(default=timechecker,verbose_name='Date (e.g., 2022/11/22)')
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     sheet_metal_cost =models.IntegerField()
     dimensions =models.CharField(max_length=255,blank=True)
