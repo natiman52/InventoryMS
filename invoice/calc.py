@@ -72,7 +72,8 @@ def get_opertional_cost(date,l=1):
 def total_opertional_cost(costs):
     data = 0
     for i in costs:
-        data += i.get('amm')
+        if(i.get('name') != "total cost/day" and i.get('name') != "operational cost/lamera"):
+            data += i.get('amm')
     return data
 
 def get_each_clients_debt(item):
