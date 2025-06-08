@@ -18,9 +18,9 @@ from accounts.models import Customer,MyUser
 from bills.models import Thickness
 import os
 from django.utils import timezone
-
+from accounts.time import timechecker,datechecker
 class DxfFile(models.Model):
-    date=models.DateField(default=timezone.datetime.now)
+    date=models.DateField(default=datechecker)
     dxf_file = models.FileField(upload_to="manual/dxf")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     def __str__(self):
@@ -32,7 +32,7 @@ class DxfFile(models.Model):
         
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
-    date=models.DateField(default=timezone.datetime.today)
+    date=models.DateField(default=datechecker)
     image = models.FileField(upload_to="manual/image")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
 
@@ -62,7 +62,7 @@ def uploadDXFTo(instance,model):
 class DXFOrder(models.Model):
     quantity = models.IntegerField(default=1)
     dxf_file = models.FileField(upload_to="manual/dxf")
-    date = models.DateTimeField(default=timezone.datetime.now)
+    date = models.DateTimeField(default=timechecker)
 
 class Item(models.Model):
     """
@@ -86,7 +86,7 @@ class Item(models.Model):
     verif_design = models.CharField(max_length=256,choices=(("P","pending"),('A',"Accepted"),("D","Declined"),('W',"Waiting")),default="W")
     price=models.IntegerField(blank=True,null=True) 
     dxf_file = models.FileField('dxf',upload_to=uploadDXFTo,blank=True,null=True)
-    date = models.DateTimeField(default=timezone.now)
+    date = models.DateTimeField(default=timechecker)
     completed = models.BooleanField(default=False)
     start = models.DateTimeField(blank=True,null=True)
     finish = models.DateTimeField(blank=True,null=True)
@@ -122,7 +122,7 @@ class Item(models.Model):
 class UserPrint(models.Model):
     item = models.ForeignKey(Item,on_delete=models.CASCADE)
     user = models.ForeignKey(MyUser,on_delete=models.CASCADE)
-    date = models.DateTimeField(default=timezone.datetime.now)
+    date = models.DateTimeField(default=timechecker)
     comment = models.CharField(max_length=256)
 
 class Delivery(models.Model):
@@ -132,7 +132,7 @@ class Delivery(models.Model):
     user = models.ForeignKey(MyUser,null=True,on_delete=models.SET_NULL)
     item = models.ForeignKey(Item, blank=True, null=True, on_delete=models.SET_NULL)
     customer = models.ForeignKey(Customer,blank=True, null=True,on_delete=models.SET_NULL)
-    date = models.DateTimeField(default=timezone.datetime.now)
+    date = models.DateTimeField(default=timechecker)
     is_delivered = models.BooleanField(default=False, verbose_name='Is Delivered')
 
     def __str__(self):

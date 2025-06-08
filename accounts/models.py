@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django_extensions.db.fields import AutoSlugField
-
+from .time import datechecker,timechecker
  
 # Define choices for profile status and roles
 STATUS_CHOICES = [
@@ -53,13 +53,13 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(username, password, **extra_fields)
 
 class OverTime(models.Model):
-    date =models.DateField(default=timezone.datetime.today)
+    date =models.DateField(default=datechecker)
     ammount =models.ManyToManyField("store.Item") 
     paid = models.BooleanField(default=False) 
     def __str__(self):
         return f"{self.date}"
 class OverTimeConnect(models.Model):
-    date =models.DateField(default=timezone.datetime.today)
+    date =models.DateField(default=datechecker)
     myuser = models.ForeignKey('accounts.MyUser',on_delete=models.CASCADE)
     overtime =models.ForeignKey('accounts.OverTime',on_delete=models.CASCADE)
 
@@ -72,7 +72,7 @@ class MyUser(AbstractUser):
         verbose_name='Role'
     )
     overtime = models.ManyToManyField(OverTime,through=OverTimeConnect)
-    last_login = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(default=timechecker)
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
     objects = CustomUserManager()

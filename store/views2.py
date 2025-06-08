@@ -1,6 +1,7 @@
 
 from django.forms import formset_factory
 from .models import  Item ,UserPrint
+from accounts.time import datechecker,timechecker
 from accounts.models import OverTimeConnect,OverTime
 from bills.models import Thickness
 from django.utils import timezone
@@ -160,24 +161,24 @@ def operator_detail_view(request,id):
     context['item'] = obj
     if request.method == "POST":
         if(request.POST.get('start')):
-            obj.start = timezone.now()
+            obj.start = timechecker()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_started_task")
             obj.thickness.removed += obj.quantity 
             obj.save()
             obj.thickness.save()
         if(request.POST.get('finish')):
-            now =timezone.datetime.now()
+            now =timechecker()
             time12 =now.replace(hour=18,minute=0,second=0)
             time6 =now.replace(hour=7,minute=50,second=0)
             if(now > time12 or now < time6):
-                connect =OverTimeConnect.objects.filter(myuser=request.user,date=timezone.datetime.today()).first()
+                connect =OverTimeConnect.objects.filter(myuser=request.user,date=datechecker()).first()
                 if(not connect):
-                    connect = OverTimeConnect.objects.create(myuser=request.user,overtime=OverTime.objects.create(),date=timezone.datetime.today())
+                    connect = OverTimeConnect.objects.create(myuser=request.user,overtime=OverTime.objects.create(),date=datechecker())
                 connect.overtime.ammount.add(obj)
                 connect.overtime.save() 
                 request.user.save()
             obj.completed = True
-            obj.finish = timezone.now()
+            obj.finish = timechecker()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_finished_task")
             obj.save()  
             return redirect(reverse("operator-finished"))
