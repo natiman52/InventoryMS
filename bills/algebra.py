@@ -4,14 +4,13 @@ from datetime import timedelta
 import calendar
 import datetime
 def clean_tab(items,cash):
-    result = cash
     for i in items:
         if(i.price):
-            if(result >= i.price):
-                result -= i.price
+            if(cash >= i.price):
+                cash -= i.price
                 i.paid = True
                 i.save()
-    return result
+    return cash
 
 def get_total_order_value(customer):
     result = 0
@@ -44,7 +43,7 @@ def get_all_expense():
     return [unpaid_bills,paid_bills]
 
 def get_total_salary_paid():
-    pay =0
+    pay = 0
     for i in SaleryPayment.objects.filter(date__year=timezone.now().year):
         pay += i.total
     return pay

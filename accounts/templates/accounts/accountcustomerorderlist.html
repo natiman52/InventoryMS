@@ -139,7 +139,7 @@
             <tbody>
                 {% for item in obj.items %}
                 <tr>
-                    <th class="nav-item" scope="row"><a class="nav-link text-primary ps-3" href="{%url 'account-order' id=item.id %}">{{ item.id }}</a></th>
+                    <th class="nav-item" scope="row"><a class="nav-link text-primary ps-3" href="{%url 'account-item' id=item.id %}">{{ item.id }}</a></th>
                     <td>{{ item.client }}</td>
                     <td>{{ item.thickness }}</td>
                     <td>{%if not item.price  %} - {%else%} {{item.price}} {%endif%}</td>

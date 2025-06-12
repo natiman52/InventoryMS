@@ -138,9 +138,9 @@ class OperatorFinishedList(LoginRequiredMixin, ExportMixin , tables.SingleTableV
         my_range=get_date_specfic(timezone.now().isoweekday())
         if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
             my_range=get_date_specfic(int(self.request.GET.get('sort')))
-        obje = obje.filter(date__range=my_range)
+        obje = obje.filter(finish__date__range=my_range)
         if(self.request.GET.get('q')):
-            obje = obje.filter(Q(completed=True,id__contains=self.request.GET.get('q'),date__range=my_range) | Q(completed=True,client__name__contains=self.request.GET.get('q'),date__range=my_range))
+            obje = obje.filter(Q(completed=True,id__contains=self.request.GET.get('q'),finish__date__range=my_range) | Q(completed=True,client__name__contains=self.request.GET.get('q'),finish__date__range=my_range))
         elif(self.request.GET.get("sort") == 'all'):
             obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
         return obje
