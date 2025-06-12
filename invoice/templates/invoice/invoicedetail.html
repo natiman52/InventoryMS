@@ -12,7 +12,7 @@
 
 <div class="container invoice-receipt p-5">
   <div class="d-flex align-items-end justify-content-between">
-    <h1><a href="{% url 'account-order' obj.item.id %}">{{obj.item.id}}</a> <small><sub>({{obj.item.client}})</sub></small></h1>
+    <h1><a href="{% url 'account-item' obj.item.id %}">{{obj.item.id}}</a> <small><sub>({{obj.item.client}})</sub></small></h1>
     <div class="d-flex gap-10 align-items-end">
       <p style="font-style: italic;">Net Profit</p>
       <p class="fw-bold ">{{obj.net_profit}} birr</p>

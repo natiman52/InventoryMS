@@ -1,11 +1,9 @@
-from typing import Any
 from django import forms
 from store.models import Item
 from .models import MyUser, Customer, Supplier,Employee
 
 
 class CreateUserForm(forms.ModelForm):
-    """Form for creating a new user with an email field."""
     username = forms.CharField(max_length=256)
     password1 = forms.CharField(label='password',widget=forms.PasswordInput)
     password2 = forms.CharField(label='confirm Password',widget=forms.PasswordInput)
@@ -87,18 +85,6 @@ class CreateEmployeeForm(forms.ModelForm):
         model = Employee
         fields = ['account','name','position',"salary","phone"]
 class SupplierForm(forms.ModelForm):
-    """Form for creating/updating vendor information."""
     class Meta:
         model = Supplier
         fields = ['name', 'phone_number', 'address']
-        widgets = {
-            'name': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'Vendor Name'}
-            ),
-            'phone_number': forms.NumberInput(
-                attrs={'class': 'form-control', 'placeholder': 'Phone Number'}
-            ),
-            'address': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'Address'}
-            ),
-        }

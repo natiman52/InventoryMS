@@ -5,18 +5,16 @@ from .models import Bill,InventoryMaterial,SingleMaterial,InventoryPayment,Thick
 @admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):
     """Admin interface for managing Bill instances."""
-    list_display = (
-        'date',
-        'description',
-        'amount',
-        'status'
-    )
+    list_display = ('date','description','amount','status')
+
 @admin.register(ClientPayment)
 class CPadmin(admin.ModelAdmin):
     list_display = ('customer',)
+
 @admin.register(FreeAssets)
 class FAadmin(admin.ModelAdmin):
     list_display = ('customer',"ammount")
+
 @admin.register(InventoryMaterial)
 class IBAdmin(admin.ModelAdmin):
     list_display = ('supplier',"user")

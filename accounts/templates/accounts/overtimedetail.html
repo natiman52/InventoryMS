@@ -26,7 +26,7 @@
                     {%if request.user.role == "OP" %}
                     <div class="d-flex align-items-center"><a class="text-decoration-none" href="{%url 'operator-detail' id=item.id %}"><p class="fw-semibold mb-2 lead">{{item.id}}</p></a>&ThinSpace;(<span style="font-size: 14px;"><small>{{overtime.myuser_set.first}}</small></span>)</div>
                     {%elif request.user.role == "AT" %}
-                    <div class="d-flex align-items-center"><a class="text-decoration-none" href="{%url 'account-order' id=item.id %}"><p class="fw-semibold mb-2 lead">{{item.id}}</p></a>&ThinSpace;(<span><small>{{overtime.myuser_set.first}}</small></span>)</div>
+                    <div class="d-flex align-items-center"><a class="text-decoration-none" href="{%url 'account-item' id=item.id %}"><p class="fw-semibold mb-2 lead">{{item.id}}</p></a>&ThinSpace;(<span><small>{{overtime.myuser_set.first}}</small></span>)</div>
                     {%endif%}
                     <p class="">({{item.quantity}}) lamera</p>
                     <div class="d-flex justify-content-between">

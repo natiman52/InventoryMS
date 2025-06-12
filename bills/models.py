@@ -3,6 +3,7 @@ from django.db import models
 from autoslug import AutoSlugField
 from accounts.models import Supplier,MyUser,Employee,Customer
 from django.utils import timezone
+from accounts.time import datechecker,timechecker
 thickness_type = ((0.5,"0.5mm"),(0.6,"0.6mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
                  (0.9,"0.9mm"),(1.4,"1.4mm"),(1.8,"1.8mm"),(2.5,"2.5mm"),
                  (1.0,"1.0mm"),(1.1,"1.1mm"),(1.2,"1.2mm"),(3.0,"3.0mm"),
@@ -36,7 +37,7 @@ class InventoryMaterial(models.Model):
     payment_method = models.CharField(max_length=256,choices=(("credit",'credit'),('cash','cash')))
     advance = models.IntegerField(null=True,blank=True)
     leftover =models.IntegerField(null=True,blank=True)
-    date = models.DateTimeField(default=timezone.datetime.now)
+    date = models.DateTimeField(default=timechecker)
     class Meta:
         get_latest_by = 'date'
         ordering = ["-date"]
@@ -44,7 +45,7 @@ class InventoryPayment(models.Model):
     user = models.ForeignKey(MyUser,on_delete=models.SET_NULL,null=True)
     inventory = models.ForeignKey(InventoryMaterial,on_delete=models.CASCADE)
     amount = models.IntegerField()
-    date = models.DateField(default=timezone.datetime.today)
+    date = models.DateField(default=datechecker)
 class SaleryPayment(models.Model):
     date =models.DateField(auto_now_add=True)
     employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
@@ -67,7 +68,7 @@ class Bill(models.Model):
 
     slug = AutoSlugField(unique=True, populate_from='date')
     date = models.DateTimeField(
-        default=timezone.now,
+        default=timechecker,
     )
     description = models.CharField(
         max_length=255,
