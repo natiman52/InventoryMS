@@ -35,12 +35,6 @@ from asgiref.sync import async_to_sync
 
 
 def register(request):
-    """
-    Handle user registration.
-    If the request is POST, process the form data to create a new user.
-    Redirect to the login page on successful registration.
-    For GET requests, render the registration form.
-    """
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
@@ -53,16 +47,8 @@ def register(request):
 
 @login_required
 def profile(request):
-    """
-    Render the user profile page.
-    Requires user to be logged in.
-    """
-    return render(request, 'accounts/profile.html')
-
-
-
-
-
+    user =request.user
+    return render(request, 'accounts/profile.html',{"user":user})
 
 
 class CustomerListView(LoginRequiredMixin, ListView):
@@ -82,11 +68,6 @@ class CustomerListView(LoginRequiredMixin, ListView):
 
 
 class SupplierSellsListView(LoginRequiredMixin, ListView):
-    """
-    View for listing all customers.
-
-    Requires the user to be logged in. Displays a list of all Customer objects.
-    """
     model = Supplier
     template_name = 'accounts/vendorsells.html'
     paginate_by = 10
@@ -97,13 +78,7 @@ class SupplierSellsListView(LoginRequiredMixin, ListView):
 
 
 class CustomerCreateView(LoginRequiredMixin, CreateView):
-    """
-    View for creating a new customer.
 
-    Requires the user to be logged in.
-    Provides a form for creating a new Customer object.
-    On successful form submission, redirects to the customer list.
-    """
     model = Customer
     template_name = 'accounts/customer_form.html'
     form_class = CustomerForm
@@ -111,13 +86,7 @@ class CustomerCreateView(LoginRequiredMixin, CreateView):
 
 
 class CustomerUpdateView(LoginRequiredMixin, UpdateView):
-    """
-    View for updating an existing customer.
 
-    Requires the user to be logged in.
-    Provides a form for editing an existing Customer object.
-    On successful form submission, redirects to the customer list.
-    """
     model = Customer
     template_name = 'accounts/customer_form.html'
     form_class = CustomerForm
@@ -125,18 +94,12 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class CustomerDeleteView(LoginRequiredMixin, DeleteView):
-    """
-    View for deleting a customer.
-
-    Requires the user to be logged in.
-    Displays a confirmation page for deleting an existing Customer object.
-    On confirmation, deletes the object and redirects to the customer list.
-    """
+ 
     model = Customer
     template_name = 'accounts/customer_confirm_delete.html'
     success_url = reverse_lazy('customer_list')
 
-##Account Views
+## Account Views
     
 class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
     model = Item
@@ -171,15 +134,14 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
 class AccountOrderList(ListView):
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
-    def get_queryset(self):
-        obje = Item.objects.filter(verif_price="P")
-        return obje
+    queryset =Item.objects.filter(verif_price="P")
+
+
 class AccountOrderListFinished(ListView):
+    queryset =Item.objects.filter(completed=True)
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
-    def get_queryset(self):
-        obje =Item.objects.filter(completed=True)
-        return obje
+
 class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
     model = Customer
     context_object_name = 'obj'
@@ -200,6 +162,7 @@ def changepasswordtest(user):
         return True
     else:
         return False
+
 @login_required
 @user_passes_test(changepasswordtest)
 def changepassword(request):
@@ -211,10 +174,12 @@ def changepassword(request):
             password = form.cleaned_data.get("password1")
             user.set_password(password)
             user.save()
-            return redirect(reverse('user-changepassword'))
+            return redirect(reverse('changepassword'))
         return render(request,'accounts/changepassword.html',{'form':form})
     return render(request,'accounts/changepassword.html',{'form':form})
+
 ## End of Account views
+
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
@@ -280,18 +245,16 @@ class OverTimeDisplayView(LoginRequiredMixin,ListView):
         if(self.request.GET.get('date')):
             obje =self.request.user.overtime.filter(date=self.request.GET.get('date'))
         return obje
+
 class OverTimeDetailView(LoginRequiredMixin,DetailView):
     model=OverTime
     template_name="accounts/overtimedetail.html"
     context_object_name = 'overtime'
     pk_url_kwarg = 'id'
-class EmployeePayRollList(LoginRequiredMixin,UserPassesTestMixin,ListView):
+class EmployeePayRollList(LoginRequiredMixin,ListView):
     model= Employee
     template_name = "accounts/stafflist.html"
     context_object_name ="employee"
-    def test_func(self):
-        """Check if the user has the required permissions."""
-        return True
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         for item in context['employee']:
