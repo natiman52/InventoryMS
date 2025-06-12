@@ -195,7 +195,7 @@ class ClientPaymentListCreate(LoginRequiredMixin,UserPassesTestMixin,CreateView)
     paginate_by = 20
     form_class = CreateClientPayment
     def get_success_url(self):
-         return reverse("client_payment_list_create",kwargs={"id":self.kwargs.get('id')})
+         return reverse("account-customer-order",kwargs={"id":self.kwargs.get('id')})
     def test_func(self):
         return True
     def get_context_data(self, **kwargs):

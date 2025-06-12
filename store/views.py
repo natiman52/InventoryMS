@@ -130,9 +130,9 @@ class AllList(ListView):
             day =get_days(week)[0]
         items = Item.objects.filter(completed=True)
         if(self.request.GET.get('date')):
-            items =items.filter(date__date=self.request.GET.get('date'))
+            items =items.filter(finish__date=self.request.GET.get('date'))
         else:
-            items = items.filter(date__date=day)
+            items = items.filter(finish__date=day)
         return items
     def get_context_data(self,**kwargs):
         context = super().get_context_data(**kwargs)

@@ -197,12 +197,12 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a class="nav-link text-light {% if request.resolver_match.url_name == 'account-order-list' %}active{% endif %}" href="{% url 'account-order-list' %}">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'account-item-list' %}active{% endif %}" href="{% url 'account-item-list' %}">
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Pending Verification
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a class="nav-link text-light {% if request.resolver_match.url_name == 'account-order-finished' %}active{% endif %}" href="{% url 'account-order-finished' %}">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'account-item-finished' %}active{% endif %}" href="{% url 'account-item-finished' %}">
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Finished Orders
                 </a>
             </li>
