@@ -50,14 +50,14 @@ class Dashboard(LoginRequiredMixin,ListView):
             items = Item.objects.all()
             return items
         elif(self.request.user.role == "MR"):
-            items = Item.objects.filter(Q(verif_price='P',date__range=my_range) | Q(verif_design="P",date__range=my_range))
+            items = Item.objects.filter(Q(verif_price='P',date__date=date) | Q(verif_design="P",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
                 items = Item.objects.filter(Q(verif_price='P') | Q(verif_design="P"))
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
         elif(self.request.user.role == "DR"):
-            items = Item.objects.filter( Q(verif_design="W",date__range=my_range) | Q(verif_design="D",date__range=my_range))
+            items = Item.objects.filter( Q(verif_design="W",date__date=date) | Q(verif_design="D",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
                 items = Item.objects.filter(Q(verif_design="W") | Q(verif_design="D"))
             if(self.request.GET.get('q')):
@@ -65,7 +65,7 @@ class Dashboard(LoginRequiredMixin,ListView):
             return items
         elif(self.request.user.role == "AT" or self.request.user.role == "GM"):
             profiles = MyUser.objects.all()
-            items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+            items = Item.objects.filter(Q(verif_price="W",date__date=date,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
                 items = Item.objects.filter(Q(verif_price="W",verif_design="A") | Q(verif_design="A",verif_price="D"))
             if(self.request.GET.get('q')):
@@ -75,7 +75,7 @@ class Dashboard(LoginRequiredMixin,ListView):
             my_range=get_date_specfic(timezone.now().isoweekday())
             if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
                 my_range=get_date_specfic(int(self.request.GET.get('sort')))
-            items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+            items = Item.objects.filter(verif_price="A",date__date=date,verif_design="A",completed=False)
             if(self.request.GET.get("sort") == "all"):
                 items = Item.objects.filter(verif_price='A',verif_design="A",completed=False)
             if(self.request.GET.get('q')):
