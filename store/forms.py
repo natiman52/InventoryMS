@@ -1,7 +1,8 @@
+from typing import Any
 from django import forms
 from .models import Item, Category, Delivery,ImageFile,DxfFile,Thickness
 from django.forms import BaseFormSet
-
+from django.utils import timezone
 
 class MyFormSet(BaseFormSet):
     def my_custom_clean(self,item):
@@ -17,8 +18,11 @@ class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return "%s (%s)" %( obj.get_name_display(), obj.added - obj.removed)
 
+
+
 class ItemForm(forms.ModelForm):
     thickness =ModuleSelectorModelChoiceField(Thickness.objects.all(),widget=forms.Select(attrs={'class':"form-control mb-3"}))  
+    date = forms.DateTimeField(input_formats=['date'],widget=forms.DateInput(attrs={'type':'date'}))
     """
     A form for creating or updating an Item in the inventory.
     """
@@ -30,6 +34,7 @@ class ItemForm(forms.ModelForm):
             'priority',
             'quantity',
             'remark',
+            "date"
         ]
     def clean(self):
         thickness =self.cleaned_data.get('thickness')
