@@ -46,7 +46,7 @@ class CustomUserManager(BaseUserManager):
 
 class OverTime(models.Model):
     date =models.DateField(default=datechecker)
-    #ammount =models.ManyToManyField("store.Item") 
+    ammount =models.ManyToManyField("store.Item") 
     paid = models.BooleanField(default=False) 
     def __str__(self):
         return f"{self.date}"
