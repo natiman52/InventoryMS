@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-g_n2+2bznu6e@1wel!i(&-4tp86_7lop5395ww+i4x%9*7^old
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["104.207.130.24","nytmetalengineering.com"]
+ALLOWED_HOSTS = ["188.245.105.225","nytmetalengineering.com"]
 CSRF_TRUSTED_ORIGINS = ["https://nytmetalengineering.com"]
 WSGI_APPLICATION = 'InventoryMS.wsgi.application'
 ASGI_APPLICATION ="InventoryMS.asgi.application"
@@ -92,7 +92,7 @@ DATABASES = {
         'NAME': 'nytManagment',
         'USER': 'nyt',
         'PASSWORD': 'take2025',
-        'HOST':'104.207.130.24',
+        'HOST':'localhost',
         'PORT':'3306',
     }
 }
