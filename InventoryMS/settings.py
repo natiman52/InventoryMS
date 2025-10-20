@@ -16,6 +16,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["188.245.105.225","nytmetalengineering.com"]
 CSRF_TRUSTED_ORIGINS = ["https://nytmetalengineering.com"]
+CSRF_COOKIE_SECURE = False
 WSGI_APPLICATION = 'InventoryMS.wsgi.application'
 ASGI_APPLICATION ="InventoryMS.asgi.application"
 # Application definition
