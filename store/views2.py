@@ -202,6 +202,7 @@ def operator_detail_view(request,id):
 def createQuote(request):
     if(request.method == "POST"):
         objs = QuoteForm(data=request.POST)
+        absolute_url = request.build_absolute_uri('/')
         if(objs.is_valid()):
             email = objs.cleaned_data['email']
             phone = objs.cleaned_data['phone']
@@ -213,7 +214,7 @@ def createQuote(request):
                 
                 # Prepare email content
                 subject = 'Thank you for Contacting Us'
-                html_message = render_to_string('store/email/quote_confirmation.html')
+                html_message = render_to_string('store/email/quote_confirmation.html', {'home':absolute_url})
                 plain_message = strip_tags(html_message)
                 from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
                 to_email = [email]
@@ -247,9 +248,10 @@ def sendQuoteEmail(request, id):
         quote = Quote.objects.get(id=id)
         subject = request.POST.get('subject')
         message = request.POST.get('message')
+        absolute_url = request.build_absolute_uri('/')
         try:
             # Prepare email content
-            html_message = render_to_string('store/email/quote_response.html', {'message': message, 'subject': subject, 'request': request})
+            html_message = render_to_string('store/email/quote_response.html', {'message': message, 'subject': subject, 'request': request,'home':absolute_url})
             plain_message = strip_tags(html_message)
             from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
             to_email = [quote.email]
