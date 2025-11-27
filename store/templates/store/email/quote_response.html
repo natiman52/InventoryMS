@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>{{ subject }}</title>
     <style>
+    p{
+        margin: 20px 0;
+    }
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -29,10 +32,8 @@
             font-size: 24px;
         }
         .content {
-            padding: 20px 0;
             color: #555555;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Preserve line breaks in the message */
+            white-space:wrap; /* Preserve line breaks in the message */
         }
         .footer {
             text-align: center;
@@ -50,6 +51,14 @@
             border-radius: 5px;
             margin-top: 20px;
         }
+        .text-end{
+            text-align: end;
+        }
+        .message-body{
+            margin-bottom: 50px;
+            margin-top: 30px;
+
+        }
     </style>
 </head>
 <body>
@@ -59,16 +68,11 @@
         </div>
         <div class="content">
             <p>Dear Customer,</p>
-            
             <div class="message-body">
                 {{ message }}
             </div>
-
-            <br>
-            <p>Best regards,</p>
-            <p>The NahiMetal Team</p>
-            
-            <a href="{{ home }}" class="button">Visit Our Website</a>
+            <p class="text-end">Best regards,</p>
+            <p class="text-end">The NahiMetal Team</p>
         </div>
         <div class="footer">
             <p>&copy; 2024 NahiMetal Engineering PLC. All rights reserved.</p>
