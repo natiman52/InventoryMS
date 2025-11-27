@@ -28,13 +28,18 @@ from django_tables2.export.views import ExportMixin
 import json
 # Local app imports
 from accounts.models import MyUser, Supplier,Employee
-from .models import Category, Item, Delivery,ImageFile,DxfFile
+from .models import Category, Item, Delivery,ImageFile,DxfFile,Portfolio,Quote
 from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileForm
 from .tables import ItemTable
 from django.utils import timezone
 from store.signals import ChangeId
 from .filters import get_date_specfic
 from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_days,get_all_expense,get_total_salary_paid,get_material_cost,get_months_with_their_weeks
+
+def HomePage(request):
+    porto = Portfolio.objects.all().order_by('-date')
+    return render(request,'index.html',{'porto':porto})
+
 class Dashboard(LoginRequiredMixin,ListView):
     template_name = "store/dashboard.html"
     context_object_name = "items"
@@ -95,7 +100,6 @@ class Dashboard(LoginRequiredMixin,ListView):
             debt_material,free_material =get_material_cost()
             profit = total_order - (unpaid_expense + paid_expense) - get_total_salary_paid() - (debt_material + free_material)
             each_month_data=items.filter(completed=True).annotate(month=TruncMonth('finish')).values('month').annotate(sum=Sum('price')).order_by('-month')
-            print(each_month_data)
             profit_type = True
             if(profit < 0):
                 profit_type = False

@@ -8,6 +8,7 @@ backups/
 # C extensions
 *.so
 managmentVenv/
+test_email.py
 # Distribution / packaging
 .Python
 env/
