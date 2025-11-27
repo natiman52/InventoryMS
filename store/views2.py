@@ -28,6 +28,8 @@ from django.views.generic import  ListView
 from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet,QuoteForm
 from .filters import get_item_or_dxffile,get_date_specfic
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 def is_user_ad_or_mr(user):
     if user.role == "MR" or user.role == "AD" or user.role == "GM":
         return True
@@ -200,6 +202,7 @@ def operator_detail_view(request,id):
 def createQuote(request):
     if(request.method == "POST"):
         objs = QuoteForm(data=request.POST)
+        absolute_url = request.build_absolute_uri('/')
         if(objs.is_valid()):
             email = objs.cleaned_data['email']
             phone = objs.cleaned_data['phone']
@@ -208,11 +211,20 @@ def createQuote(request):
                 messages.error(request, "You have already requested a quote.")
             else:
                 objs.save()
+                
+                # Prepare email content
+                subject = 'Thank you for Contacting Us'
+                html_message = render_to_string('store/email/quote_confirmation.html', {'home':absolute_url})
+                plain_message = strip_tags(html_message)
+                from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
+                to_email = [email]
+
                 send_mail(
-                    'Thank you for your Contacting Us',
-                    'we will get back to you as soon as possible',
-                    'support@nahimetal.com',
-                    [email],
+                    subject,
+                    plain_message,
+                    from_email,
+                    to_email,
+                    html_message=html_message,
                     fail_silently=False,
                 )
                 messages.success(request,"Quote has been added")
@@ -236,12 +248,20 @@ def sendQuoteEmail(request, id):
         quote = Quote.objects.get(id=id)
         subject = request.POST.get('subject')
         message = request.POST.get('message')
+        absolute_url = request.build_absolute_uri('/')
         try:
+            # Prepare email content
+            html_message = render_to_string('store/email/quote_response.html', {'message': message, 'subject': subject, 'request': request,'home':absolute_url})
+            plain_message = strip_tags(html_message)
+            from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
+            to_email = [quote.email]
+
             send_mail(
                 subject,
-                message,
-                'support@nahimetal.com',
-                [quote.email],
+                plain_message,
+                from_email,
+                to_email,
+                html_message=html_message,
                 fail_silently=False,
             )
             messages.success(request, "Email sent successfully")
