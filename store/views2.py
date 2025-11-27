@@ -211,7 +211,7 @@ def createQuote(request):
                 send_mail(
                     'Thank you for your Contacting Us',
                     'we will get back to you as soon as possible',
-                    'support@nahimetal.com',
+                    'NahiMetal Engineering PLC <support@nahimetal.com>',
                     [email],
                     fail_silently=False,
                 )
@@ -240,7 +240,7 @@ def sendQuoteEmail(request, id):
             send_mail(
                 subject,
                 message,
-                'support@nahimetal.com',
+                'NahiMetal Engineering PLC <support@nahimetal.com>',
                 [quote.email],
                 fail_silently=False,
             )
