@@ -10,7 +10,15 @@ This module defines the following admin classes:
 """
 
 from django.contrib import admin
-from .models import Category, Item, Delivery,ImageFile,DxfFile,UserPrint
+from .models import Category, Item, Delivery,ImageFile,DxfFile,UserPrint,Quote,Portfolio
+
+@admin.decorators.register(Portfolio)
+class AdminPortfolio(admin.ModelAdmin):
+    list_display = ("img",)
+@admin.decorators.register(Quote)
+class QouteAdmin(admin.ModelAdmin):
+    list_display = ('name','email')
+
 
 @admin.decorators.register(ImageFile)
 class ImageFileAdmin(admin.ModelAdmin):

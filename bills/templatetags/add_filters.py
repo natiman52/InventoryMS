@@ -5,6 +5,13 @@ from bills.models import thickness_type
 from invoice.models import Invoice
 register = template.library.Library()
 
+
+@register.filter
+def filter_by_catagory(val,vla):
+    result =val.filter(catagory=vla)
+    if(result.exists()):
+        return result[:5]
+    return 0
 @register.filter
 def strf(value):
     return f"{value}"
