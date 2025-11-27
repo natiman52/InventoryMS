@@ -145,11 +145,15 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a class="nav-link text-light {% if request.path == '/order/OE' %}active{% endif %}" href="{% url 'order-type' type='OT' %}">
+                <a class="nav-link text-light {% if request.path == '/order/OT' %}active{% endif %}" href="{% url 'order-type' type='OT' %}">
                     <i class="fa fa-shopping-bag fa-fw me-2"></i> other
                 </a>
             </li>
-
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'qoute_list' %}active{% endif %}" href="{% url 'qoute_list' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Qoutes
+                </a>
+            </li>
         </ul>
         {% elif request.user.role == "DR"%}
         <ul class="nav flex-column mt-3">
@@ -225,6 +229,11 @@
             <li class="nav-item mb-2">
                 <a class="nav-link text-light {% if request.resolver_match.url_name == 'vendor-list' %}active{% endif %}" href="{% url 'vendor-list' %}">
                     <i class="fa fa-tachometer-alt fa-fw me-2"></i> Vendors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light {% if request.resolver_match.url_name == 'qoute_list' %}active{% endif %}" href="{% url 'qoute_list' %}">
+                    <i class="fa fa-tachometer-alt fa-fw me-2"></i> Qoutes
                 </a>
             </li>
             {%endif%}
