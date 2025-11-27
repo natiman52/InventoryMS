@@ -1,6 +1,5 @@
 
 from django.forms import formset_factory
-from .models import  Item ,UserPrint
 from accounts.time import datechecker,timechecker
 from accounts.models import OverTimeConnect,OverTime
 from bills.models import Thickness
@@ -10,10 +9,12 @@ from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.db.models import Q
 import json
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,HttpResponse
+from render_block import render_block_to_string
 # Authentication and permissions
 from asgiref.sync import async_to_sync
 import string
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -21,15 +22,28 @@ import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from .tables import ItemTableDesign
 from channels.layers import get_channel_layer
-# Class-based views
+# Internal Objects
+from .models import  Item ,UserPrint,Quote
 from django.views.generic import  ListView
-from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet
+from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet,QuoteForm
 from .filters import get_item_or_dxffile,get_date_specfic
+from django.core.mail import send_mail
+def is_user_ad_or_mr(user):
+    if user.role == "MR" or user.role == "AD" or user.role == "GM":
+        return True
+    else:
+        return False    
 def test_func_design_view(user):
         if user.role == "DR" or user.role == "AD":
             return True
         else:
             return False
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def showQoutes(request):
+    qoutes = Quote.objects.all().order_by('-date')
+    return render(request,"qoutes.html",{"items":qoutes})
 @login_required
 @user_passes_test(test_func_design_view)
 def design_detail_view(request,id):
@@ -85,8 +99,6 @@ def design_detail_view(request,id):
                                 item2.save()
                             return redirect(reverse('designer-order',kwargs={"id":item.id}))
                         else:
-                            print(formset.errors)
-                            print(form)
                             context['errors'] = {'main':'please correct your errors'}
                             return render(request,"store/designdetail.html",context)                            
                     else:
@@ -184,3 +196,58 @@ def operator_detail_view(request,id):
             return redirect(reverse("operator-finished"))
     return render(request,"store/operator/operatordetail.html",context)
 
+
+def createQuote(request):
+    if(request.method == "POST"):
+        objs = QuoteForm(data=request.POST)
+        if(objs.is_valid()):
+            email = objs.cleaned_data['email']
+            phone = objs.cleaned_data['phone']
+
+            if Quote.objects.filter(Q(email=email) | Q(phone=phone)).exists():
+                messages.error(request, "You have already requested a quote.")
+            else:
+                objs.save()
+                send_mail(
+                    'Thank you for your Contacting Us',
+                    'we will get back to you as soon as possible',
+                    'support@nahimetal.com',
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request,"Quote has been added")
+        else:
+            messages.error(request,"something went wrong")
+        html = render_block_to_string('index.html',"quoted",request=request)
+        response = HttpResponse(html)
+        return response
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def deleteQuote(request,id):
+    quote = Quote.objects.get(id=id)
+    quote.delete()
+    return redirect("qoute_list")
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def sendQuoteEmail(request, id):
+    if request.method == "POST":
+        quote = Quote.objects.get(id=id)
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        try:
+            send_mail(
+                subject,
+                message,
+                'support@nahimetal.com',
+                [quote.email],
+                fail_silently=False,
+            )
+            messages.success(request, "Email sent successfully")
+        except Exception as e:
+            print(e)
+            messages.error(request, f"Failed to send email: {e}")
+    return redirect("qoute_list")
+        
+        

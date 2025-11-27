@@ -1,8 +1,12 @@
 from django import forms
-from .models import Item, Category, Delivery,ImageFile,DxfFile,Thickness
+from .models import Item, Category, Delivery,ImageFile,DxfFile,Thickness,Quote
 from django.forms import BaseFormSet
 
 
+class QuoteForm(forms.ModelForm):
+    class Meta:
+        model = Quote
+        fields = '__all__'
 class MyFormSet(BaseFormSet):
     def my_custom_clean(self,item):
         for form in self.forms:

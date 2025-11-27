@@ -19,6 +19,17 @@ from bills.models import Thickness
 import os
 from django.utils import timezone
 from accounts.time import timechecker,datechecker
+
+class Quote(models.Model):
+    name = models.CharField(max_length=225)
+    email = models.EmailField()
+    request = models.TextField()
+    phone = models.IntegerField()
+    date = models.DateTimeField(blank=True,default=timezone.now)
+class Portfolio(models.Model):
+    img = models.ImageField(upload_to="porfolio")
+    date = models.DateTimeField(default=timezone.now)
+    catagory = models.CharField(max_length=255,default="Creative Signage")
 class DxfFile(models.Model):
     date=models.DateField(default=datechecker)
     dxf_file = models.FileField(upload_to="manual/dxf")
