@@ -12,6 +12,7 @@ test_email.py
 # Distribution / packaging
 .Python
 env/
+.env
 venv/
 __pycache__/
 build/
