@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = ["https://nytmetalengineering.com"]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_COOKIE_SECURE = False
 WSGI_APPLICATION = 'InventoryMS.wsgi.application'
 ASGI_APPLICATION ="InventoryMS.asgi.application"
@@ -143,7 +143,8 @@ LOGOUT_URL = 'logout'
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,'static')
 ]
 STATIC_ROOT = os.getenv('STATIC_ROOT', os.path.join(BASE_DIR, 'staticroot'))
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
