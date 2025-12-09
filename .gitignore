@@ -13,6 +13,7 @@ staticroot/
 # Distribution / packaging
 .Python
 env/
+.env
 venv/
 __pycache__/
 build/

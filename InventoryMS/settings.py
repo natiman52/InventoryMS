@@ -1,5 +1,8 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,13 +12,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g_n2+2bznu6e@1wel!i(&-4tp86_7lop5395ww+i4x%9*7^old'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ["188.245.105.225","nytmetalengineering.com"]
-CSRF_TRUSTED_ORIGINS = ["https://nytmetalengineering.com"]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_COOKIE_SECURE = False
 WSGI_APPLICATION = 'InventoryMS.wsgi.application'
 ASGI_APPLICATION ="InventoryMS.asgi.application"
@@ -89,12 +92,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nytManagment',
-        'USER': 'nyt',
-        'PASSWORD': 'take2025',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
 
@@ -140,10 +143,11 @@ LOGOUT_URL = 'logout'
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,'static')
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticroot')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.getenv('STATIC_ROOT', os.path.join(BASE_DIR, 'staticroot'))
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 MEDIA_URL = '/media/'
 
 # Default primary key field type
@@ -158,6 +162,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = False
