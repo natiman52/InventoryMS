@@ -53,6 +53,8 @@ def get_single_client_debt(invoices,client):
 
 
 def get_opertional_cost(date,l=1):
+    if(l == 0):
+        l = 1
     data = []
     AMMOUNT = 0
     item = Bill.objects.filter(date__date=date,bill_type__in=[x[0] for x in bill_type])
