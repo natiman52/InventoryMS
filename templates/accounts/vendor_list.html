@@ -1,0 +1,54 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="container my-4">
+    <div class="card shadow-sm rounded p-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Vendors</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end gap-2">
+                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'vendor-create' %}">
+                    <i class="fa-solid fa-plus"></i> Add Vendor
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container px-3">
+    <style>
+        .table th, .table td {
+            text-align: center;
+        }
+    </style>
+    <table class="table table-bordered table-striped">
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor.id }}</td>
+                <td><a href="{% url 'supplies-sells' id=vendor.id %}">{{ vendor.name }} </a></td>
+                <td>{{ vendor.phone_number }}</td>
+                <td>{{ vendor.address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination controls -->
+     {%if is_paginated%}
+        {%include 'content/paginator.html' %}
+    {%endif%}
+
+</div>
+{% endblock %}

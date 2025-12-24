@@ -1,0 +1,53 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="container my-4">
+    <div class="card shadow-sm rounded p-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Categories</h4>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end gap-2">
+                <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'category-create' %}">
+                    <i class="fa-solid fa-plus"></i> Add Category
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container px-3">
+    <style>
+        .table th, .table td {
+            text-align: center;
+        }
+    </style>
+    <table class="table table-sm table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in page_obj %}
+            <tr>
+                <td>{{ category.pk }}</td>
+                <td>{{ category.name }}</td>
+                <td>
+                    <a href="{% url 'category-detail' category.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-info-circle me-2"></i> View Details
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-center mt-4">
+        {%if is_paginated %}
+        {%include 'content/paginator.html' %}
+        {%endif%}
+    </div>
+</div>
+{% endblock %}

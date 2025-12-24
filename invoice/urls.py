@@ -11,7 +11,7 @@ from .views import (
     InvoiceUpdateView,
     InvoiceDeleteView,
     InvoicePrepView,
-    create_operation_cost,
+    create_update_operation_cost,
 )
 
 # URL patterns
@@ -22,10 +22,10 @@ urlpatterns = [
         InvoiceListView.as_view(),
         name='invoicelist'
     ),
-    path('create_operation',create_operation_cost,name='create_operation_cost'),
+    path('create_operation',create_update_operation_cost,name='create_update_operation_cost'),
     path("prep-audit/",InvoicePrepView.as_view(),name="invoiceprep"),
     path(
-        'audit/<int:id>/',
+        'audit/<slug:slug>/',
         InvoiceDetailView.as_view(),
         name='invoice-detail'
     ),
@@ -40,7 +40,7 @@ urlpatterns = [
         name='invoice-update'
     ),
     path(
-        'audit/<int:pk>/delete/',
+        'audit/<slug:slug>/delete/',
         InvoiceDeleteView.as_view(),
         name='invoice-delete'
     ),

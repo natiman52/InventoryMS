@@ -135,6 +135,7 @@ class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView
 class DesignerOrderListFinished(ListView):
     context_object_name = "items"
     template_name = 'store/designerorderlist.html'
+    paginate_by = 30
     def get_queryset(self):
         objects = Item.objects.filter(verif_design="A")
         return objects
