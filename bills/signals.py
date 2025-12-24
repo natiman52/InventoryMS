@@ -1,7 +1,9 @@
 from django.db.models.signals import post_save,pre_save
 from django.dispatch import receiver
-from .models import InventoryMaterial
+from .models import InventoryMaterial,ClientPayment,FreeAssets
+from .algebra import clean_tab
 from django.utils import timezone
+from store.models import Item
 
 
 @receiver(pre_save,sender=InventoryMaterial)
@@ -27,3 +29,14 @@ def ChangeId(sender,instance,**kwargs):
                  last_no = "01"
             client = f"{instance.supplier.name[0] + instance.supplier.name[1]}".upper()
             instance.id = "MR" + str(month).upper() + str(day) + f'{client}{last_no}'
+
+
+@receiver(post_save,sender=ClientPayment)
+def cleanClientTab(sender,instance,created,**kwargs):
+     assets = FreeAssets.objects.get_or_create(customer=instance.customer)[0]
+     if created:
+        total = instance.ammount + assets.ammount
+        customer_tab = Item.objects.filter(client=instance.customer,paid=False)
+        free_assets = clean_tab(customer_tab,total)
+        assets.ammount = free_assets
+        assets.save()

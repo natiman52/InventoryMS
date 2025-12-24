@@ -1,15 +1,3 @@
-"""
-Module: store.views
-
-Contains Django views for managing items, profiles,
-and deliveries in the store application.
-
-Classes handle product listing, creation, updating,
-deletion, and delivery management.
-The module integrates with Django's authentication
-and querying functionalities.
-"""
-
 # Standard library imports
 import operator
 from functools import reduce
@@ -17,11 +5,14 @@ import json
 # Django core imports
 from asgiref.sync import async_to_sync
 from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.shortcuts import render,redirect
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 from django.db.models import Q, Sum
-from django.core import serializers
+from django.db.models.functions import TruncMonth
+from django.core.serializers.json import DjangoJSONEncoder
+
 # Authentication and permissions
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -34,52 +25,34 @@ from django.views.generic import (
 from django_tables2 import SingleTableView
 import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
-
+import json
 # Local app imports
-from accounts.models import MyUser, Supplier
-from transactions.models import Sale
-from .models import Category, Item, Delivery,ImageFile,DxfFile
+from accounts.models import MyUser, Supplier,Employee
+from .models import Category, Item, Delivery,ImageFile,DxfFile,Portfolio,Quote
 from .forms import ItemForm, CategoryForm, DeliveryForm,imageFileForm,DXFFileForm
 from .tables import ItemTable
 from django.utils import timezone
 from store.signals import ChangeId
+from .filters import get_date_specfic
+from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_days,get_all_expense,get_total_salary_paid,get_material_cost,get_months_with_their_weeks
+
+def HomePage(request):
+    porto = Portfolio.objects.all().order_by('-date')
+    return render(request,'index.html',{'porto':porto})
 
 class Dashboard(LoginRequiredMixin,ListView):
     template_name = "store/dashboard.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 8
     export_name = "given_order_list"
     def get_queryset(self):
-        date =timezone.now().date()
+        date =timezone.now()
         if(self.request.GET.get("sort") == 'yesterday'):
             date =timezone.datetime(date.year,date.month,date.day ) -timezone.timedelta(days=1)
-        date_time1 = timezone.datetime(date.year,date.month,date.day)
-        date_time2 =timezone.datetime(date.year,date.month,date.day) + timezone.timedelta(hours=23,minutes=59)
-        my_range = [date_time1,date_time2]
-        if(self.request.user.role == "AD"):
-            profiles = MyUser.objects.all()
+        date_time2 =date.replace(hour=0,minute=0,second=0) + timezone.timedelta(hours=23,minutes=59,seconds=0)
+        my_range = [date.replace(hour=0,minute=0,second=0),date_time2]
+        if(self.request.user.role == "AD" or self.request.user.role == "SH"):
             items = Item.objects.all()
-            total_items = (
-                Item.objects.all()
-                .aggregate(Sum("quantity"))
-                .get("quantity__sum", 0.00)
-            )
-            items_count = items.count()
-            profiles_count = profiles.count()
-
-    # Prepare data for charts
-
-
-            context = {
-            "items": items,
-            "profiles": profiles,
-            "profiles_count": profiles_count,
-            "items_count": items_count,
-            "total_items": total_items,
-            "vendors": Supplier.objects.all(),
-            "delivery": Delivery.objects.all(),
-            "sales": Sale.objects.all(),
-        }
             return items
         elif(self.request.user.role == "MR"):
             items = Item.objects.filter(Q(verif_price='P',date__range=my_range) | Q(verif_design="P",date__range=my_range))
@@ -95,22 +68,93 @@ class Dashboard(LoginRequiredMixin,ListView):
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
-        elif(self.request.user.role == "AT"):
+        elif(self.request.user.role == "AT" or self.request.user.role == "GM"):
             profiles = MyUser.objects.all()
             items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
             if(self.request.GET.get("sort") == "all"):
-                items = Item.objects.filter(Q(verif_price="W",date__range=my_range,verif_design="A") | Q(verif_design="A",verif_price="D",date__range=my_range))
+                items = Item.objects.filter(Q(verif_price="W",verif_design="A") | Q(verif_design="A",verif_price="D"))
             if(self.request.GET.get('q')):
                 items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
             return items
         elif(self.request.user.role == "OP"):
+            my_range=get_date_specfic(timezone.now().isoweekday())
+            if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
+                my_range=get_date_specfic(int(self.request.GET.get('sort')))
             items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
             if(self.request.GET.get("sort") == "all"):
-                items = Item.objects.filter(verif_price="A",date__range=my_range,verif_design="A",completed=False)
+                items = Item.objects.filter(verif_price='A',verif_design="A",completed=False)
             if(self.request.GET.get('q')):
-                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))
-        
+                items=items.filter(Q(id__contains=self.request.GET.get('q')) | Q(client__name__contains=self.request.GET.get('q')))     
             return items 
+    def get_context_data(self, **kwargs):
+        if(self.request.user.role != "SH" and self.request.user.role != "AD"):
+            return super().get_context_data(**kwargs)
+        else:
+            profiles = Employee.objects.all()
+            items = Item.objects.filter(date__year=timezone.now().year)
+            paid_order =get_total_paid_value(items) 
+            unpaid_order =get_total_unpaid_value(items) 
+            total_order = paid_order + unpaid_order
+            unpaid_expense,paid_expense= get_all_expense()
+            orders_count = items.count()
+            debt_material,free_material =get_material_cost()
+            profit = total_order - (unpaid_expense + paid_expense) - get_total_salary_paid() - (debt_material + free_material)
+            each_month_data=items.filter(completed=True).annotate(month=TruncMonth('finish')).values('month').annotate(sum=Sum('price')).order_by('-month')
+            profit_type = True
+            if(profit < 0):
+                profit_type = False
+            context = {
+            "profiles_count": profiles.count(),
+            "items_count": orders_count,
+            "each_month_data":json.dumps(list(each_month_data),cls=DjangoJSONEncoder),
+            "total_order_value": total_order,
+            "total_expense":int(paid_expense+unpaid_expense),
+            "total_payroll":get_total_salary_paid(),
+            "total_material":debt_material+free_material,
+            "profit":int(profit),
+            'profit_type':profit_type,
+            "vendors": Supplier.objects.all(),
+            "delivery": Delivery.objects.all(),
+        }
+            return context
+
+class AllList(ListView):
+    model =Item
+    template_name = "store/all_list.html"
+    context_object_name = "items"
+    paginate_by = 25
+    def get_queryset(self,**kwargs):
+        if(self.request.GET.get('month')):
+            week =get_months_with_their_weeks()[int(self.request.GET.get('month')) - 1].get('initial_week')
+        else:
+            week = get_months_with_their_weeks()[0].get('initial_week')
+        if(self.request.GET.get('week')):
+            day =get_days(int(self.request.GET.get('week')))[0]
+        else:
+            day =get_days(week)[0]
+        items = Item.objects.filter(completed=True)
+        if(self.request.GET.get('date')):
+            items =items.filter(finish__date=self.request.GET.get('date'))
+        else:
+            items = items.filter(finish__date=day)
+        return items
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        weeks =get_months_with_their_weeks()
+        context['weeks'] = weeks
+        week = weeks[0].get('initial_week')
+        if(self.request.GET.get('month')):
+            week =weeks[int(self.request.GET.get('month')) - 1].get('initial_week')
+            context['week'] = weeks[int(self.request.GET.get('month')) - 1].get('initial_week')
+        else:
+            context['week'] = weeks[0].get('initial_week')
+        if(self.request.GET.get('week')):
+            context['days'] =get_days(int(self.request.GET.get('week')))
+        else:
+            context['days'] =get_days(week)
+        return context
+
+
 class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.
@@ -127,11 +171,12 @@ class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView
     table_class = ItemTable
     template_name = "store/GivenProductList.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 30
     export_name = "given_order_list"
     SingleTableView.table_pagination = False
 
-class ProductListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+
+class ProductListView(LoginRequiredMixin,ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.
 
@@ -142,12 +187,11 @@ class ProductListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     - context_object_name: The variable name for the context object.
     - paginate_by: Number of items per page for pagination.
     """
-
-    model = Item
     table_class = ItemTable
     template_name = "store/productslist.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 30
+    queryset = Item.objects.all()
     SingleTableView.table_pagination = False
 
 
@@ -159,7 +203,7 @@ class ItemSearchListView(ProductListView):
     - paginate_by: Number of items per page for pagination.
     """
 
-    paginate_by = 10
+    paginate_by = 40
 
     def get_queryset(self):
         result = super(ItemSearchListView, self).get_queryset()
@@ -180,8 +224,8 @@ class ProductDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView):
     template_name = "store/productdetail.html"
     context_object_name = 'item'
     def test_func(self):
-        print(self.request.user.role)
-        if self.request.user.role == "MR":
+
+        if self.request.user.role == "MR" or self.request.user.role == "GM":
             return True
         else:
             return False
@@ -255,7 +299,7 @@ def Item_create_view(request,type):
             obj.save()
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)('DR',{"type":"send.notification",'message':"message"})
-            return redirect("/")
+            return redirect(reverse("dashboard"))
         return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})   
     return render(request,"store/productcreate.html",{"form":form,'type':type})
 
@@ -502,7 +546,6 @@ def is_ajax(request):
 @login_required
 def get_items_ajax_view(request):
     if is_ajax(request):
-        print(json.dumps(Item.objects.filter(Q(verif_design="A")).first().toJSON()))
         try:
             type=request.GET.get('type')
             files =json.dumps([item.toJSON() for item in Item.objects.filter(Q(verif_design="A") & Q(type=type)) ])

@@ -1,0 +1,38 @@
+{% extends "store/base.html" %}
+{%load add_filters%}
+{%block content%}
+<div class="px-4 pt-5">
+    <div class="card shadow-sm rounded p-3 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Over Times</h4>
+            </div>
+        </div>
+            {%include "content/search.html"%}
+    </div>
+    <table class="table table-bordered table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">operator</th>
+                <th scope="col">Date </th>
+                <th scope="col">Ammount Done </th>
+                <th scope="col">Paid Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for operator in operators%}
+            <tr>
+                <td><a style="text-decoration: none;" href="{%url 'overtime-detail' id=operator.overtime.id %}">{{operator.myuser.username}}</a></td>
+                <td class="ps-2">{{operator.overtime.date|date:"D M, Y"}}</td>
+                <td>{{operator.overtime.ammount.all.count}}</td>
+                <td>{% if operator.overtime.paid %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+    {%include 'content/paginator.html' %}
+{% endif %}
+{%endblock content%}

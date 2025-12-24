@@ -1,6 +1,8 @@
 /* Importing Google Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
+
+
 /* Root variables */
 :root {
   --dk-gray-100: #f3f4f6;
@@ -231,4 +233,23 @@ a {
 .navbar .navbar-nav > li > a > i {
   font-size: 18px;
 }
-
+.l-bg-red-dark{
+  background: linear-gradient(to right, #500a0a, #ef3838) !important;
+  color: #fff;
+}
+.l-bg-green-dark {
+  background: linear-gradient(to right, #0a504a, #38ef7d) !important;
+  color: #fff;
+}
+.l-bg-cherry {
+  background: linear-gradient(to right, #493240, #f09) !important;
+  color: #fff;
+}
+.l-bg-blue-dark {
+  background: linear-gradient(to right, #373b44, #4286f4) !important;
+  color: #fff;
+}
+.l-bg-orange-dark {
+  background: linear-gradient(to right, #a86008, #ffba56) !important;
+  color: #fff;
+}

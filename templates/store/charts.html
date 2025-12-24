@@ -1,0 +1,84 @@
+<div class="row justify-content-around">
+    <div class="card shadow border-0 mb-7 col-md-6 col-lg-6">
+        <div class="card-body">
+            <h5 class="card-title">Revenue</h5>
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow border-0 mb-7 col-md-5 col-lg-5">
+        <div class="card-body ">
+            <h5 class="card-title">Expense</h5>
+            <div class="chart-container d-flex justify-content-center">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+  type: 'pie',
+  data: {
+    labels: ['Total Expense', 'Total Material Cost', 'Total Payroll'],
+    datasets: [{
+      label: 'Total Costs in the current year',
+      data: [Number("{{total_expense}}"),Number("{{total_material}}"), Number("{{total_payroll}}")],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+</script>
+<script>
+    var line_chart_Data ={{each_month_data|safe }}
+    var linechart = document.getElementById('lineChart')
+    var theMonths = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+    var today = new Date();
+    var sevenMonths = []
+    var aMonth = today.getMonth();
+    var i;
+    for (i=0; i<7; i++) {
+        sevenMonths.push(theMonths[aMonth]) //here you can do whatever you want...
+        aMonth -= 1;
+        if (aMonth < 0) {
+            aMonth = 11;
+        }
+    }
+    new Chart(linechart,{
+        type:'line',
+        data:{
+            labels:sevenMonths.slice(0,line_chart_Data.length).reverse(),
+            datasets:[{
+                label:'Revenue over the last seven months',
+                data:line_chart_Data.map(e => e.sum),    
+                fill: true,
+                borderColor: '#C5172E',
+                backgroundColor:"#C5172E",
+                pointRadius:2
+            }]
+        }
+    })
+</script>
+  <style>
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+  }
+
+  #pieChart, #lineChart {
+    max-width: 100%;
+    height: 100%;
+  }
+  </style>

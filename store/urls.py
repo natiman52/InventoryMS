@@ -2,7 +2,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.views.generic import TemplateView
 # Local app imports
 from . import views2
 from . import views
@@ -27,14 +27,18 @@ from .views import (
     CategoryUpdateView,
     CategoryDeleteView,
     GivenOrderListView,
-    Dashboard
+    Dashboard,
+    AllList,
+    HomePage
 )
 
 # URL patterns
 urlpatterns = [
+    path('qoutes',views2.showQoutes,name="qoute_list"),
     # Dashboard
-    path('', Dashboard.as_view(), name='dashboard'),
-
+    path("",HomePage,name="home"),
+    path('dashboard/', Dashboard.as_view(), name='dashboard'),
+    path('all_list',AllList.as_view(),name="all_list"),
     # Product URLs
     path('order-list/',ProductListView.as_view(),name='order-lists'),
     path('given-order/',GivenOrderListView.as_view(),name="given-order"),
@@ -47,11 +51,13 @@ urlpatterns = [
     path('create/new-dxf/<str:type>',DXFCreateView.as_view(),name="dxf-create"),
     path('product/<slug:slug>/delete/',ProductDeleteView.as_view(),name='product-delete'),
     path('update/new-dxf/<int:id>',DXFUpdateView.as_view(),name="dxf-update"),
-    #Designner 
+    
+    # Designner 
     path("designer-order/<str:id>",views2.design_detail_view,name='designer-order'),
     path('designer-order-list/',views2.DesignerOrderList.as_view(),name='designer-order-list'),
     path("designer-order-finished/",views2.DesignerOrderListFinished.as_view(),name="designer-order-finished"),
-    #Accountant
+    
+    # Accountant
 
     #operator
     path('operator-finished/',views2.OperatorFinishedList.as_view(),name='operator-finished'),
@@ -124,6 +130,9 @@ urlpatterns = [
         CategoryDeleteView.as_view(),
         name='category-delete'
     ),
+    path('quote',views2.createQuote,name="create_quote"),
+    path('quote/delete/<int:id>',views2.deleteQuote,name='quote-delete'),
+    path('quote/send-email/<int:id>',views2.sendQuoteEmail,name='send-quote-email')
 ]
 
 # Static media files configuration for development

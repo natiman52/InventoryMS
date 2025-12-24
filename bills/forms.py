@@ -1,6 +1,5 @@
-from typing import Any
 from django import forms
-from  .models import SingleMaterial,InventoryMaterial,Thickness
+from  .models import SingleMaterial,InventoryMaterial,Thickness,ClientPayment,SaleryPayment,Bill
 
 
 class InventoryUpdateBillForm(forms.Form):
@@ -22,7 +21,7 @@ class ModuleSelectorModelChoiceField(forms.ModelChoiceField):
         return "%smm" % obj.name
 
 class SingleBillForm(forms.ModelForm):
-    thickness = ModuleSelectorModelChoiceField(Thickness.objects.all())
+    thickness = forms.ModelChoiceField(Thickness.objects.all())
     quantity= forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
     price = forms.IntegerField(widget=forms.NumberInput(attrs={"class":"form-control mt-2"}))
     class Meta:
@@ -33,3 +32,17 @@ class SingleBillForm(forms.ModelForm):
             if (self.thickness == "----"):
                 self.is_bound = False
             return self.thickness
+class CreateClientPayment(forms.ModelForm):
+    class Meta:
+        model = ClientPayment
+        fields = ['payment_method',"ammount",'proof']
+class EmployeePaymentForm(forms.ModelForm):
+    class Meta:
+        model = SaleryPayment
+        fields = ['bonus','total']
+
+class BillFrom(forms.ModelForm):
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows':5}))
+    class Meta:
+        model = Bill
+        fields = ['description',"amount"]

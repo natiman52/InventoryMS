@@ -1,16 +1,20 @@
 
 from django.forms import formset_factory
-from .models import  Item ,UserPrint
+from accounts.time import datechecker,timechecker
+from accounts.models import OverTimeConnect,OverTime
+from bills.models import Thickness
 from django.utils import timezone
 from django.db.models.base import Model as Model
 from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.db.models import Q
 import json
-from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden,HttpResponse
+from render_block import render_block_to_string
 # Authentication and permissions
 from asgiref.sync import async_to_sync
 import string
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_tables2 import SingleTableView
@@ -18,22 +22,37 @@ import django_tables2 as tables
 from django_tables2.export.views import ExportMixin
 from .tables import ItemTableDesign
 from channels.layers import get_channel_layer
-# Class-based views
+# Internal Objects
+from .models import  Item ,UserPrint,Quote
 from django.views.generic import  ListView
-from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet
-from .filters import get_item_or_dxffile
+from .forms import ItemDxfForm,ItemDxfAddForm,MyFormSet,QuoteForm
+from .filters import get_item_or_dxffile,get_date_specfic
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+def is_user_ad_or_mr(user):
+    if user.role == "MR" or user.role == "AD" or user.role == "GM":
+        return True
+    else:
+        return False    
 def test_func_design_view(user):
         if user.role == "DR" or user.role == "AD":
             return True
         else:
             return False
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def showQoutes(request):
+    qoutes = Quote.objects.all().order_by('-date')
+    return render(request,"qoutes.html",{"items":qoutes})
 @login_required
 @user_passes_test(test_func_design_view)
 def design_detail_view(request,id):
     context = {}
-    form = ItemDxfForm()
-    model_formset =formset_factory(form=ItemDxfAddForm,formset=MyFormSet,extra=0)
     item = Item.objects.get(id=id)
+    form = ItemDxfForm(initial={'thickness':item.thickness})
+    model_formset =formset_factory(form=ItemDxfAddForm,formset=MyFormSet,extra=0)
     context['form'] = form
     context['item'] = item
     context['formset'] = model_formset
@@ -41,56 +60,62 @@ def design_detail_view(request,id):
         context['diminsion'] = json.loads(item.diminsions)
     if(request.method == "POST"):
         channel = get_channel_layer()
+        form =ItemDxfForm(request.POST,request.FILES)
         async_to_sync(channel.group_send)('MR',{'type':"send.notification"})
         item =Item.objects.get(id=id)
         formset= model_formset(request.POST,request.FILES)
+        context['form'] =form
+        context['formset'] = formset
         if(request.POST.get('choosen') != "" or request.FILES.get('dxf_file')):
             UserPrint.objects.create(user=request.user,item=item,comment="designer_change_add")
             item.verif_design = "P"
             if(request.POST.get('choosen') != ""):
+                context['chosen_file_value'] = get_item_or_dxffile(request.POST.get('choosen'))
                 item.dxf_file = get_item_or_dxffile(request.POST.get('choosen')).dxf_file
             else:
                 item.dxf_file =request.FILES.get("dxf_file")
             if(not request.POST.get('hidden')):
                 item.save()
                 return redirect(reverse('designer-order',kwargs={"id":item.id}))
-            elif(request.POST.get('hidden') and request.POST.get('quantity')):
-                if(int(request.POST.get('quantity')) < (item.thickness.added - item.thickness.removed)):
+            elif(request.POST.get('hidden') and request.POST.get('quantity') and request.POST.get('thickness')):
+                context['form_error_quantity'] =int(request.POST.get('quantity'))
+                thickness = Thickness.objects.get(id=int(request.POST.get('thickness'))) if request.POST.get('thickness') else item.thickness
+                if(int(request.POST.get('quantity')) < (thickness.added - thickness.removed)):
                     item.quantity = int(request.POST.get('quantity'))
                     if(formset.is_valid()):
                         if(formset.my_custom_clean(item)):
+                            item.thickness = Thickness.objects.get(id=int(request.POST.get('thickness')))
                             item.subclassed = True
                             item.save()
                             for index,f in enumerate(formset):
                                 item2 =Item.objects.get(id=id)
-                                print(item2.pk + string.ascii_uppercase[index])
                                 item2.pk = item2.pk + string.ascii_uppercase[index]
                                 if(f.cleaned_data.get('search')):
                                     item2.dxf_file = get_item_or_dxffile(f.cleaned_data.get('search')).dxf_file
                                 else:
                                     item2.dxf_file = f.cleaned_data.get("dxf_file")
+                                if(f.cleaned_data.get("thickness")):
+                                    item2.thickness =f.cleaned_data.get("thickness")
                                 item2.quantity = f.cleaned_data.get('quantity')
                                 item2.subclassed = True
                                 item2.save()
                             return redirect(reverse('designer-order',kwargs={"id":item.id}))
                         else:
-                            context['formset'] = formset
                             context['errors'] = {'main':'please correct your errors'}
                             return render(request,"store/designdetail.html",context)                            
                     else:
-                        context['formset'] = formset
                         context['errors'] = {'main':'please at least fill the first form'}
                         return render(request,"store/designdetail.html",context)
                 else:
-                    context['formset'] = formset
                     context['errors'] = {'main_quantity':'not enough in inventory','main':'please at least fill the first form'}
                     return render(request,"store/designdetail.html",context)                    
             elif(not request.POST.get('quantity')):
-                context['formset'] = formset
                 context['errors'] = {'main_quantity':'please fill the quantity'}
                 return render(request,"store/designdetail.html",context)
+            elif(not request.POST.get('thickness')):
+                context['errors'] = {'main':'please fill in all the forms'}
+                return render(request,"store/designdetail.html",context)
         else:
-            context['formset'] = formset
             context['errors'] = {'main':'please at least fill the first form'}
             return render(request,"store/designdetail.html",context)
     return render(request,"store/designdetail.html",context)
@@ -110,6 +135,7 @@ class DesignerOrderList(LoginRequiredMixin, ExportMixin , tables.SingleTableView
 class DesignerOrderListFinished(ListView):
     context_object_name = "items"
     template_name = 'store/designerorderlist.html'
+    paginate_by = 30
     def get_queryset(self):
         objects = Item.objects.filter(verif_design="A")
         return objects
@@ -122,12 +148,16 @@ class OperatorFinishedList(LoginRequiredMixin, ExportMixin , tables.SingleTableV
     paginate_by =10
     template_name = 'store/operator/operatororderlist.html'
     SingleTableView.table_pagination = False
-    def get(self,request,*args,**kwargs):
-        if(request.GET.get('q')):
-            self.queryset = self.model.objects.filter(Q(completed=True,id__contains=request.GET.get('q')) | Q(completed=True,client__name__contains=request.GET.get('q')))
-        return super(OperatorFinishedList,self).get(request,*args,**kwargs)
     def get_queryset(self):
         obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
+        my_range=get_date_specfic(timezone.now().isoweekday())
+        if(self.request.GET.get("sort") and self.request.GET.get("sort").isdigit()):
+            my_range=get_date_specfic(int(self.request.GET.get('sort')))
+        obje = obje.filter(finish__date__range=my_range)
+        if(self.request.GET.get('q')):
+            obje = obje.filter(Q(completed=True,id__contains=self.request.GET.get('q'),finish__date__range=my_range) | Q(completed=True,client__name__contains=self.request.GET.get('q'),finish__date__range=my_range))
+        elif(self.request.GET.get("sort") == 'all'):
+            obje = Item.objects.filter(verif_price="A",verif_design="A",completed=True)
         return obje
 def test_func(event):
     if(event.role == "OP" or event.role == "AD"):
@@ -140,22 +170,105 @@ def operator_detail_view(request,id):
     context = {}
     obj = Item.objects.get(id=id)
     if(obj.verif_design !='A' and obj.verif_price !='A'):
-        return PermissionDenied()
+        return HttpResponseForbidden()
     if(obj.diminsions):
             context['diminsion'] = json.loads(obj.diminsions)
     context['item'] = obj
     if request.method == "POST":
         if(request.POST.get('start')):
-            obj.start = timezone.now()
+            obj.start = timechecker()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_started_task")
             obj.thickness.removed += obj.quantity 
             obj.save()
             obj.thickness.save()
         if(request.POST.get('finish')):
+            now =timechecker()
+            time12 =now.replace(hour=18,minute=0,second=0)
+            time6 =now.replace(hour=7,minute=50,second=0)
+            if(now > time12 or now < time6):
+                connect =OverTimeConnect.objects.filter(myuser=request.user,date=datechecker()).first()
+                if(not connect):
+                    connect = OverTimeConnect.objects.create(myuser=request.user,overtime=OverTime.objects.create(),date=datechecker())
+                connect.overtime.ammount.add(obj)
+                connect.overtime.save() 
+                request.user.save()
             obj.completed = True
-            obj.finish = timezone.now()
+            obj.finish = timechecker()
             UserPrint.objects.create(user=request.user,item=obj,comment="operator_finished_task")
             obj.save()  
             return redirect(reverse("operator-finished"))
     return render(request,"store/operator/operatordetail.html",context)
 
+
+def createQuote(request):
+    if(request.method == "POST"):
+        objs = QuoteForm(data=request.POST)
+        absolute_url = request.build_absolute_uri('/')
+        if(objs.is_valid()):
+            email = objs.cleaned_data['email']
+            phone = objs.cleaned_data['phone']
+
+            if Quote.objects.filter(Q(email=email) | Q(phone=phone)).exists():
+                messages.error(request, "You have already requested a quote.")
+            else:
+                objs.save()
+                
+                # Prepare email content
+                subject = 'Thank you for Contacting Us'
+                html_message = render_to_string('store/email/quote_confirmation.html', {'home':absolute_url})
+                plain_message = strip_tags(html_message)
+                from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
+                to_email = [email]
+
+                send_mail(
+                    subject,
+                    plain_message,
+                    from_email,
+                    to_email,
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+                messages.success(request,"Quote has been added")
+        else:
+            messages.error(request,"something went wrong")
+        html = render_block_to_string('index.html',"quoted",request=request)
+        response = HttpResponse(html)
+        return response
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def deleteQuote(request,id):
+    quote = Quote.objects.get(id=id)
+    quote.delete()
+    return redirect("qoute_list")
+
+@login_required
+@user_passes_test(is_user_ad_or_mr)
+def sendQuoteEmail(request, id):
+    if request.method == "POST":
+        quote = Quote.objects.get(id=id)
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        absolute_url = request.build_absolute_uri('/')
+        try:
+            # Prepare email content
+            html_message = render_to_string('store/email/quote_response.html', {'message': message, 'subject': subject, 'request': request,'home':absolute_url})
+            plain_message = strip_tags(html_message)
+            from_email = 'NahiMetal Engineering PLC <support@nahimetal.com>'
+            to_email = [quote.email]
+
+            send_mail(
+                subject,
+                plain_message,
+                from_email,
+                to_email,
+                html_message=html_message,
+                fail_silently=False,
+            )
+            messages.success(request, "Email sent successfully")
+        except Exception as e:
+            print(e)
+            messages.error(request, f"Failed to send email: {e}")
+    return redirect("qoute_list")
+        
+        

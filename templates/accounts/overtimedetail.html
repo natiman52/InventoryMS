@@ -1,0 +1,45 @@
+{%extends "store/base.html" %}
+{%load add_filters%}
+{%block stylesheets%}
+<style>
+    .overtime-detail{
+        min-height: 95vh;
+        padding-top:2rem;
+        background-color: whitesmoke;
+    }
+
+</style>
+{%endblock stylesheets%}
+{%block content%}
+<div class="overtime-detail">
+    <div class="me-5 ms-5">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex align-items-center">
+                <h2>{{overtime.date|date:"D M ,Y"}}</h2>
+                <p class="mb-0 ms-2">{% if overtime.paid %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span style="padding:0rem .4rem .1rem .4rem;" class="btn-danger rounded-circle "><i class="fa fa-solid fa-close"></i></span>{%endif%}</p>
+            </div>
+        </div>
+        <div class="row mt-4">
+            {%for item in overtime.ammount.all %}
+            <div class="col-md-4 col-lg-4" key="{{item.id}}">
+                <div class="bg-white border-1 rounded p-1 px-2 shadow-sm">
+                    {%if request.user.role == "OP" %}
+                    <div class="d-flex align-items-center"><a class="text-decoration-none" href="{%url 'operator-detail' id=item.id %}"><p class="fw-semibold mb-2 lead">{{item.id}}</p></a>&ThinSpace;(<span style="font-size: 14px;"><small>{{overtime.myuser_set.first}}</small></span>)</div>
+                    {%elif request.user.role == "AT" %}
+                    <div class="d-flex align-items-center"><a class="text-decoration-none" href="{%url 'account-item' id=item.id %}"><p class="fw-semibold mb-2 lead">{{item.id}}</p></a>&ThinSpace;(<span><small>{{overtime.myuser_set.first}}</small></span>)</div>
+                    {%endif%}
+                    <p class="">({{item.quantity}}) lamera</p>
+                    <div class="d-flex justify-content-between">
+                        <p class="mb-0 small text-success"><sup>start</sup>{{item.start|date:"F, D (G:i)"}}</p>
+                        <p class="mb-0 small text-danger"><sup>finish</sup>{{item.finish|date:"F, D (G:i)"}}</p>
+                    </div>
+                </div>
+            </div>
+            {%endfor%}
+            {%if overtime.ammount.all.count == 0 %}
+            <p class="text-center text-bold h4">No Overtime Done.</p>
+            {%endif%}
+        </div>
+    </div>
+</div>
+{%endblock content%}

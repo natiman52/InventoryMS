@@ -13,23 +13,29 @@ Each class provides specific fields and methods for handling related data.
 
 from django.db import models
 from django.urls import reverse
-from django.forms import model_to_dict
 from django_extensions.db.fields import AutoSlugField
 from accounts.models import Customer,MyUser
 from bills.models import Thickness
 import os
-from django.db.models import Value
-thickness_type = ((0.5,"0.5mm"),(0.7,"0.7mm"),(0.8,"0.8mm"),
-                 (0.9,"0.9mm"),(1.0,"1.0mm"),(1.1,"1.1mm"),
-                 (1.4,"1.4mm"),(1.8,"1.8mm"),
-                  (2.5,"2.5mm"),(3.0,"3.0mm"))
+from django.utils import timezone
+from accounts.time import timechecker,datechecker
+
+class Quote(models.Model):
+    name = models.CharField(max_length=225)
+    email = models.EmailField()
+    request = models.TextField()
+    phone = models.IntegerField()
+    date = models.DateTimeField(blank=True,default=timezone.now)
+class Portfolio(models.Model):
+    img = models.ImageField(upload_to="porfolio")
+    date = models.DateTimeField(default=timezone.now)
+    catagory = models.CharField(max_length=255,default="Creative Signage")
 class DxfFile(models.Model):
-    date=models.DateField(auto_now_add=True)
+    date=models.DateField(default=datechecker)
     dxf_file = models.FileField(upload_to="manual/dxf")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     def __str__(self):
         return f"{self.type} {self.id}"
-    @property
     def filename(self):
         return os.path.basename(self.dxf_file.name).split('.')[0]
     def toJSON(self):
@@ -37,7 +43,7 @@ class DxfFile(models.Model):
         
 class ImageFile(models.Model):
     name = models.CharField(max_length=100,blank=True)
-    date=models.DateField(auto_now=True)
+    date=models.DateField(default=datechecker)
     image = models.FileField(upload_to="manual/image")
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
 
@@ -67,7 +73,7 @@ def uploadDXFTo(instance,model):
 class DXFOrder(models.Model):
     quantity = models.IntegerField(default=1)
     dxf_file = models.FileField(upload_to="manual/dxf")
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timechecker)
 
 class Item(models.Model):
     """
@@ -91,12 +97,13 @@ class Item(models.Model):
     verif_design = models.CharField(max_length=256,choices=(("P","pending"),('A',"Accepted"),("D","Declined"),('W',"Waiting")),default="W")
     price=models.IntegerField(blank=True,null=True) 
     dxf_file = models.FileField('dxf',upload_to=uploadDXFTo,blank=True,null=True)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(default=timechecker)
     completed = models.BooleanField(default=False)
     start = models.DateTimeField(blank=True,null=True)
     finish = models.DateTimeField(blank=True,null=True)
     type = models.CharField(max_length=256,choices=(('DR',"Door (bere)"),("BL",'Balkeni (berenda)'),("ST","stairs"),("OT","Other")))
     subclassed = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
     def __str__(self):
         """
         String representation of the item.
@@ -126,7 +133,7 @@ class Item(models.Model):
 class UserPrint(models.Model):
     item = models.ForeignKey(Item,on_delete=models.CASCADE)
     user = models.ForeignKey(MyUser,on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(default=timechecker)
     comment = models.CharField(max_length=256)
 
 class Delivery(models.Model):
@@ -136,7 +143,7 @@ class Delivery(models.Model):
     user = models.ForeignKey(MyUser,null=True,on_delete=models.SET_NULL)
     item = models.ForeignKey(Item, blank=True, null=True, on_delete=models.SET_NULL)
     customer = models.ForeignKey(Customer,blank=True, null=True,on_delete=models.SET_NULL)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timechecker)
     is_delivered = models.BooleanField(default=False, verbose_name='Is Delivered')
 
     def __str__(self):

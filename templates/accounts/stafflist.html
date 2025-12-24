@@ -1,0 +1,58 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="container my-4">
+    <div class="card shadow-sm rounded p-3">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="display-6 mb-0 text-success">Employee</h4>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="container">
+  <style>
+    .table th, .table td {
+        text-align: center;
+    }
+  </style>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">salery</th>
+                <th scope="col">overtime</th>
+                <th scope="col">bonus</th>
+                <th scope="col">total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in employee %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td><a href="{%url 'payroll' id=customer.id%}"><p class="text-capitalize h6 mb-0">{{ customer.name }}</p></a></td>
+                <td><p class="text-sm mb-0">{{ customer.salary }} Birr</p></td>
+                <td><p class="text-sm mb-0">{{ customer.overtime}} Birr</p></td>
+                <td><p class="mb-0 text-sm">0</p></td>
+                <td>
+                    {{customer.total}} Birr
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {%if request.user.role != "SH"%}
+    <div class="position-fixed bottom-5 right-1">
+        <div class="d-flex justify-content-end gap-2">
+            <a class="btn btn-success btn-sm rounded-pill shadow-sm" href="{% url 'create_employee' %}">
+                <i class="fa-solid fa-plus"></i> Add Employee
+            </a>
+        </div>
+    </div>
+    {%endif%}
+</div>
+{% endblock %}

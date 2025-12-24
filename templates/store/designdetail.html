@@ -1,0 +1,286 @@
+{%extends "store/base.html"%}
+{%load add_filters %}
+{%load crispy_forms_tags%}
+{%block title%} {{item.client}}{%endblock title%}
+
+{%block content%}
+{%if errors.main%}
+ <div class="bg-danger py-1 px-2">
+    <p class="text-white mb-0">{{errors.main}}</p>
+ </div>
+ {%endif%}
+ <h2 class="mb-0 pb-0 pt-3 ps-4"><strong>{{item.id}}</strong></h2>
+
+    <div class="px-5 py-4">
+        <div class="d-flex justify-content-around flex-wrap gap-2">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="/media/{{item.image1}}" alt="" srcset="">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image2 %}/media/{{item.image2}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
+            <img style="width: 250px;height: 300px;object-fit: cover;border: 1px solid rgb(195, 195, 195);border-radius: 5px;" src="{%if item.image3 %}/media/{{item.image3}}{%else%} /static/placeholder.jpg {%endif%}" alt="" srcset="">
+        </div>
+        <div class="d-flex pt-4 mb-3 flex-wrap" style="column-gap: 40px;">
+            <div class="">
+                <label for="" class="text-md">thickness</label>
+                <p class="mb-0 ms-1 p-2 border-1 rounded-small fw-bold">{{item.thickness}}</p>
+            </div>
+            <div class="">
+                <p class="mb-0 text-md">DXF:-</p>
+                {%if item.verif_design != "W"%}
+                <div class="d-flex mb-0 py-2 justify-content-between">
+                    <p class="text-gray mb-0 me-2">{%if item.verif_design == "P" %} <p class="text-info me-1">Pending</p> {%elif item.verif_design == "D"%} <p class="text-danger mb-0 me-1">Declined</p> {%else%} <p class="text-success mb-0 me-1">Accepted</p>{%endif%}</p>
+                    <a download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}"><i class="fa-solid fa-download p-2 border-1 rounded-small"></i></a>
+                </div>
+                {%else%}
+                <p class="py-2 ms-1 text-info">Waiting</p>
+                {%endif%}
+            </div>
+            <div class="">
+                <p class="mb-0 text-md">Quantity</p>
+                <div class="mb-0 py-2 ms-1 justify-content-between">
+                     <p>{%if item.quantity == 0 %} ON DIMENSIONS {%else%}{{item.quantity}}{%endif%}</p>
+                </div>
+            </div>
+            <div class="">
+                <p class="mb-0 text-md">Remark</p>
+                <div class="mb-0 py-2 ms-1 justify-content-between">
+                    <p>{{item.remark |linebreaksbr}}</p>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="mt-2 mb-4">
+                <p class="mb-2 text-md">Diminsions: ({{item.dimensions_type}})</p>
+                <div>
+                    {%if item.dimensions_type == "rectangular"%}
+                    <div class="d-flex justify-content-center" style="border-bottom: 3px solid black;width:100px;margin-left: 75px;">
+                        <p class="mb-0 text-center mb-2 p-2 border-1 rounded-small">{{diminsion.width}}cm</p>
+                    </div>
+                    <div class="d-flex align-items-center" style="height:100px;">
+                        <div class="h-100 d-flex align-items-center" style="border-right: 3px solid black;">
+                            <p class="mb-0 text-center me-2 p-2 border-1 rounded-small">{{diminsion.length}}cm</p>
+                        </div>
+                    </div>
+                    {%elif item.dimensions_type == "square"%}
+                    <div class="d-flex justify-content-center" style="border-bottom: 3px solid black;width:100px;margin-left: 10px;">
+                        <p class="mb-0 text-center mb-2 p-2 border-1 rounded-small">{{diminsion.width}}cm</p>
+                    </div>
+                    <div class="d-flex align-items-center" style="height:100px;">
+                        <div class="h-100 d-flex align-items-center" style="border-right: 3px solid black;">
+                        </div>
+                    </div>
+                    {%else%}
+                        {%if item.dimensions_image%}
+                        <a href="/media/{{item.dimensions_image}}"><img style="width: 100px;height: 100px;" src="/media/{{item.dimensions_image}}" alt="Dimemsions" srcset=""></a>
+                        {%else%}   
+                        <div class="mb-0 py-2 ms-1 justify-content-between">
+                                <p class="border-1 ps-2 rounded-medium">{{item.dimensions_info | linebreaksbr}}</p>
+                            </div>
+                        {%endif%}
+                    {%endif%}
+                </div>
+            </div>
+        </div>
+        {%if item.verif_design == "W" or item.verif_design == "D"%}
+        <div class="mt-4">
+            <form class="position-relative " action="" enctype="multipart/form-data" method="post">
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="">
+                        <input type="hidden" id="choosen" value="{%if chosen_file_value%}It_{{chosen_file_value.id}}{%endif%}" name="choosen">
+                        <label for="">Search DXF:</label>
+                        <input autocomplete="off" type="text" value="{{chosen_file_value.filename}}" class="form-control" id="prev_dxf" >
+                        <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list">
+                        </ul>
+                    </div>
+                    <p class="mt-2 mb-2"><strong>OR</strong></p>
+                    <div class="">
+                        <label for="">Upload DXF</label>
+                        {{form.dxf_file}}
+                    </div>
+                </div>
+
+                {%if item.dimensions_type == "other" and item.subclassed == False %}
+                <div>
+                    <label for="">thickness</label>
+                    {{form.thickness}}
+                </div>
+                <input type="hidden" name="hidden" value="ignore" id="">
+                <div class="mb-5">
+                    <label for="quantity">quantity:</label>
+                    {%if errors.main_quantity%}
+                    <input type="number" name="quantity" id="quantity" value="{{form_error_quantity}}" class="form-control border-danger">
+                    <strong><small class="text-danger form-text ms-1">{{errors.main_quantity}}</small></strong>
+                    {%else%}
+                    <input type="number" name="quantity" id="quantity" value="{{form_error_quantity}}" class="form-control">
+                    {%endif%}
+                </div>
+                {{formset.management_form}}
+                <div id="formset-form-list">
+                    {%for form in formset%}
+                    <div class="formset-element position-relative border mt-2 rounded px-2 py-1">
+                        <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between">
+                            <div class="">
+                                {{form.search}}
+                                <label for="">Search DXF:</label>
+                                <input autocomplete="off" type="text" value="{{form.get_item_or_dxffile.filename}}" class="form-control prev_dxf_multiple" id="prev_dxf_multiple-{{forloop.counter0}}" >
+                                <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100 file_name_list" id="file_name_list-{{forloop.counter0}}">
+                                </ul>
+                            </div>
+                            <p class="mt-2 mb-2"><strong>OR</strong></p>
+                            <div class="">
+                                <label for="">Upload DXF</label>
+                                {{form.dxf_file}}
+                            </div>
+                        </div>
+                        <div>
+                            {{form.thickness | as_crispy_field}}
+                        </div>
+                        <div>
+                            {{form.quantity |as_crispy_field}}
+                        </div>
+                    </div>
+                    {%endfor%}
+                </div>
+                <div id="formset_temp" class="position-relative border mt-2 rounded px-2 py-2 d-none">
+                    <span onclick="killme(event)" class="cursor-pointer position-absolute top-0 end-3"><i class="fa fa-solid fa-close"></i></span>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="">
+                            {{formset.empty_form.search}}
+                            <label for="">Search DXF:</label>
+                            <input autocomplete="off" type="text" value="" class="form-control mb-2 mt-2" id="prev_dxf_multiple-__prefix__" >
+                            <ul style="overflow-y: auto;height: 120px;" class="d-none list-group-flush list-group mt-3 bg-white position-absolute shadow p-2 w-100" id="file_name_list-__prefix__">
+                            </ul>
+                        </div>
+                        <p class="mt-2 mb-2"><strong>OR</strong></p>
+                        <div class="">
+                            <label for="">Upload DXF</label>
+                            {{formset.empty_form.dxf_file}}
+                        </div>
+                    </div>
+                    <div>
+                        {{formset.empty_form.thickness | as_crispy_field}}
+                    </div>
+                    <div>
+                        {{formset.empty_form.quantity | as_crispy_field}}
+                    </div>
+                </div>
+                {%endif%}
+                {%csrf_token%}
+                <div class=" d-flex align-items-end flex-column mt-3">
+                    <div class="mb-4 px-2 d-flex align-items-end flex-colum gap-3">
+                        {%if item.dimensions_type == "other" and item.subclassed == False%}
+                        <button type="button" id="add_form" class="btn btn-primary "><i class="fa fa-plus"></i> DXF</button>
+                        {%endif%}
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                    <small class="text-danger"><strong> Please  be sure about the file before  UPLOADING!</strong></small>
+                </div>
+            </form>
+        </div>
+        {%endif%}
+    </div>
+    
+    {%endblock%}
+    {%block javascripts%}
+    {%if item.verif_design == "W" or item.verif_design == "D"%}
+
+    <script> 
+    function clean(filesraw){
+        var result = []
+        filesraw.forEach(file => {
+            if(!(result.filter(prev =>prev.dxf_file.toLowerCase() == file.dxf_file.toLowerCase()).length)){
+                result.push(file)
+            }
+            })
+        return result
+    }
+        objects = ""
+        $.ajax({
+            url:`http://${window.location.host}/get-items?type={{item.type}}`,
+            async:false,
+        }).done((e)=> {
+            objects = {'files':clean(JSON.parse(e.files)),"files2":clean(JSON.parse(e.files2))}
+        }).fail(e=> {
+            console.log(e)
+        })
+    if(document.getElementById("id_form-TOTAL_FORMS")){
+        const updateFormNumber = document.getElementById("id_form-TOTAL_FORMS") 
+    }
+    var ul =document.getElementById("file_name_list")
+    var custom =''
+
+    const keyupFunction = (e,x) => {
+        if(x){
+            custom =document.getElementById(`file_name_list-${x-1}`)
+        }
+        if(e.target.value == ""){
+            if(x){
+            custom.classList.add("d-none")
+            }else{ ul.classList.add('d-none')}
+        }else{
+            if(x){
+                custom.classList.remove("d-none")
+            }else{ul.classList.remove("d-none") }
+        } 
+        str = ``
+        files = objects.files.filter(file => file.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data =>{
+                str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="It_${data.pk}">
+                    ${data.filename} 
+                    <a download="${data.filename}.dxf" href="/media/${data.dxf_file}">
+                    <i class="border p-1 rounded fa fa-download"></i></a></li>`
+        })
+        files2 = objects.files2.filter(file => file.dxf_file.toLowerCase().includes(e.target.value.toLowerCase())).forEach(data => {
+                str +=`<li onclick="changeForm(event,${x})"  class="list-group-item-action list-group-item d-flex justify-content-between align-items-center" data-id="St_${data.pk}">
+                    ${data.filename}
+                     <a download="${data.filename}.dxf" href="/media/${data.dxf_file}">
+                        <i class="border p-1 rounded fa fa-download"></i></a>
+                     </li>`
+        })
+        if(x){
+            custom.innerHTML = str
+        }else{ ul.innerHTML = str }
+    }
+    document.getElementById("prev_dxf").addEventListener("keyup",e=> keyupFunction(e,0))
+
+    function killme(e){
+        totalforms = Number(document.getElementById('id_form-TOTAL_FORMS').value)
+        e.target.parentNode.parentNode.remove()
+        totalforms -= 1
+        updateFormNumber.setAttribute("value",totalforms - 1)
+    }
+    document.getElementById("add_form").addEventListener("click", event => {
+        updateFormNumber = document.getElementById('id_form-TOTAL_FORMS')
+        totalforms = Number(updateFormNumber.value)
+        const cloned = document.getElementById('formset_temp').cloneNode(true)
+        cloned.setAttribute("id","form_" + totalforms)
+        cloned.classList.remove("d-none")
+        cloned.classList.add("formset-element")
+        const regex = new RegExp("__prefix__","g")
+        cloned.innerHTML = cloned.innerHTML.replace(regex,totalforms)
+        updateFormNumber.setAttribute('value',totalforms + 1)
+        document.getElementById("formset-form-list").append(cloned)
+        document.getElementById(`prev_dxf_multiple-${totalforms}`).addEventListener("keyup", e => keyupFunction(e,totalforms + 1))
+
+    })  
+
+
+    if(Number(document.getElementById('id_form-TOTAL_FORMS').value)) {
+        new Array(Number(document.getElementById('id_form-TOTAL_FORMS').value)).fill(1).forEach(function(n){
+            console.log(n,document.getElementById(`prev_dxf_multiple-${n - 1}`))
+            document.getElementById(`prev_dxf_multiple-${n - 1}`).addEventListener("keyup",e => keyupFunction(e,n))
+        });
+      
+    }
+    function changeForm(e,x){
+        if(x){
+            document.getElementById(`prev_dxf_multiple-${x-1}`).value = e.target.innerText
+            document.getElementById(`id_form-${x-1}-search`).value = e.target.dataset.id
+            custom.classList.add("d-none")
+        }else{
+            document.getElementById("prev_dxf").value = e.target.innerText
+           document.getElementById('choosen').setAttribute('value',e.target.dataset.id)
+           ul.classList.add("d-none")
+        }
+    }
+</script>
+{%endif%}
+{% endblock javascripts %}

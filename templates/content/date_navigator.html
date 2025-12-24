@@ -1,0 +1,9 @@
+ {%load add_filters%}
+ 
+ <div>
+    <ul class=" pb-2 list-group list-group-horizontal w-25  gap-2">
+        <a href="{%url_replace request 'sort' 'all'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'all'%} active {%endif%}">All </a>
+        <a class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'yesterday' %} active {%endif%}" href="{%url_replace request 'sort' 'yesterday'%}">Yesterday</a>
+        <a href="{%url_replace request 'sort' 'today'%}" class="list-group-item list-group-item-action py-2 rounded-small {%if request.GET.sort == 'today' or not request.GET.sort%} active {%endif%}">today </a>
+</ul>
+</div>

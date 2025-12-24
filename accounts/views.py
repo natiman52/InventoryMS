@@ -22,23 +22,21 @@ from django.views.generic import (
 
 # Local app imports
 from store.models import Item,UserPrint
-from bills.models import InventoryMaterial
-from .models import Customer, Supplier,MyUser
+from bills.models import InventoryMaterial,FreeAssets
+from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_total_order_value
+from .models import Customer, Supplier,OverTime,MyUser,Employee,OverTimeConnect
+
 from .forms import (
     CreateUserForm, CustomerForm,
-    SupplierForm,ItemPriceForm,changePasswordForm
+    SupplierForm,ItemPriceForm,changePasswordForm,CreateEmployeeForm
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+from django.core.paginator import Paginator
+
 
 def register(request):
-    """
-    Handle user registration.
-    If the request is POST, process the form data to create a new user.
-    Redirect to the login page on successful registration.
-    For GET requests, render the registration form.
-    """
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
@@ -51,24 +49,12 @@ def register(request):
 
 @login_required
 def profile(request):
-    """
-    Render the user profile page.
-    Requires user to be logged in.
-    """
-    return render(request, 'accounts/profile.html')
-
-
-
-
-
+    user =request.user
+    return render(request, 'accounts/profile.html',{"user":user})
 
 
 class CustomerListView(LoginRequiredMixin, ListView):
-    """
-    View for listing all customers.
 
-    Requires the user to be logged in. Displays a list of all Customer objects.
-    """
     model = Customer
     template_name = 'accounts/accountcustomerlist.html'
     context_object_name = 'items'
@@ -84,11 +70,6 @@ class CustomerListView(LoginRequiredMixin, ListView):
 
 
 class SupplierSellsListView(LoginRequiredMixin, ListView):
-    """
-    View for listing all customers.
-
-    Requires the user to be logged in. Displays a list of all Customer objects.
-    """
     model = Supplier
     template_name = 'accounts/vendorsells.html'
     paginate_by = 10
@@ -99,13 +80,7 @@ class SupplierSellsListView(LoginRequiredMixin, ListView):
 
 
 class CustomerCreateView(LoginRequiredMixin, CreateView):
-    """
-    View for creating a new customer.
 
-    Requires the user to be logged in.
-    Provides a form for creating a new Customer object.
-    On successful form submission, redirects to the customer list.
-    """
     model = Customer
     template_name = 'accounts/customer_form.html'
     form_class = CustomerForm
@@ -113,13 +88,7 @@ class CustomerCreateView(LoginRequiredMixin, CreateView):
 
 
 class CustomerUpdateView(LoginRequiredMixin, UpdateView):
-    """
-    View for updating an existing customer.
 
-    Requires the user to be logged in.
-    Provides a form for editing an existing Customer object.
-    On successful form submission, redirects to the customer list.
-    """
     model = Customer
     template_name = 'accounts/customer_form.html'
     form_class = CustomerForm
@@ -127,18 +96,12 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class CustomerDeleteView(LoginRequiredMixin, DeleteView):
-    """
-    View for deleting a customer.
-
-    Requires the user to be logged in.
-    Displays a confirmation page for deleting an existing Customer object.
-    On confirmation, deletes the object and redirects to the customer list.
-    """
+ 
     model = Customer
     template_name = 'accounts/customer_confirm_delete.html'
     success_url = reverse_lazy('customer_list')
 
-##Account Views
+## Account Views
     
 class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,UpdateView):
     model = Item
@@ -148,7 +111,7 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
     pk_url_kwarg = 'id'
     success_url ="/"
     def test_func(self):
-        if self.request.user.role == "AT" or self.request.user.role == "AD":
+        if self.request.user.role == "AT" or self.request.user.role == "AD" or self.request.user.role == "GM":
             return True
         else:
             return False
@@ -173,53 +136,36 @@ class AccountDetailView(LoginRequiredMixin,DetailView,UserPassesTestMixin,Update
 class AccountOrderList(ListView):
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
-    def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_price == "P" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_price == "P"):
-                        obje.append(i.item)
-                        current = i.item
-        print(obje)
-        return obje
+    queryset =Item.objects.filter(verif_price="P")
+
+
 class AccountOrderListFinished(ListView):
+    queryset =Item.objects.filter(completed=True)
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
-    def get_queryset(self):
-        obje = []
-        current = ''
-        prints =UserPrint.objects.filter(user=self.request.user)
-        for i in prints:
-            try:
-                if(i.item.verif_price == "A" and (obje.index(i.item))):
-                    current = i.item
-            except:
-                    if(i.item.verif_price == "A"):
-                        obje.append(i.item)
-                        current = i.item
-        print(obje)
-        return obje
+    paginate_by = 30
+
 class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
     model = Customer
-    context_object_name = 'items'
+    context_object_name = 'obj'
     template_name = "accounts/accountcustomerorderlist.html"
     pk_url_kwarg = "id"
     def get_object(self):
         obj = super(AccountCustomerOrderList,self).get_object()
         obje = Item.objects.filter(client=obj)
-        return obje
-
+        total_unpaid = get_total_unpaid_value(obje)
+        total_order_value =get_total_order_value(obje)
+        total_paid = get_total_paid_value(obje)
+        total_value = total_paid + total_unpaid
+        free_assets,created = FreeAssets.objects.get_or_create(customer=obj)
+        return {"client":obj,"order_value":total_value,"total_item_value":total_order_value,"unpaid":total_unpaid,"assets":free_assets,"paid":total_paid,"items":obje}
 
 def changepasswordtest(user):
     if(user.is_superuser):
         return True
     else:
         return False
+
 @login_required
 @user_passes_test(changepasswordtest)
 def changepassword(request):
@@ -231,10 +177,12 @@ def changepassword(request):
             password = form.cleaned_data.get("password1")
             user.set_password(password)
             user.save()
-            return redirect(reverse('user-changepassword'))
+            return redirect(reverse('changepassword'))
         return render(request,'accounts/changepassword.html',{'form':form})
     return render(request,'accounts/changepassword.html',{'form':form})
+
 ## End of Account views
+
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
@@ -278,3 +226,55 @@ class SupplierDeleteView(LoginRequiredMixin, DeleteView):
     model = Supplier
     template_name = 'accounts/vendor_confirm_delete.html'
     success_url = reverse_lazy('vendor-list')
+
+class AllOverTimeDisplay(LoginRequiredMixin,ListView):
+    queryset =OverTimeConnect.objects.all()
+    template_name = "accounts/allovertime.html"
+    context_object_name = "operators"
+    paginate_by = 25
+    def get_queryset(self):
+        obje = self.queryset
+        if(self.request.GET.get('date')):
+            obje =obje.filter(overtime__date =self.request.GET.get('date'))
+        elif(self.request.GET.get('q')):
+            obje =obje.filter(myuser__username__contains=self.request.GET.get('q'))
+        return obje
+
+class OverTimeDisplayView(LoginRequiredMixin,ListView):
+    template_name = "accounts/overtime.html"
+    context_object_name = "overtimes"
+    paginate_by = 15
+    def get_queryset(self):
+        obje =self.request.user.overtime.all()
+        if(self.request.GET.get('date')):
+            obje =self.request.user.overtime.filter(date=self.request.GET.get('date'))
+        return obje
+
+class OverTimeDetailView(LoginRequiredMixin,DetailView):
+    model=OverTime
+    template_name="accounts/overtimedetail.html"
+    context_object_name = 'overtime'
+    pk_url_kwarg = 'id'
+class EmployeePayRollList(LoginRequiredMixin,ListView):
+    model= Employee
+    template_name = "accounts/stafflist.html"
+    context_object_name ="employee"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for item in context['employee']:
+            overtime = 0
+            if(item.account):
+                for i in item.account.overtime.filter(paid=False):
+                    for t in i.ammount.all():
+                        overtime += t.quantity    
+            item.overtime = overtime * 50
+            item.total = item.overtime + item.salary
+        return context
+
+class CreateEmployee(LoginRequiredMixin,CreateView):
+    model=Employee
+    form_class = CreateEmployeeForm
+    template_name = "accounts/staffcreate.html"
+    def get_success_url(self):
+        return reverse('payroll')
+    

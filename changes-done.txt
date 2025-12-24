@@ -1,0 +1,94 @@
+
+moved all templates to a single file in the root directory for ease of use. 
+
+Changed all redirects from / to "dashboard"
+
+removed work from home page and made scroll bahaviour smooth
+
+created a content directory inside for inluded HTML.
+
+Created a Filter which is used for alltypes of get queries:
+
+            @register.simple_tag
+            def url_replace(request, field, value):
+                dict_ = request.GET.copy()
+                dict_[field] = value
+                return f"?{dict_.urlencode()}"
+
+Used the top filter in dashboard to ease searching between dates.
+Transformed Dashboard search bar to be an included HTML.
+
+                 """""""""""""""""""""""""""""""""""""""""""""""""""
+                <form class="input-group mt-4"  role="search" id="searchform" method="get" accept-charset="utf-8">
+                    {%if request.GET%}
+                    <i id="clearget" style="cursor: pointer;" class="d-flex align-items-center fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
+                {%endif%}
+                    <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
+                    <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </form>
+                """""""""""""""""""""""""""""""""""""""""""""""""""
+made all paginations button to be an included HTML.
+
+        """""""""""""""""""""""""""""""""""""""""""""""""""
+        {%load add_filters%}
+        <nav aria-label="Page navigation mb-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="{%url_replace request 'page' page_obj.previous_page_number %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{%url_replace request 'page' i %}">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{%url_replace request 'page' page_obj.next_page_number %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        """""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+Changed ItemSearchListView paginate_by to 40
+
+created another component called search item for those who are searched with action:
+            
+            """""""""""""""""""""""""""""""""""""""""""""""""""
+                <form class="input-group mt-4"  role="search" id="searchform" action="{% url 'item_search_list_view' %}" method="get" accept-charset="utf-8">
+                    {%if request.GET%}
+                    <i id="clearget" style="cursor: pointer;" class="d-flex align-items-center fa fa-close border-0 rounded-pill shadow-sm p-1 px-2 me-2"></i>
+                {%endif%}
+                    <input id="searchbox" name="q" type="text" class="form-control border-0 rounded-pill shadow-sm" placeholder="Find products">
+                    <button class="btn btn-outline-success rounded-pill shadow-sm" type="submit">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </form>
+            """""""""""""""""""""""""""""""""""""""""""""""""""

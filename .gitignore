@@ -4,12 +4,15 @@ __pycache__/
 *$py.class
 migrations/
 media/
+backups/
 # C extensions
 *.so
 managmentVenv/
+test_email.py
 # Distribution / packaging
 .Python
 env/
+.env
 venv/
 __pycache__/
 build/
@@ -30,7 +33,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+staticroot/
 # PyInstaller
 # Usually these files are written by a python script from a template
 # before PyInstaller builds the exe, so as not to infect the source

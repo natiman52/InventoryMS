@@ -1,0 +1,102 @@
+<div class="row justify-content-around">
+    <div class="card shadow border-0 mb-7 col-12">
+        <div class="card-body">
+            <h5 class="card-title">Current week activity</h5>
+            <div class="chart-container d-flex justify-content-center">
+                    <canvas id="lineChart" ></canvas>
+            </div>
+        </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('lineChart');
+    const data = {{itemsweek|safe}}
+    var new_data = []
+    var theDays = new Array("sunday","monday", "Tuesday", "Wendnesday", "Thursday", "Friday", "Saturday");
+    var today = new Date();
+    var sevenDay = []
+    var aDay = today.getDay();
+
+    var i;
+    for (i=0; i<5; i++) {
+        if (aDay <= 0) {
+            aDay = 6;
+        }
+        sevenDay.push(theDays[aDay]) 
+        if(data.find(e=>e.weekday == aDay+1) ){
+            new_data.push(data.find(e=>e.weekday == aDay+1).count)
+        }else{
+            new_data.push(0)
+        }
+        aDay -= 1;
+    }
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: sevenDay,
+    datasets: [{
+      label:"weekly activity",
+      data: new_data,
+      backgroundColor: "blue",
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+    x:{
+        reverse: true,
+        },
+    y: {
+        position: 'right',
+        beginAtZero: true,
+        suggestedMax: 50
+      }
+    }
+  }
+});
+</script>
+<script>
+    var line_chart_Data ={{each_month_data|safe }}
+    var linechart = document.getElementById('lineChart')
+    var theMonths = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+    var today = new Date();
+    var sevenMonths = []
+    var aMonth = today.getMonth();
+    var i;
+    for (i=0; i<7; i++) {
+        sevenMonths.push(theMonths[aMonth]) //here you can do whatever you want...
+        aMonth -= 1;
+        if (aMonth < 0) {
+            aMonth = 11;
+        }
+    }
+    new Chart(linechart,{
+        type:'line',
+        data:{
+            labels:sevenMonths.slice(0,line_chart_Data.length).reverse(),
+            datasets:[{
+                label:'Revenue over the last seven months',
+                data:line_chart_Data.map(e => e.sum),    
+                fill: true,
+                borderColor: '#C5172E',
+                backgroundColor:"#C5172E",
+                pointRadius:2
+            }]
+        }
+    })
+</script>
+  <style>
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+  }
+
+  #pieChart, #lineChart {
+    max-width: 100%;
+    height: 100%;
+  }
+  </style>
