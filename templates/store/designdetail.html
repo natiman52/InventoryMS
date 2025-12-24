@@ -195,7 +195,7 @@
     }
         objects = ""
         $.ajax({
-            url:`http://${window.location.host}/get-items?type={{item.type}}`,
+            url:`${window.location.protocol}//${window.location.host}/get-items?type={{item.type}}`,
             async:false,
         }).done((e)=> {
             objects = {'files':clean(JSON.parse(e.files)),"files2":clean(JSON.parse(e.files2))}
