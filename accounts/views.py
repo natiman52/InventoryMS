@@ -24,7 +24,7 @@ from django.views.generic import (
 from store.models import Item,UserPrint
 from bills.models import InventoryMaterial,FreeAssets
 from bills.algebra import get_total_paid_value,get_total_unpaid_value,get_total_order_value
-from .models import Customer, Supplier,OverTime,MyUser,Employee
+from .models import Customer, Supplier,OverTime,MyUser,Employee,OverTimeConnect
 
 from .forms import (
     CreateUserForm, CustomerForm,
@@ -32,6 +32,8 @@ from .forms import (
 )
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
+from django.core.paginator import Paginator
 
 
 def register(request):
@@ -141,6 +143,7 @@ class AccountOrderListFinished(ListView):
     queryset =Item.objects.filter(completed=True)
     context_object_name = "items"
     template_name = 'accounts/accountorderlist.html'
+    paginate_by = 30
 
 class AccountCustomerOrderList(LoginRequiredMixin,DetailView):
     model = Customer
@@ -225,17 +228,18 @@ class SupplierDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('vendor-list')
 
 class AllOverTimeDisplay(LoginRequiredMixin,ListView):
+    queryset =OverTimeConnect.objects.all()
     template_name = "accounts/allovertime.html"
     context_object_name = "operators"
-    paginate_by = 15
+    paginate_by = 25
     def get_queryset(self):
-        obje =MyUser.objects.filter(role="OP")
+        obje = self.queryset
         if(self.request.GET.get('date')):
             obje =obje.filter(overtime__date =self.request.GET.get('date'))
         elif(self.request.GET.get('q')):
-            obje =obje.filter(username__contains=self.request.GET.get('q'))
+            obje =obje.filter(myuser__username__contains=self.request.GET.get('q'))
         return obje
-      
+
 class OverTimeDisplayView(LoginRequiredMixin,ListView):
     template_name = "accounts/overtime.html"
     context_object_name = "overtimes"

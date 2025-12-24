@@ -1,0 +1,155 @@
+<<<<<<< HEAD:bills/templates/bills/clientpaymentlistcreate.html
+<!-- customer_form.html -->
+{% extends 'store/base.html' %}
+{%load crispy_forms_tags%}
+{%load add_filters%}
+{% block content %}
+  <div class=" ms-5 mt-5 mb-3 me-5">
+    <h1 class="mb-4">{% if form.instance.pk %}Edit{% else %}Create{% endif %} Customer</h1>
+    <form class="container" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+            {{form | crispy}}
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Save
+      </button>
+    </form>
+  </div>
+  <div class="px-4">
+    <table class="table table-bordered table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">ammount <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">payment_method <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Proof <i class="fa-solid fa-sort"></i></th>
+                {%if request.user.role == "AD"%}
+                <th scope="col">Action</th>
+                {%endif%}
+              
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in payments %}
+            <tr>
+                <td>{{ item.date|date:"M d, Y"  }}</td>
+                <td ><p class="text-capitalize text-sm mb-0">{%if not item.ammount  %} - {%else%} {{item.ammount}} {%endif%}</p></td>
+                <td ><p class="h6 mb-0 text-capitalize"> {{ item.payment_method }}</p></td>
+                <td class="d-flex justify-content-center"><button class="btn btn-light py-0"><a download="recipt.png" href="{{ item.proof }}"><i class="fa fa-download text-sm px-2"></i></a></button></td>
+                {%if request.user.role == "AD"%}
+                <td>
+                    <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                    <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.slug %}">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </a>
+                </td>
+                {%endif%}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{request | get_sort}}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </span>
+        </li>
+        {% endif %}
+        {% for i in paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ i }}{{request | get_sort}}">{{ i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{{request | get_sort}}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+=======
+<!-- customer_form.html -->
+{% extends 'store/base.html' %}
+{%load crispy_forms_tags%}
+{%load add_filters%}
+{% block content %}
+  <div class=" ms-5 mt-5 mb-3 me-5">
+    <h1 class="mb-4">{% if form.instance.pk %}Edit{% else %}Create{% endif %} Customer</h1>
+    <form class="container" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+            {{form | crispy}}
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Save
+      </button>
+    </form>
+  </div>
+  <div class="px-4">
+    <table class="table table-bordered table-striped table-hover table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">date <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">ammount <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">payment_method <i class="fa-solid fa-sort"></i></th>
+                <th scope="col">Proof <i class="fa-solid fa-sort"></i></th>
+                {%if request.user.role == "AD"%}
+                <th scope="col">Action</th>
+                {%endif%}
+              
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in payments %}
+            <tr>
+                <td>{{ item.date|date:"M d, Y"  }}</td>
+                <td ><p class="text-capitalize text-sm mb-0">{%if not item.ammount  %} - {%else%} {{item.ammount}} {%endif%}</p></td>
+                <td ><p class="h6 mb-0 text-capitalize"> {{ item.payment_method }}</p></td>
+                <td class="d-flex justify-content-center"><button class="btn btn-light py-0"><a download="recipt.png" href="{{ item.proof }}"><i class="fa fa-download text-sm px-2"></i></a></button></td>
+                {%if request.user.role == "AD"%}
+                <td>
+                    <a class="btn btn-outline-info btn-sm" href="{% url 'product-update' item.slug %}">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                    <a class="btn btn-outline-danger btn-sm float-end" href="{% url 'product-delete' item.slug %}">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </a>
+                </td>
+                {%endif%}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+{%include 'content/paginator.html' %}
+{% endif %}
+{% endblock %}
+>>>>>>> main:templates/bills/clientpaymentlistcreate.html

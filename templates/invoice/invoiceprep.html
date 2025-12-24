@@ -1,0 +1,391 @@
+<<<<<<< HEAD:invoice/templates/invoice/invoiceprep.html
+{% extends "store/base.html" %}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}
+{% load static %}
+{%load add_filters%}
+{% block title %}Invoices{% endblock title %}
+
+{% block content %}
+<div class="container px-5 p-4">
+  <style>
+    .table th, .table td {
+        text-align: center;
+    }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
+  </style>
+    <form id="search-get" class="form-group row justify-content-end" action="" method="get">
+        <label class="col-sm-1 col-form-label" for="date">Date:</label>
+        <div class="col-sm-2">
+            <input onchange="submitSearch(event)" class="form-control" type="date" name="date" id="">
+        </div>
+    </form>
+    <h2 class="mb-2">{{current_date|date:"M d, Y"}}</h2>
+    <div class="container mb-3">
+        <div class="row justify-content-end">
+            <div class="col-xl-3 col-sm-3 col-6" id="TotalLamera">
+                <div class="card shadow border-0">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col">
+                                <span class="h6 font-semibold text-muted text-sm d-block mb-1">Total Lamera</span>
+                                <span class="h3 font-bold mb-0 "><span> {{total_metals}} </span>
+                            </div>
+                        </div>
+                    </div>
+                     </div>
+        </div>
+        <div class="col-xl-3 col-sm-3 col-6" id="TotalLamera">
+            <div class="card shadow border-0">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col">
+                            <span class="h6 font-semibold text-muted text-sm d-block mb-1">Client N<span class="text-underline">o</span></span>
+                            <span class="h3 font-bold mb-0 "><span> {{clients_count}} </span>
+                        </div>
+                    </div>
+                </div>
+                 </div>
+    </div>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <div class="row justify-content-around">
+            <div class=" col-md-3">
+                <p class="text-xl text-underline mb-3">Sheet metal List</p>
+                <div>
+                    {%if metals|length == 0 %}
+                    <p>no work done</p>
+                    {%endif%}
+                    {%for i in metals%}
+                    <p class="d-flex justify-content-between">{{i.name |thickness_name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.quantity.amm}} units</span></p>
+                    {%endfor%}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="text-xl text-underline">Operational Cost</p>
+                    {%if not operational_cost%}
+                    <button onclick="submitForm()" class="btn btn-danger py-1">submit</button>
+                    {%endif%}
+                </div>
+                {%if operational_cost%}
+                <div>
+                    {%for i in operational_cost%}
+                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.amm}}</span></p>
+                    {%endfor%}
+                </div>
+                {%else%}
+                <form id="operation_cost" action="{%url 'create_operation_cost' %}" method="post">
+                    {%csrf_token%}
+                    <input type="hidden" name="date" value="{{current_date|date:'Y-m-d'}}">
+                    <p class="d-flex justify-content-between">Rent <input type="number" name="rent" placeholder="Rent/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Logistics <input type="number" name="log" placeholder="Logistics/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">PayRoll <input type="number" name="pay" placeholder="PayRoll/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">machinery & Electric <input type="number" name="elec" placeholder="Electric/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                    <p class="d-flex justify-content-between">Overtime <input type="number" name="over" placeholder="Overtime/day" style="background-color: white;width: 120px;" class="text-center rounded-md border-1 "/></p>
+                </form>
+                {%endif%}
+            </div>
+            <div class="col-md-3">
+                <p class="text-xl text-underline mb-3">client list</p>
+                <div class="">
+                    {%if clients|length == 0 %}
+                    <p>no clients satisfied</p>
+                    {%endif%}
+                    
+                    {%for i in clients%}
+                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{%if i.debt%}{{i.debt}}{%else%}-{%endif%}</span></p>
+                    {%endfor%}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="m-2">
+        {%if operational_cost %}
+        <table class="table table-sm table-striped table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">ID <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Customer Name <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Thickness <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
+                    <th>Dxf </th>
+                    <th>Audited</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    {%if item.audited%}
+                    {%with invoice=item|get_invoice%}
+                    <td><a href="{%url 'invoice-detail' id=invoice.id %}">{{ item.client}}</a></td>
+                    {%endwith%}
+                    {%else%}
+                    <td><a href="{%url 'invoice-create' id=item.id %}">{{ item.client}}</a></td>
+                    {%endif%}
+                    <td>{{ item.thickness }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.date|date:"M d Y" }}</td>
+                    <td><a style="text-decoration: none;" download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
+                    <td>{% if item.audited %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {%else%}
+        <p class="text-center">Please Fill & Submit Operation Cost</p>
+        {%endif%}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ i }} <span class="visually-hidden">(current)</span></span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+<script>
+    function submitForm(){
+        form = document.getElementById("operation_cost")
+        form.submit()
+    }
+    function submitSearch(event){
+        document.getElementById('search-get').submit()
+    }
+</script>
+{% endblock content %}
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+=======
+{% extends "store/base.html" %}
+{% load render_table from django_tables2 %}
+{% load querystring from django_tables2 %}
+{% load static %}
+{%load add_filters%}
+{% block title %}Invoices{% endblock title %}
+
+{% block content %}
+<div class="container px-5 p-4">
+  <style>
+    .table th, .table td {
+        text-align: center;
+    }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
+  </style>
+    <form id="search-get" class="form-group row justify-content-end" action="" method="get">
+        <label class="col-sm-1 col-form-label" for="date">Date:</label>
+        <div class="col-sm-2">
+            <input onchange="submitSearch(event)" class="form-control" type="date" name="date" id="">
+        </div>
+    </form>
+    <h2 class="mb-2">{{current_date|date:"M d, Y"}}</h2>
+    <div class="container mb-3">
+        <div class="row justify-content-end">
+            <div class="col-xl-3 col-sm-3 col-6" id="TotalLamera">
+                <div class="card shadow border-0">
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col">
+                                <span class="h6 font-semibold text-muted text-sm d-block mb-1">Total Lamera</span>
+                                <span class="h3 font-bold mb-0 "><span> {{total_metals}} </span>
+                            </div>
+                        </div>
+                    </div>
+                     </div>
+        </div>
+        <div class="col-xl-3 col-sm-3 col-6" id="TotalLamera">
+            <div class="card shadow border-0">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col">
+                            <span class="h6 font-semibold text-muted text-sm d-block mb-1">Client N<span class="text-underline">o</span></span>
+                            <span class="h3 font-bold mb-0 "><span> {{clients_count}} </span>
+                        </div>
+                    </div>
+                </div>
+                 </div>
+    </div>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <div class="row justify-content-around">
+            <div class=" col-md-3">
+                <p class="text-xl text-underline mb-3">Sheet metal List</p>
+                <div>
+                    {%if metals|length == 0 %}
+                    <p>no work done</p>
+                    {%endif%}
+                    {%for i in metals%}
+                    <p class="d-flex justify-content-between">{{i.name |thickness_name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.quantity.amm}} units</span></p>
+                    {%endfor%}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="text-xl text-underline">Operational Cost</p>
+                    {%if not operational_cost%}
+                    <button onclick="submitForm()" class="btn btn-danger py-1">submit</button>
+                    {%else%}
+                    <span onclick="showUpdateForm(event)" class="btn"><i class="fa fa-pen"></i></span>
+                    <button id="operation_cost_update" onclick="updateForm()" class="d-none btn btn-success py-0">update</button>
+                    {%endif%}
+                </div>
+                {%if operational_cost%}
+                <div id="operation_cost_display">
+                    {%for i in operational_cost%}
+                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{{i.amm}}</span></p>
+                    {%endfor%}
+                </div>
+                <form id="operation_cost_editor" class="d-none" action="{%url 'create_update_operation_cost' %}" method="post">
+                        {%csrf_token%}
+                        {%include "content/invoice_operation_cost.html" %}
+                </form>
+                {%else%}
+                <form id="operation_cost" action="{%url 'create_update_operation_cost' %}" method="post">
+                    {%csrf_token%}
+                        {%include "content/invoice_operation_cost.html" %}
+                </form>
+                {%endif%}
+            </div>
+            <div class="col-md-3">
+                <p class="text-xl text-underline mb-3">client list</p>
+                <div class="">
+                    {%if clients|length == 0 %}
+                    <p>no clients satisfied</p>
+                    {%endif%}
+                    
+                    {%for i in clients%}
+                    <p class="d-flex justify-content-between">{{i.name}} <span style="background-color: white;width: 100px;" class="text-center rounded-md py-1 border-1 ">{%if i.debt%}{{i.debt}}{%else%}-{%endif%}</span></p>
+                    {%endfor%}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="m-2">
+        {%if operational_cost %}
+        <table class="table table-sm table-striped table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">ID <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Customer Name <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Thickness <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Quantity <i class="fa-solid fa-sort"></i></th>
+                    <th scope="col">Date <i class="fa-solid fa-sort"></i></th>
+                    <th>Dxf </th>
+                    <th>Audited</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    {%if item.audited%}
+                    {%with invoice=item|get_invoice%}
+                    <td><a href="{%url 'invoice-detail' slug=invoice.slug %}">{{ item.client}}</a></td>
+                    {%endwith%}
+                    {%else%}
+                    <td><a href="{%url 'invoice-create' id=item.id %}">{{ item.client}}</a></td>
+                    {%endif%}
+                    <td>{{ item.thickness }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.date|date:"M d Y" }}</td>
+                    <td><a style="text-decoration: none;" download="{{item.dxf_file_identifier}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
+                    <td>{% if item.audited %} <span class=" btn-success rounded-circle px-1"><i class="fa fa-solid fa-check"></i></span>{%else%}<span class="btn-danger rounded-circle px-1"><i class="fa fa-solid fa-close"></i></span>{%endif%}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {%else%}
+        <p class="text-center">Please Fill & Submit Operation Cost</p>
+        {%endif%}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {% if is_paginated %}
+        {%include 'content/paginator.html' %}
+        {% endif %}
+    </div>
+</div>
+<script>
+    function showUpdateForm(event){
+        console.log(event)
+        var form = document.getElementById("operation_cost_editor")
+        var cost_display = document.getElementById("operation_cost_display")
+        form.classList.remove('d-none')
+        cost_display.classList.add("d-none")
+        event.target.classList.add("d-none")
+        document.getElementById("operation_cost_update").classList.remove("d-none")
+    }
+    function updateForm(){
+        var form = document.getElementById("operation_cost_editor")
+        form.submit()
+    }
+    function submitForm(){
+        form = document.getElementById("operation_cost")
+        form.submit()
+    }
+    function submitSearch(event){
+        document.getElementById('search-get').submit()
+    }
+</script>
+{% endblock content %}
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+>>>>>>> main:templates/invoice/invoiceprep.html
+{%endblock javascripts %}

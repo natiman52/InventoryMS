@@ -122,7 +122,7 @@ class AllList(ListView):
     model =Item
     template_name = "store/all_list.html"
     context_object_name = "items"
-    paginate_by = 15
+    paginate_by = 25
     def get_queryset(self,**kwargs):
         if(self.request.GET.get('month')):
             week =get_months_with_their_weeks()[int(self.request.GET.get('month')) - 1].get('initial_week')
@@ -171,11 +171,12 @@ class GivenOrderListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView
     table_class = ItemTable
     template_name = "store/GivenProductList.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 30
     export_name = "given_order_list"
     SingleTableView.table_pagination = False
 
-class ProductListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
+
+class ProductListView(LoginRequiredMixin,ExportMixin, tables.SingleTableView):
     """
     View class to display a list of products.
 
@@ -186,12 +187,11 @@ class ProductListView(LoginRequiredMixin, ExportMixin, tables.SingleTableView):
     - context_object_name: The variable name for the context object.
     - paginate_by: Number of items per page for pagination.
     """
-
-    model = Item
     table_class = ItemTable
     template_name = "store/productslist.html"
     context_object_name = "items"
-    paginate_by = 10
+    paginate_by = 30
+    queryset = Item.objects.all()
     SingleTableView.table_pagination = False
 
 
@@ -203,7 +203,7 @@ class ItemSearchListView(ProductListView):
     - paginate_by: Number of items per page for pagination.
     """
 
-    paginate_by = 10
+    paginate_by = 40
 
     def get_queryset(self):
         result = super(ItemSearchListView, self).get_queryset()
@@ -299,7 +299,7 @@ def Item_create_view(request,type):
             obj.save()
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)('DR',{"type":"send.notification",'message':"message"})
-            return redirect("/")
+            return redirect(reverse("dashboard"))
         return render(request,"store/productcreate.html",{"form":form,'type':type,"error":True})   
     return render(request,"store/productcreate.html",{"form":form,'type':type})
 
