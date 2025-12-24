@@ -17,15 +17,6 @@ Sales Inventory Management is a Django-based web application for managing invent
 - `bills` — Stores daily operational bills and helper functions to aggregate them.
 - `accounts` — User and profile management (permissions used for restricting updates/deletes).
 
-## How invoices & the detail page work (high level)
-- When you create an invoice for an `Item`, the `Invoice.save()` method computes derived fields:
-	- total = quantity * unit_price
-	- gross_revenue = total + (scrap_value * quantity)
-	- gross_cost = sheet_metal_cost * quantity
-	- gross_profit = gross_revenue - gross_cost
-	- opertional_cost is calculated by reading the day's Bills, summing them, and allocating the daily operational cost proportionally across the total sheets produced that day.
-	- net_profit = gross_profit - opertional_cost
-- The detail page (`/audit/<id>/`) simply reads these persisted fields and displays them (net_profit, breakdown of costs, scrap info, dimensions, etc.).
 
 ## Tech stack and libraries
 - Python, Django (web framework)
@@ -56,7 +47,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-4. (Optional) Load sample data or import backups (project backups are stored under `backups/` as database dumps).
+
 
 ## Project structure (high-level)
 - `accounts/` — authentication, profiles, signals, filters
@@ -68,12 +59,8 @@ python manage.py runserver
 
 ## Notes, caveats and recommended improvements
 - The invoices compute operational allocations at save time; if bills or items change later, the stored invoice values may become inconsistent unless invoices are updated.
-- There are a few known places to harden the code: guard against division by zero when allocating operational cost, ensure `InvoiceUpdateView` fields match the model, and make the invoice table model consistent.
+
 
 ## Contributing
 Please open issues or pull requests. If you add features, include tests and update `requirements.txt` where appropriate.
-
-## License
-This repository doesn't include a formal license file — add one if you plan to publish the project.
-
 
