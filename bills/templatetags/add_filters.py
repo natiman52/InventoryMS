@@ -6,6 +6,12 @@ from invoice.models import Invoice
 register = template.library.Library()
 
 
+@register.simple_tag
+def url_replace(request, field, value):
+    dict_ = request.GET.copy()
+    dict_[field] = value
+    return f"?{dict_.urlencode()}"
+
 @register.filter
 def filter_by_catagory(val,vla):
     result =val.filter(catagory=vla)
@@ -116,6 +122,31 @@ def myrange(value):
         firstdayofweek, lastdayofweek=getDateRangeFromWeek(timezone.datetime.now().year,i)
         lst.append({'weekno':f"{i}",'dates':f'{firstdayofweek.strftime("%b %d")}-{lastdayofweek.strftime("%b %d")}'})
     return lst
+
+@register.filter
+def get_range(page_obj, num_pages_to_show=10):
+    """
+    Generates a range of page numbers centered around the current page.
+    """
+    num_pages = page_obj.paginator.num_pages
+    current_page = page_obj.number
+    
+    half_total = num_pages_to_show // 2
+    
+    start_page = current_page - half_total
+    end_page = current_page + half_total
+    
+
+    if start_page < 1:
+        end_page += 1 - start_page
+        start_page = 1
+    if end_page > num_pages:
+        start_page -= end_page - num_pages
+        end_page = num_pages
+        if start_page < 1:
+            start_page = 1
+            
+    return range(start_page, end_page + 1)
 @register.filter
 def weekno(value):
     return value.weekno

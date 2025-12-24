@@ -3,7 +3,7 @@ from typing import Any
 from django.db.models import OuterRef,Exists,Sum
 from django.urls import reverse
 from django.http.response import HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.shortcuts import redirect,render
 from django.utils import timezone
 # Authentication and permissions
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -113,13 +113,13 @@ class InvoiceDetailView(DetailView):
     """
     model = Invoice
     template_name = 'invoice/invoicedetail.html'
-    pk_url_kwarg = "id"
+    lookup_field = 'slug'
     context_object_name = "obj"
     def get_success_url(self):
         """
         Return the URL to redirect to after a successful action.
         """
-        return reverse('invoice-detail', kwargs={'id': self.object.id})
+        return reverse('invoice-detail', kwargs={'slug': self.object.slug})
 
 
 
@@ -163,21 +163,24 @@ class InvoiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Invoice
     template_name = 'invoice/invoiceupdate.html'
     fields = [
-        'customer_name', 'contact_number', 'item',
-        'price_per_item', 'quantity', 'shipping'
+        'sheet_metal_cost', 'dimensions', 'quantity',
+        'scrap_type', 'scrap_value', 'unit_price'
     ]
-
+    context_object_name="invoice"
     def get_success_url(self):
         """
         Return the URL to redirect to after a successful update.
         """
-        return reverse('invoicelist')
-
+        return reverse('invoice-detail',kwargs={"slug":self.kwargs.get('slug')})
+    def get_context_data(self, **kwargs: Any):
+        context =super().get_context_data(**kwargs)
+        context['item'] =Invoice.objects.get(slug=self.kwargs.get('slug')).item
+        return context
     def test_func(self):
         """
         Determine if the user has permission to update the invoice.
         """
-        return self.request.user.is_superuser
+        return True
 
 
 class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -198,18 +201,20 @@ class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         """
         Determine if the user has permission to delete the invoice.
         """
-        return self.request.user.is_superuser
+        return True
 
 
-def create_operation_cost(request):
+
+def create_update_operation_cost(request):
 
     if(request.method == "POST"):
         if(request.POST.get('date') and request.POST.get('rent') and request.POST.get("log") and request.POST.get('pay') and request.POST.get("elec") and request.POST.get('over')):
-            Bill.objects.create(date=request.POST.get('date'),bill_type="Rent",amount=int(request.POST.get('rent')))
-            Bill.objects.create(date=request.POST.get('date'),bill_type="Logistics",amount=int(request.POST.get('log')))
-            Bill.objects.create(date=request.POST.get('date'),bill_type="PayRoll",amount=int(request.POST.get('pay')))
-            Bill.objects.create(date=request.POST.get('date'),bill_type="Electric",amount=int(request.POST.get('elec')))
-            Bill.objects.create(date=request.POST.get('date'),bill_type="Overtime",amount=int(request.POST.get('over')))
+            Bill.objects.update_or_create(date=request.POST.get('date'),bill_type="Rent",defaults={'amount':int(request.POST.get('rent'))})
+            Bill.objects.update_or_create(date=request.POST.get('date'),bill_type="Logistics",defaults={'amount':int(request.POST.get('log'))})
+            Bill.objects.update_or_create(date=request.POST.get('date'),bill_type="PayRoll",defaults={'amount':int(request.POST.get('pay'))})
+            Bill.objects.update_or_create(date=request.POST.get('date'),bill_type="Electric",defaults={'amount':int(request.POST.get('elec'))})
+            Bill.objects.update_or_create(date=request.POST.get('date'),bill_type="Overtime",defaults={'amount':int(request.POST.get('over'))})
             return redirect(reverse("invoiceprep") + comparetoday(request.POST.get('date')))
         else:
             return HttpResponseBadRequest()
+
