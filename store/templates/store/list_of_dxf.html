@@ -30,7 +30,7 @@
                 <tbody>
                     {% for file in Dxf_flies %}
                     <tr>
-                        <td class="ps-3" style="font-size: 16px;"><a download="{{file.filename}}" href="/media/{{file.dxf_file}}">{{file.filename}}</a></td>
+                        <td class="ps-3" style="font-size: 16px;"><a download="{{file.filename}}.dxf" href="/media/{{file.dxf_file}}">{{file.filename}}</a></td>
                         <td style="font-size: 16px;">{{ file.date }}</td>
                          {%if request.user.role == "AD" %}
                         <td>
@@ -52,7 +52,7 @@
                     {% endfor %}
                     {%for item in items%}
             <tr>
-                <td class="ps-3" style="font-size: 16px;"><a download="{{item.filename}}" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
+                <td class="ps-3" style="font-size: 16px;"><a download="{{item.filename}}.dxf" href="/media/{{item.dxf_file}}">{{item.filename}}</a></td>
                 <td style="font-size: 16px;">{{ item.date|date:"M d, Y"  }}</td>
                  {%if request.user.role == "AD"%}
                 <td>
